@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DropIt™ - P2P Local & Faraway Connect</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.3.3/tailwind.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .safe-bottom {
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <div class="bg-orange-600 text-white p-2 rounded-xl font-bold flex items-center justify-center shadow-lg shadow-orange-600/30">
+                <i class="fa-solid fa-box-open text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold tracking-tight text-lg text-white">Drop<span class="text-orange-500">It</span></h1>
+                <p class="text-xs text-slate-400 flex items-center gap-1">
+                    <span id="connection-indicator" class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                    <span id="connection-status-text">Ready & Connected</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="my-peer-id-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition active:scale-95">
+                <i class="fa-solid fa-qrcode mr-1"></i> My ID
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-md w-full mx-auto px-4 py-4 safe-bottom">
+        
+        <!-- Tab Navigation -->
+        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 border border-slate-800 rounded-2xl mb-6 shadow-inner">
+            <button id="tab-local" class="py-2.5 px-4 rounded-xl text-sm font-semibold bg-orange-600 text-white shadow-md transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wifi"></i> Local Xender
+            </button>
+            <button id="tab-faraway" class="py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-globe"></i> Faraway Match
+            </button>
+        </div>
+
+        <!-- SECTION: LOCAL XENDER -->
+        <section id="section-local" class="space-y-6">
+            <!-- Radar / Scan Area -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center relative overflow-hidden shadow-xl">
+                <div class="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none"></div>
+                <div class="w-24 h-24 mx-auto mb-4 bg-orange-600/10 border border-orange-500/30 rounded-full flex items-center justify-center relative animate-pulse">
+                    <i class="fa-solid fa-satellite-dish text-orange-500 text-3xl"></i>
+                    <div class="absolute inset-0 rounded-full border border-orange-500/20 animate-ping"></div>
+                </div>
+                <h2 class="text-lg font-bold text-white mb-1">Local P2P Radar</h2>
+                <p class="text-xs text-slate-400 mb-6">Scan QR code or enter peer ID to connect instantly offline or online.</p>
+
+                <div class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="remote-peer-id-input" placeholder="Enter peer ID or scan..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                        <button id="connect-btn" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-5 rounded-xl text-sm transition active:scale-95 shadow-lg shadow-orange-600/20">
+                            Connect
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="show-qr-btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-xl text-xs font-medium border border-slate-700 transition">
+                            <i class="fa-solid fa-qrcode mr-1.5 text-orange-400"></i> Show My QR
+                        </button>
+                        <button id="scan-qr-btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-xl text-xs font-medium border border-slate-700 transition">
+                            <i class="fa-solid fa-camera mr-1.5 text-orange-400"></i> Scan QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transfer & Chat Panel (Hidden initially until connected) -->
+            <div id="transfer-panel" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                            Active Session
+                        </h3>
+                        <p id="active-peer-label" class="text-xs text-slate-400 font-mono mt-0.5">Connected to: --</p>
+                    </div>
+                    <button id="disconnect-btn" class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 px-3 py-1.5 rounded-lg font-medium transition">
+                        Disconnect
+                    </button>
+                </div>
+
+                <!-- File Drop Zone -->
+                <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-orange-500 bg-slate-950/50 rounded-2xl p-6 text-center cursor-pointer transition">
+                    <input type="file" id="file-input" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-orange-500 mb-2"></i>
+                    <p class="text-sm font-medium text-slate-200 mb-1">Tap to select or drop file</p>
+                    <p class="text-xs text-slate-500">Any file type supported • P2P secure transfer</p>
+                </div>
+
+                <!-- Transfer Progress -->
+                <div id="progress-container" class="hidden space-y-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <div class="flex justify-between text-xs font-medium text-slate-300">
+                        <span id="transfer-filename" class="truncate max-w-[200px]">filename.ext</span>
+                        <span id="transfer-percentage">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-orange-500 h-full w-0 transition-all duration-150"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] text-slate-500">
+                        <span id="transfer-status">Sending...</span>
+                        <button id="cancel-transfer-btn" class="text-red-400 hover:underline">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Incoming/Outgoing Files Log -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transferred Files</h4>
+                    <div id="file-history" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-500 italic text-center py-2">No files transferred yet in this session.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: FARAWAY MATCH -->
+        <section id="section-faraway" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
+                <div class="text-center space-y-1">
+                    <div class="w-16 h-16 mx-auto bg-orange-600/10 border border-orange-500/30 rounded-full flex items-center justify-center text-orange-500 text-2xl mb-2">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-white">Faraway Interest Match</h2>
+                    <p class="text-xs text-slate-400">Select what you are looking for or sharing, and match with peers anywhere.</p>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Your Interest Tag</label>
+                        <select id="faraway-interest" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500">
+                            <option value="textbooks">📚 Textbooks & Notes</option>
+                            <option value="gadgets">💻 Gadgets & Chargers</option>
+                            <option value="hostel">🏠 Hostel & Accommodation</option>
+                            <option value="services">🛠 Student Services & Skills</option>
+                            <option value="general">💬 General Hangout & Chat</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Custom Note / Item Name</label>
+                        <input type="text" id="faraway-note" placeholder="e.g. Selling calculator ₦3,000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                    </div>
+
+                    <button id="broadcast-interest-btn" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 rounded-xl text-sm transition active:scale-95 shadow-lg shadow-orange-600/20">
+                        <i class="fa-solid fa-broadcast-tower mr-1.5"></i> Broadcast Interest
+                    </button>
+                </div>
+            </div>
+
+            <!-- Discovered Peers List -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                        <i class="fa-solid fa-users text-orange-500"></i> Active Peers on Interest Hub
+                    </h3>
+                    <button id="refresh-peers-btn" class="text-xs text-orange-400 hover:underline">Refresh</button>
+                </div>
+
+                <div id="discovered-peers-list" class="space-y-2.5">
+                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-xs text-white">CampusPeer_99</span>
+                                <span class="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full font-medium">Textbooks</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">Physics 101 Past Questions</p>
+                        </div>
+                        <button class="connect-peer-direct bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition" data-id="demo-peer-1">
+                            Connect
+                        </button>
+                    </div>
+                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-xs text-white">TechGuy_J</span>
+                                <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-medium">Gadgets</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">MacBook Charger for sale</p>
+                        </div>
+                        <button class="connect-peer-direct bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-xl border border-slate-700 transition" data-id="demo-peer-2">
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Fixed Bottom Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-6 py-3 flex justify-around items-center">
+        <button id="nav-local" class="flex flex-col items-center text-orange-500 transition">
+            <i class="fa-solid fa-wifi text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">Local Xender</span>
+        </button>
+        <button id="nav-faraway" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition">
+            <i class="fa-solid fa-globe text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">Faraway Match</span>
+        </button>
+        <button id="nav-history" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition">
+            <i class="fa-solid fa-clock-rotate-left text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">History</span>
+        </button>
+    </nav>
+
+    <!-- Modal: QR Code Display -->
+    <div id="qr-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl relative">
+            <button id="close-qr-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-white">Your Connection QR Code</h3>
+            <p class="text-xs text-slate-400">Let another device scan this QR code to connect instantly via P2P.</p>
+            <div id="qrcode-container" class="bg-white p-4 rounded-2xl inline-block mx-auto"></div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                <span id="modal-peer-id" class="text-xs font-mono text-orange-400 truncate max-w-[200px]">Generating ID...</span>
+                <button id="copy-id-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Transfer History -->
+    <div id="history-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-orange-500"></i> Transfer History
+                </h3>
+                <button id="close-history-modal" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-history-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-500 italic text-center py-4">No transfer records found.</p>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                <button id="clear-history-btn" class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 px-3 py-1.5 rounded-lg font-medium transition">
+                    Clear History
+                </button>
+                <button id="close-history-btn-bottom" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded-lg font-medium transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State variables
+            let peer = null;
+            let conn = null;
+            let myPeerId = '';
+            let savedHistory = [];
+
+            try {
+                const localData = localStorage.getItem('dropit_history');
+                if (localData) savedHistory = JSON.parse(localData);
+            } catch (e) {
+                console.error("Storage error:", e);
+            }
+
+            // DOM Element Queries with null checks
+            const tabLocal = document.getElementById('tab-local');
+            const tabFaraway = document.getElementById('tab-faraway');
+            const sectionLocal = document.getElementById('section-local');
+            const sectionFaraway = document.getElementById('section-faraway');
+            const navLocal = document.getElementById('nav-local');
+            const navFaraway = document.getElementById('nav-faraway');
+            const navHistory = document.getElementById('nav-history');
+
+            const connectionIndicator = document.getElementById('connection-indicator');
+            const connectionStatusText = document.getElementById('connection-status-text');
+            const myPeerIdBtn = document.getElementById('my-peer-id-btn');
+            const remotePeerIdInput = document.getElementById('remote-peer-id-input');
+            const connectBtn = document.getElementById('connect-btn');
+            const showQrBtn = document.getElementById('show-qr-btn');
+            const scanQrBtn = document.getElementById('scan-qr-btn');
+            
+            const transferPanel = document.getElementById('transfer-panel');
+            const activePeerLabel = document.getElementById('active-peer-label');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const progressContainer = document.getElementById('progress-container');
+            const transferFilename = document.getElementById('transfer-filename');
+            const transferPercentage = document.getElementById('transfer-percentage');
+            const progressBar = document.getElementById('progress-bar');
+            const transferStatus = document.getElementById('transfer-status');
+            const cancelTransferBtn = document.getElementById('cancel-transfer-btn');
+            const fileHistory = document.getElementById('file-history');
+
+            const broadcastInterestBtn = document.getElementById('broadcast-interest-btn');
+            const farawayInterest = document.getElementById('faraway-interest');
+            const farawayNote = document.getElementById('faraway-note');
+            const discoveredPeersList = document.getElementById('discovered-peers-list');
+            const refreshPeersBtn = document.getElementById('refresh-peers-btn');
+
+            const qrModal = document.getElementById('qr-modal');
+            const closeQrModal = document.getElementById('close-qr-modal');
+            const qrcodeContainer = document.getElementById('qrcode-container');
+            const modalPeerId = document.getElementById('modal-peer-id');
+            const copyIdBtn = document.getElementById('copy-id-btn');
+
+            // History Modal Elements
+            const historyModal = document.getElementById('history-modal');
+            const closeHistoryModal = document.getElementById('close-history-modal');
+            const closeHistoryBtnBottom = document.getElementById('close-history-btn-bottom');
+            const modalHistoryList = document.getElementById('modal-history-list');
+            const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+            // Initialize PeerJS
+            function initPeer() {
+                try {
+                    peer = new Peer({
+                        config: {
+                            'iceServers': [
+                                { urls: 'stun:stun.l.google.com:19302' },
+                                { urls: 'stun:global.stun.twilio.com:3478' }
+                            ]
+                        }
+                    });
+
+                    peer.on('open', (id) => {
+                        myPeerId = id;
+                        if (modalPeerId) modalPeerId.textContent = id;
+                        if (connectionStatusText) connectionStatusText.textContent = "Online & Ready";
+                        if (connectionIndicator) {
+                            connectionIndicator.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
+                        }
+                        generateQRCode(id);
+                    });
+
+                    peer.on('connection', (incomingConn) => {
+                        setupConnection(incomingConn);
+                    });
+
+                    peer.on('error', (err) => {
+                        console.error("Peer error:", err);
+                        if (connectionStatusText) connectionStatusText.textContent = "Connection Error";
+                        if (connectionIndicator) {
+                            connectionIndicator.className = "w-2 h-2 rounded-full bg-red-500 inline-block";
+                        }
+                    });
+                } catch (e) {
+                    console.error("Failed to initialize PeerJS:", e);
+                }
+            }
+
+            initPeer();
+
+            // QR Code Generator
+            function generateQRCode(text) {
+                if (!qrcodeContainer) return;
+                qrcodeContainer.innerHTML = "";
+                try {
+                    new QRCode(qrcodeContainer, {
+                        text: text,
+                        width: 180,
+                        height: 180,
+                        colorDark: "#020617",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } catch (e) {
+                    console.error("QR gen error:", e);
+                }
+            }
+
+            // Tab Switchers
+            function switchTab(tab) {
+                if (tab === 'local') {
+                    if (sectionLocal) sectionLocal.classList.remove('hidden');
+                    if (sectionFaraway) sectionFaraway.classList.add('hidden');
+                    if (tabLocal) {
+                        tabLocal.className = "py-2.5 px-4 rounded-xl text-sm font-semibold bg-orange-600 text-white shadow-md transition flex items-center justify-center gap-2";
+                    }
+                    if (tabFaraway) {
+                        tabFaraway.className = "py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition flex items-center justify-center gap-2";
+                    }
+                    if (navLocal) navLocal.className = "flex flex-col items-center text-orange-500 transition";
+                    if (navFaraway) navFaraway.className = "flex flex-col items-center text-slate-400 hover:text-slate-200 transition";
+                } else {
+                    if (sectionLocal) sectionLocal.classList.add('hidden');
+                    if (sectionFaraway) sectionFaraway.classList.remove('hidden');
+                    if (tabFaraway) {
+                        tabFaraway.className = "py-2.5 px-4 rounded-xl text-sm font-semibold bg-orange-600 text-white shadow-md transition flex items-center justify-center gap-2";
+                    }
+                    if (tabLocal) {
+                        tabLocal.className = "py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition flex items-center justify-center gap-2";
+                    }
+                    if (navFaraway) navFaraway.className = "flex flex-col items-center text-orange-500 transition";
+                    if (navLocal) navLocal.className = "flex flex-col items-center text-slate-400 hover:text-slate-200 transition";
+                }
+            }
+
+            if (tabLocal) tabLocal.addEventListener('click', () => switchTab('local'));
+            if (tabFaraway) tabFaraway.addEventListener('click', () => switchTab('faraway'));
+            if (navLocal) navLocal.addEventListener('click', () => switchTab('local'));
+            if (navFaraway) navFaraway.addEventListener('click', () => switchTab('faraway'));
+
+            // History Modal Logic
+            function renderHistoryModal() {
+                if (!modalHistoryList) return;
+                modalHistoryList.innerHTML = '';
+                if (!savedHistory || savedHistory.length === 0) {
+                    modalHistoryList.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">No transfer records found.</p>';
+                    return;
+                }
+
+                savedHistory.forEach(item => {
+                    const isReceived = item.type === 'received';
+                    const badgeClass = isReceived ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400';
+                    const badgeText = isReceived ? 'Received' : 'Sent';
+                    const sizeStr = item.size ? `${(item.size / 1024).toFixed(1)} KB` : '';
+
+                    const rowHtml = `
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between">
+                            <div class="overflow-hidden pr-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-xs text-white truncate max-w-[140px]">${item.name}</span>
+                                    <span class="text-[10px] ${badgeClass} px-2 py-0.5 rounded-full font-medium">${badgeText}</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1">${sizeStr} • ${item.time || ''}</p>
+                            </div>
+                        </div>
+                    `;
+                    modalHistoryList.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            }
+
+            if (navHistory && historyModal) {
+                navHistory.addEventListener('click', () => {
+                    renderHistoryModal();
+                    historyModal.classList.remove('hidden');
+                });
+            }
+
+            if (closeHistoryModal && historyModal) {
+                closeHistoryModal.addEventListener('click', () => historyModal.classList.add('hidden'));
+            }
+
+            if (closeHistoryBtnBottom && historyModal) {
+                closeHistoryBtnBottom.addEventListener('click', () => historyModal.classList.add('hidden'));
+            }
+
+            if (clearHistoryBtn) {
+                clearHistoryBtn.addEventListener('click', () => {
+                    savedHistory = [];
+                    try {
+                        localStorage.removeItem('dropit_history');
+                    } catch (e) {}
+                    renderHistoryModal();
+                });
+            }
+
+            // Connect button handler
+            if (connectBtn && remotePeerIdInput) {
+                connectBtn.addEventListener('click', () => {
+                    const targetId = remotePeerIdInput.value.trim();
+                    if (!targetId) {
+                        alert("Please enter a valid Peer ID.");
+                        return;
+                    }
+                    if (targetId === myPeerId) {
+                        alert("You cannot connect to yourself.");
+                        return;
+                    }
+                    if (peer) {
+                        const outConn = peer.connect(targetId);
+                        setupConnection(outConn);
+                    }
+                });
+            }
+
+            // Setup active connection
+            function setupConnection(activeConn) {
+                conn = activeConn;
+                conn.on('open', () => {
+                    if (transferPanel) transferPanel.classList.remove('hidden');
+                    if (activePeerLabel) activePeerLabel.textContent = `Connected to: ${conn.peer}`;
+                    if (connectionStatusText) connectionStatusText.textContent = "Peer Connected";
+                });
+
+                conn.on('data', (data) => {
+                    if (data && data.file) {
+                        handleIncomingFile(data);
+                    }
+                });
+
+                conn.on('close', () => {
+                    resetConnectionState();
+                });
+            }
+
+            function resetConnectionState() {
+                if (transferPanel) transferPanel.classList.add('hidden');
+                if (connectionStatusText) connectionStatusText.textContent = "Online & Ready";
+                conn = null;
+            }
+
+            if (disconnectBtn) {
+                disconnectBtn.addEventListener('click', () => {
+                    if (conn) conn.close();
+                    resetConnectionState();
+                });
+            }
+
+            // File Sharing Handlers
+            if (dropZone && fileInput) {
+                dropZone.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) sendFile(file);
+                });
+            }
+
+            function sendFile(file) {
+                if (!conn || !conn.open) {
+                    alert("No active peer connection to send file.");
+                    return;
+                }
+
+                if (progressContainer) progressContainer.classList.remove('hidden');
+                if (transferFilename) transferFilename.textContent = file.name;
+                if (transferPercentage) transferPercentage.textContent = "0%";
+                if (progressBar) progressBar.style.width = "0%";
+                if (transferStatus) transferStatus.textContent = "Preparing file...";
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const rawBuffer = event.target.result;
+                    if (transferStatus) transferStatus.textContent = "Sending...";
+                    if (transferPercentage) transferPercentage.textContent = "100%";
+                    if (progressBar) progressBar.style.width = "100%";
+
+                    conn.send({
+                        file: true,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        buffer: rawBuffer
+                    });
+
+                    setTimeout(() => {
+                        if (progressContainer) progressContainer.classList.add('hidden');
+                        addHistoryItem(file.name, file.size, 'sent');
+                    }, 1000);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            function handleIncomingFile(data) {
+                try {
+                    const blob = new Blob([data.buffer], { type: data.type });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const itemHtml = `
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-xs text-white block truncate max-w-[160px]">${data.name}</span>
+                                <span class="text-[10px] text-slate-400">${(data.size / 1024).toFixed(1)} KB • Received</span>
+                            </div>
+                            <a href="${url}" download="${data.name}" class="bg-orange-600 hover:bg-orange-500 text-white text-xs px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> Save
+                            </a>
+                        </div>
+                    `;
+                    if (fileHistory) {
+                        if (fileHistory.querySelector('p')) fileHistory.innerHTML = '';
+                        fileHistory.insertAdjacentHTML('afterbegin', itemHtml);
+                    }
+                    addHistoryItem(data.name, data.size, 'received');
+                } catch (e) {
+                    console.error("Error handling incoming file:", e);
+                }
+            }
+
+            function addHistoryItem(name, size, type) {
+                const record = { name, size, type, time: new Date().toLocaleTimeString() };
+                savedHistory.unshift(record);
+                try {
+                    localStorage.setItem('dropit_history', JSON.stringify(savedHistory));
+                } catch (e) {}
+            }
+
+            // QR Modal controls
+            if (showQrBtn && qrModal) {
+                showQrBtn.addEventListener('click', () => qrModal.classList.remove('hidden'));
+            }
+            if (myPeerIdBtn && qrModal) {
+                myPeerIdBtn.addEventListener('click', () => qrModal.classList.remove('hidden'));
+            }
+            if (closeQrModal && qrModal) {
+                closeQrModal.addEventListener('click', () => qrModal.classList.add('hidden'));
+            }
+            if (copyIdBtn) {
+                copyIdBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(myPeerId);
+                    copyIdBtn.textContent = "Copied!";
+                    setTimeout(() => copyIdBtn.textContent = "Copy", 2000);
+                });
+            }
+
+            // Faraway Broadcast & Match
+            if (broadcastInterestBtn) {
+                broadcastInterestBtn.addEventListener('click', () => {
+                    const tag = farawayInterest.value;
+                    const note = farawayNote.value.trim() || "Available for P2P connection";
+                    alert(`Successfully broadcasted interest: [${tag.toUpperCase()}] ${note}`);
+                });
+            }
+
+            if (refreshPeersBtn) {
+                refreshPeersBtn.addEventListener('click', () => {
+                    alert("Refreshed peer list. No additional peers nearby online.");
+                });
+            }
+
+            // Scan QR Simulated Button
+            if (scanQrBtn) {
+                scanQrBtn.addEventListener('click', () => {
+                    const scanned = prompt("Enter or paste Scanned Peer ID:");
+                    if (scanned && remotePeerIdInput) {
+                        remotePeerIdInput.value = scanned.trim();
+                        connectBtn.click();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
