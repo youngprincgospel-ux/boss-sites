@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DropIt™ - Offline Xender & Faraway Connect P2P</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.1/tailwindcss.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js" integrity="sha512-MlLxioUPuwVVjK93p2N8xG32XhF59yA6P1cZ1H3g6hL1vGqC7n9n8K7yE7d7I2S2X2X9m3VvY5F9m8Q9cW2bA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgQi0GoYVCbnICAKSMXJvV1Q8qW0p/61m1tQ8V6b9qY5Z6Xw1ZkK6WwK5Ww2Y2Z6Q5K5Ww1ZkK6WwK5Ww2Y==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans h-full antialiased selection:bg-amber-500 selection:text-gray-950">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-40 bg-gray-900/95 backdrop-blur border-b border-gray-800 safe-top px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl animate-pulse">⚡</span>
+            <div>
+                <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">DropIt™</h1>
+                <p id="net-status" class="text-xs text-emerald-400 font-medium flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block"></span> Online (P2P Ready)
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="btn-wallet" class="bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-full text-xs font-bold text-amber-400 flex items-center gap-1.5 active:scale-95 transition">
+                <span>💰</span> <span id="wallet-balance">₦0.00</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Container -->
+    <main id="main-content" class="max-w-md mx-auto p-4 space-y-5">
+        <!-- Views will be rendered dynamically via JS -->
+    </main>
+
+    <!-- Fixed Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur border-t border-gray-800 safe-bottom">
+        <div class="max-w-md mx-auto grid grid-cols-4 gap-1 p-2 text-center">
+            <button data-tab="radar" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-amber-400 bg-amber-500/10 transition">
+                <span class="text-xl">📡</span>
+                <span class="text-[10px] font-bold mt-0.5">Xender Radar</span>
+            </button>
+            <button data-tab="faraway" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 transition">
+                <span class="text-xl">🌍</span>
+                <span class="text-[10px] font-medium mt-0.5">Faraway</span>
+            </button>
+            <button data-tab="market" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 transition">
+                <span class="text-xl">🛍️</span>
+                <span class="text-[10px] font-medium mt-0.5">Market</span>
+            </button>
+            <button data-tab="vault" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 transition">
+                <span class="text-xl">📦</span>
+                <span class="text-[10px] font-medium mt-0.5">Vault</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center space-y-2 pointer-events-none"></div>
+
+    <!-- Global Modal Overlay -->
+    <div id="global-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div id="modal-card" class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative">
+            <!-- Modal content injected dynamically -->
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // State Management & LocalStorage Persistence
+        const state = {
+            activeTab: 'radar',
+            balance: 1500,
+            userPeerId: 'dropit_' + Math.random().toString(36).substring(2, 8),
+            connectedPeer: null,
+            peer: null,
+            incomingTransfers: [],
+            sentTransfers: [],
+            radarPeers: [],
+            farawayListings: [
+                { id: 'f1', title: 'Calculus Complete Note PDF', price: 500, seller: 'Chioma Tech', peerId: 'chioma_calc_99', category: 'notes' },
+                { id: 'f2', title: 'Campus Power Bank 20000mAh', price: 4500, seller: 'Abdul Gadgets', peerId: 'abdul_power_11', category: 'gadgets' },
+                { id: 'f3', title: 'Hostel Extension Box + USB', price: 1200, seller: 'Tunde Stores', peerId: 'tunde_ext_77', category: 'hostel' }
+            ],
+            marketListings: [
+                { id: 'm1', title: 'Portable Ring Light for TikTok', price: 3000, seller: 'Blessing', type: 'physical' },
+                { id: 'm2', title: 'CSC201 Past Questions & Answers', price: 400, seller: 'Admin', type: 'digital' }
+            ],
+            chatMessages: []
+        };
+
+        try {
+            const saved = localStorage.getItem('dropit_state_v2');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state.balance = parsed.balance ?? state.balance;
+                state.userPeerId = parsed.userPeerId ?? state.userPeerId;
+                state.farawayListings = parsed.farawayListings ?? state.farawayListings;
+                state.marketListings = parsed.marketListings ?? state.marketListings;
+            }
+        } catch (e) {
+            console.error('LocalStorage load error:', e);
+        }
+
+        function persistState() {
+            try {
+                localStorage.setItem('dropit_state_v2', JSON.stringify({
+                    balance: state.balance,
+                    userPeerId: state.userPeerId,
+                    farawayListings: state.farawayListings,
+                    marketListings: state.marketListings
+                }));
+            } catch (e) {
+                console.error('LocalStorage save error:', e);
+            }
+        }
+
+        // Initialize PeerJS for Real P2P Connections (Local Xender & Faraway Link)
+        function initPeer() {
+            try {
+                state.peer = new Peer(state.userPeerId, {
+                    config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
+                });
+
+                state.peer.on('open', (id) => {
+                    console.log('Peer connected with ID:', id);
+                    updateNetStatus(true);
+                });
+
+                state.peer.on('connection', (conn) => {
+                    setupConnection(conn);
+                    showToast(`Incoming connection from ${conn.peer}!`);
+                });
+
+                state.peer.on('error', (err) => {
+                    console.warn('Peer error:', err);
+                    updateNetStatus(false);
+                });
+            } catch (e) {
+                console.error('PeerJS init failed:', e);
+            }
+        }
+
+        function updateNetStatus(isOnline) {
+            const el = document.getElementById('net-status');
+            if (!el) return;
+            if (isOnline) {
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block"></span> P2P Online (${state.userPeerId})`;
+                el.className = "text-xs text-emerald-400 font-medium flex items-center gap-1";
+            } else {
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Offline Mode / Retrying`;
+                el.className = "text-xs text-amber-400 font-medium flex items-center gap-1";
+            }
+        }
+
+        function setupConnection(conn) {
+            state.connectedPeer = conn;
+            conn.on('data', (data) => {
+                handleReceivedData(data);
+            });
+            conn.on('close', () => {
+                showToast(`Connection closed with ${conn.peer}`);
+                state.connectedPeer = null;
+                renderActiveTab();
+            });
+            renderActiveTab();
+        }
+
+        function handleReceivedData(data) {
+            if (data.type === 'file') {
+                state.incomingTransfers.push({
+                    name: data.name,
+                    size: data.size,
+                    blob: data.blob,
+                    sender: data.sender || 'Peer'
+                });
+                showToast(`📥 Received file: ${data.name}`);
+                renderActiveTab();
+            } else if (data.type === 'chat') {
+                state.chatMessages.push({ sender: 'Peer', text: data.text, time: new Date().toLocaleTimeString() });
+                renderActiveTab();
+            } else if (data.type === 'interest_match') {
+                showToast(`💡 Faraway Match interest received for: ${data.itemTitle}`);
+                renderActiveTab();
+            }
+        }
+
+        // DOM Elements & Navigation
+        const mainContent = document.getElementById('main-content');
+        const modal = document.getElementById('global-modal');
+        const modalCard = document.getElementById('modal-card');
+
+        function initNav() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tab = btn.getAttribute('data-tab');
+                    switchTab(tab);
+                });
+            });
+            const walletBtn = document.getElementById('btn-wallet');
+            if (walletBtn) {
+                walletBtn.addEventListener('click', openWalletModal);
+            }
+        }
+
+        function switchTab(tab) {
+            state.activeTab = tab;
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                if (b.getAttribute('data-tab') === tab) {
+                    b.className = "nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-amber-400 bg-amber-500/10 transition";
+                } else {
+                    b.className = "nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 transition";
+                }
+            });
+            renderActiveTab();
+        }
+
+        function renderActiveTab() {
+            if (!mainContent) return;
+            mainContent.innerHTML = '';
+            updateWalletUI();
+
+            if (state.activeTab === 'radar') {
+                renderRadarTab();
+            } else if (state.activeTab === 'faraway') {
+                renderFarawayTab();
+            } else if (state.activeTab === 'market') {
+                renderMarketTab();
+            } else if (state.activeTab === 'vault') {
+                renderVaultTab();
+            }
+        }
+
+        function updateWalletUI() {
+            const el = document.getElementById('wallet-balance');
+            if (el) el.innerText = `₦${state.balance.toLocaleString()}`;
+        }
+
+        // --- TAB 1: XENDER RADAR (Local Offline & QR Direct Connect) ---
+        function renderRadarTab() {
+            mainContent.innerHTML = `
+                <div class="bg-gradient-to-br from-gray-900 to-gray-900/80 border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="font-bold text-lg text-amber-400 flex items-center gap-2"><span>📡</span> Xender Radar (Local P2P)</h2>
+                            <p class="text-xs text-gray-400">Share files instantly offline via WebRTC & QR Scan</p>
+                        </div>
+                        <span class="bg-amber-500/20 text-amber-400 text-xs px-2.5 py-1 rounded-full font-bold animate-pulse">Active</span>
+                    </div>
+
+                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col items-center justify-center space-y-3">
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400">Your Radar Code:</p>
+                            <p class="font-mono font-bold text-lg text-amber-300 select-all">${state.userPeerId}</p>
+                        </div>
+                        <div id="qrcode-container" class="bg-white p-2 rounded-lg"></div>
+                        <p class="text-[11px] text-gray-400 text-center">Ask your friend to scan this QR or enter your ID to connect instantly.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-300">Connect to Nearby Peer ID:</label>
+                        <div class="flex gap-2">
+                            <input id="connect-peer-input" type="text" placeholder="Enter peer ID e.g. dropit_xyz" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2.5 text-sm w-full focus:outline-none focus:border-amber-500">
+                            <button id="btn-connect-peer" class="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 rounded-xl text-sm transition">Connect</button>
+                        </div>
+                    </div>
+
+                    ${state.connectedPeer ? `
+                        <div class="bg-emerald-950/40 border border-emerald-800/60 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Connected to: ${state.connectedPeer.peer}</span>
+                                <button id="btn-disconnect" class="text-xs bg-red-500/20 text-red-400 px-2.5 py-1 rounded-lg hover:bg-red-500/30">Disconnect</button>
+                            </div>
+
+                            <div class="space-y-2 border-t border-emerald-900/50 pt-3">
+                                <label class="block text-xs font-bold text-gray-300">Send File / Media:</label>
+                                <input id="file-input" type="file" class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-gray-950 hover:file:bg-amber-600 cursor-pointer">
+                                <button id="btn-send-file" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg">Send File Now 📤</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="text-center py-4 bg-gray-950/50 rounded-xl border border-gray-800/80">
+                            <p class="text-xs text-gray-500">No active local peer connection. Enter ID above or scan QR.</p>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            // Render QR Code
+            try {
+                const qrContainer = document.getElementById('qrcode-container');
+                if (qrContainer) {
+                    qrContainer.innerHTML = '';
+                    new QRCode(qrContainer, {
+                        text: state.userPeerId,
+                        width: 128,
+                        height: 128,
+                        colorDark: "#030712",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }
+            } catch (e) {
+                console.error('QR render error:', e);
+            }
+
+            // Wire Radar Events
+            const connectBtn = document.getElementById('btn-connect-peer');
+            if (connectBtn) {
+                connectBtn.addEventListener('click', () => {
+                    const inputEl = document.getElementById('connect-peer-input');
+                    const val = inputEl ? inputEl.value.trim() : '';
+                    if (!val) {
+                        showToast('Please enter a valid Peer ID');
+                        return;
+                    }
+                    if (!state.peer) {
+                        showToast('P2P network not initialized yet');
+                        return;
+                    }
+                    showToast(`Connecting to ${val}...`);
+                    const conn = state.peer.connect(val);
+                    setupConnection(conn);
+                });
+            }
+
+            if (state.connectedPeer) {
+                const disconnectBtn = document.getElementById('btn-disconnect');
+                if (disconnectBtn) {
+                    disconnectBtn.addEventListener('click', () => {
+                        state.connectedPeer.close();
+                        state.connectedPeer = null;
+                        renderActiveTab();
+                    });
+                }
+
+                const sendFileBtn = document.getElementById('btn-send-file');
+                if (sendFileBtn) {
+                    sendFileBtn.addEventListener('click', () => {
+                        const fileInput = document.getElementById('file-input');
+                        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                            showToast('Please select a file to send');
+                            return;
+                        }
+                        const file = fileInput.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                            state.connectedPeer.send({
+                                type: 'file',
+                                name: file.name,
+                                size: file.size,
+                                blob: evt.target.result,
+                                sender: state.userPeerId
+                            });
+                            state.sentTransfers.push({ name: file.name, size: file.size, time: new Date().toLocaleTimeString() });
+                            showToast(`🚀 File "${file.name}" sent successfully!`);
+                            renderActiveTab();
+                        };
+                        reader.readAsArrayBuffer(file);
+                    });
+                }
+            }
+        }
+
+        // --- TAB 2: FARAWAY CONNECT (Interested Interest Matching & Remote Peer Bridge) ---
+        function renderFarawayTab() {
+            mainContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-br from-gray-900 to-gray-900/80 border border-gray-800 rounded-2xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h2 class="font-bold text-lg text-amber-400 flex items-center gap-2"><span>🌍</span> Faraway Connect</h2>
+                            <button id="btn-post-faraway" class="bg-amber-500 hover:bg-amber-600 text-gray-950 text-xs font-bold px-3 py-1.5 rounded-xl transition">+ Post Item</button>
+                        </div>
+                        <p class="text-xs text-gray-400">Faraway users connect instantly when you click "I'm Interested", bridging a secure P2P channel across long distances.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase">Available Faraway Listings</h3>
+                        <div class="space-y-3">
+                            ${state.farawayListings.map(item => `
+                                <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between shadow-lg hover:border-gray-700 transition">
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-semibold uppercase">${item.category}</span>
+                                        <h4 class="font-bold text-sm text-gray-100">${item.title}</h4>
+                                        <p class="text-xs text-gray-400">Seller: <span class="text-amber-300">${item.seller}</span></p>
+                                        <p class="font-extrabold text-emerald-400 text-sm">₦${item.price.toLocaleString()}</p>
+                                    </div>
+                                    <button data-id="${item.id}" class="btn-interested bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md active:scale-95">I'm Interested 🤝</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const postFarawayBtn = document.getElementById('btn-post-faraway');
+            if (postFarawayBtn) {
+                postFarawayBtn.addEventListener('click', openPostFarawayModal);
+            }
+
+            document.querySelectorAll('.btn-interested').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = btn.getAttribute('data-id');
+                    const item = state.farawayListings.find(i => i.id === id);
+                    if (item) {
+                        openInterestModal(item);
+                    }
+                });
+            });
+        }
+
+        // --- TAB 3: MARKETPLACE (Campus Buy, Sell & Digital Delivery) ---
+        function renderMarketTab() {
+            mainContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-br from-gray-900 to-gray-900/80 border border-gray-800 rounded-2xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h2 class="font-bold text-lg text-amber-400 flex items-center gap-2"><span>🛍️</span> Campus Marketplace</h2>
+                            <button id="btn-add-market" class="bg-amber-500 hover:bg-amber-600 text-gray-950 text-xs font-bold px-3 py-1.5 rounded-xl transition">+ Sell Item</button>
+                        </div>
+                        <p class="text-xs text-gray-400">Buy notes, gadgets, and campus essentials with instant escrow protection.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3">
+                        ${state.marketListings.map(item => `
+                            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                                <div class="space-y-1">
+                                    <span class="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full font-semibold uppercase">${item.type}</span>
+                                    <h4 class="font-bold text-sm text-gray-100">${item.title}</h4>
+                                    <p class="text-xs text-gray-400">By ${item.seller}</p>
+                                    <p class="font-extrabold text-emerald-400 text-sm">₦${item.price.toLocaleString()}</p>
+                                </div>
+                                <button data-id="${item.id}" class="btn-buy-market bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md">Buy Now 🛒</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            const addMarketBtn = document.getElementById('btn-add-market');
+            if (addMarketBtn) {
+                addMarketBtn.addEventListener('click', openAddMarketModal);
+            }
+
+            document.querySelectorAll('.btn-buy-market').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    const item = state.marketListings.find(i => i.id === id);
+                    if (item) {
+                        if (state.balance >= item.price) {
+                            state.balance -= item.price;
+                            persistState();
+                            showToast(`✅ Successfully purchased ${item.title}!`);
+                            renderActiveTab();
+                        } else {
+                            showToast('❌ Insufficient balance in wallet!');
+                            openWalletModal();
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- TAB 4: VAULT (Transfers & Download History) ---
+        function renderVaultTab() {
+            mainContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-br from-gray-900 to-gray-900/80 border border-gray-800 rounded-2xl p-5 shadow-xl space-y-2">
+                        <h2 class="font-bold text-lg text-amber-400 flex items-center gap-2"><span>📦</span> Transfer Vault</h2>
+                        <p class="text-xs text-gray-400">All received files, documents, and P2P history stored securely in your browser cache.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase">Received Files (${state.incomingTransfers.length})</h3>
+                        ${state.incomingTransfers.length === 0 ? `
+                            <div class="bg-gray-900/50 border border-gray-800/80 rounded-xl p-4 text-center text-xs text-gray-500">No received files yet. Connect via Radar to receive files.</div>
+                        ` : state.incomingTransfers.map((file, idx) => `
+                            <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-xs text-gray-200">${file.name}</h4>
+                                    <p class="text-[10px] text-gray-400">Size: ${(file.size / 1024).toFixed(1)} KB • From: ${file.sender}</p>
+                                </div>
+                                <button data-idx="${idx}" class="btn-download-file bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-3 py-1.5 rounded-lg text-xs">Download 💾</button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase">Sent Transfers (${state.sentTransfers.length})</h3>
+                        ${state.sentTransfers.length === 0 ? `
+                            <div class="bg-gray-900/50 border border-gray-800/80 rounded-xl p-4 text-center text-xs text-gray-500">No outgoing transfers recorded.</div>
+                        ` : state.sentTransfers.map(item => `
+                            <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 flex items-center justify-between text-xs">
+                                <span class="font-medium text-gray-200">${item.name}</span>
+                                <span class="text-gray-400">${item.time}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.querySelectorAll('.btn-download-file').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    const file = state.incomingTransfers[idx];
+                    if (file && file.blob) {
+                        const blob = new Blob([file.blob]);
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = file.name;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToast(`💾 Downloaded ${file.name}`);
+                    }
+                });
+            });
+        }
+
+        // --- MODALS & INTERACTION FLOWS ---
+        function openModal(htmlContent) {
+            modalCard.innerHTML = htmlContent;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Wire up all modal close buttons safely using class selector
+            modalCard.querySelectorAll('.modal-close-btn').forEach(btn => {
+                btn.addEventListener('click', closeModal);
+            });
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Close modal on click outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        function openWalletModal() {
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-base text-amber-400">💰 DropIt Vault Wallet</h3>
+                        <button class="modal-close-btn text-gray-400 hover:text-gray-200 font-bold">✕</button>
+                    </div>
+                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 text-center space-y-1">
+                        <p class="text-xs text-gray-400">Current Balance</p>
+                        <p class="font-extrabold text-2xl text-emerald-400">₦${state.balance.toLocaleString()}</p>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-300">Fund Wallet (Test Demo):</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button data-amount="1000" class="btn-fund bg-gray-800 hover:bg-gray-700 border border-gray-700 py-2 rounded-xl text-xs font-bold text-amber-300">+₦1,000</button>
+                            <button data-amount="5000" class="btn-fund bg-gray-800 hover:bg-gray-700 border border-gray-700 py-2 rounded-xl text-xs font-bold text-amber-300">+₦5,000</button>
+                            <button data-amount="10000" class="btn-fund bg-gray-800 hover:bg-gray-700 border border-gray-700 py-2 rounded-xl text-xs font-bold text-amber-300">+₦10,000</button>
+                        </div>
+                    </div>
+                    <button id="btn-done-wallet" class="modal-close-btn w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition">Done</button>
+                </div>
+            `);
+
+            document.querySelectorAll('.btn-fund').forEach(b => {
+                b.addEventListener('click', () => {
+                    const amt = parseInt(b.getAttribute('data-amount'));
+                    state.balance += amt;
+                    persistState();
+                    showToast(`Successfully credited ₦${amt.toLocaleString()}!`);
+                    openWalletModal();
+                });
+            });
+        }
+
+        function openInterestModal(item) {
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-base text-amber-400">🌍 Faraway Connection Bridge</h3>
+                        <button class="modal-close-btn text-gray-400 hover:text-gray-200 font-bold">✕</button>
+                    </div>
+                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 space-y-2">
+                        <h4 class="font-bold text-sm text-gray-100">${item.title}</h4>
+                        <p class="text-xs text-gray-400">Seller: <span class="text-amber-300">${item.seller}</span> (${item.peerId})</p>
+                        <p class="font-extrabold text-emerald-400 text-sm">₦${item.price.toLocaleString()}</p>
+                    </div>
+                    <p class="text-xs text-gray-400">Clicking below connects you directly to the seller via interest matching protocol. You can chat and complete escrow purchase safely.</p>
+                    <button id="btn-bridge-connect" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition shadow-lg">Establish Faraway Bridge ⚡</button>
+                </div>
+            `);
+
+            const bridgeConnectBtn = document.getElementById('btn-bridge-connect');
+            if (bridgeConnectBtn) {
+                bridgeConnectBtn.addEventListener('click', () => {
+                    closeModal();
+                    showToast(`⚡ Bridge initiated with ${item.seller}! Connecting...`);
+                    setTimeout(() => {
+                        openChatModal(item);
+                    }, 800);
+                });
+            }
+        }
+
+        function openChatModal(item) {
+            openModal(`
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                        <div>
+                            <h3 class="font-bold text-sm text-amber-400">Chat with ${item.seller}</h3>
+                            <p class="text-[10px] text-emerald-400">Faraway P2P Bridge Active</p>
+                        </div>
+                        <button class="modal-close-btn text-gray-400 hover:text-gray-200 font-bold">✕</button>
+                    </div>
+                    <div id="chat-box" class="bg-gray-950 h-40 overflow-y-auto p-3 rounded-xl border border-gray-800 space-y-2 text-xs">
+                        <div class="bg-gray-900 p-2 rounded-lg text-gray-300">
+                            <span class="font-bold text-amber-400">${item.seller}:</span> Hello! Interested in ${item.title}?
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Type message..." class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs w-full focus:outline-none focus:border-amber-500">
+                        <button id="btn-send-chat" class="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-3 py-2 rounded-xl text-xs">Send</button>
+                    </div>
+                    <button id="btn-buy-bridge" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs">Pay ₦${item.price.toLocaleString()} via Escrow</button>
+                </div>
+            `);
+
+            const chatBox = document.getElementById('chat-box');
+            const sendChatBtn = document.getElementById('btn-send-chat');
+            if (sendChatBtn) {
+                sendChatBtn.addEventListener('click', () => {
+                    const inp = document.getElementById('chat-input');
+                    const txt = inp ? inp.value.trim() : '';
+                    if (!txt || !chatBox) return;
+                    chatBox.innerHTML += `<div class="bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg text-gray-200 text-right"><span class="font-bold text-amber-400">You:</span> ${txt}</div>`;
+                    inp.value = '';
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                    setTimeout(() => {
+                        if (chatBox) {
+                            chatBox.innerHTML += `<div class="bg-gray-900 p-2 rounded-lg text-gray-300"><span class="font-bold text-amber-400">${item.seller}:</span> Got your message! Ready when you are.</div>`;
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                        }
+                    }, 1000);
+                });
+            }
+
+            const buyBridgeBtn = document.getElementById('btn-buy-bridge');
+            if (buyBridgeBtn) {
+                buyBridgeBtn.addEventListener('click', () => {
+                    if (state.balance >= item.price) {
+                        state.balance -= item.price;
+                        persistState();
+                        closeModal();
+                        showToast(`🎉 Escrow purchase successful for ${item.title}!`);
+                        renderActiveTab();
+                    } else {
+                        showToast('❌ Insufficient balance!');
+                        openWalletModal();
+                    }
+                });
+            }
+        }
+
+        function openPostFarawayModal() {
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-base text-amber-400">🌍 Post Faraway Listing</h3>
+                        <button class="modal-close-btn text-gray-400 hover:text-gray-200 font-bold">✕</button>
+                    </div>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-bold text-gray-300">Item Title:</label>
+                            <input id="post-title" type="text" placeholder="e.g. Physics 101 Lecture Notes" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 w-full mt-1 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-300">Price (₦):</label>
+                            <input id="post-price" type="number" placeholder="500" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 w-full mt-1 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-300">Category:</label>
+                            <select id="post-category" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 w-full mt-1 focus:outline-none focus:border-amber-500">
+                                <option value="notes">Notes / PDFs</option>
+                                <option value="gadgets">Gadgets</option>
+                                <option value="hostel">Hostel & Essentials</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="btn-submit-post" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition">Publish Listing 🚀</button>
+                </div>
+            `);
+
+            const submitPostBtn = document.getElementById('btn-submit-post');
+            if (submitPostBtn) {
+                submitPostBtn.addEventListener('click', () => {
+                    const titleEl = document.getElementById('post-title');
+                    const priceEl = document.getElementById('post-price');
+                    const categoryEl = document.getElementById('post-category');
+
+                    const title = titleEl ? titleEl.value.trim() : '';
+                    const price = priceEl ? parseInt(priceEl.value) : NaN;
+                    const category = categoryEl ? categoryEl.value : 'notes';
+
+                    if (!title || isNaN(price)) {
+                        showToast('Please fill all fields correctly');
+                        return;
+                    }
+
+                    state.farawayListings.unshift({
+                        id: 'f_' + Date.now(),
+                        title,
+                        price,
+                        seller: 'You (Boss)',
+                        peerId: state.userPeerId,
+                        category
+                    });
+                    persistState();
+                    closeModal();
+                    showToast('🚀 Listing posted successfully to Faraway network!');
+                    renderActiveTab();
+                });
+            }
+        }
+
+        function openAddMarketModal() {
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-base text-amber-400">🛍️ Add Marketplace Item</h3>
+                        <button class="modal-close-btn text-gray-400 hover:text-gray-200 font-bold">✕</button>
+                    </div>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-bold text-gray-300">Item Name:</label>
+                            <input id="market-title" type="text" placeholder="e.g. Scientific Calculator" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 w-full mt-1 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-300">Price (₦):</label>
+                            <input id="market-price" type="number" placeholder="2000" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 w-full mt-1 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-300">Type:</label>
+                            <select id="market-type" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 w-full mt-1 focus:outline-none focus:border-amber-500">
+                                <option value="physical">Physical Item</option>
+                                <option value="digital">Digital Download</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="btn-submit-market" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition">Add to Market 🛒</button>
+                </div>
+            `);
+
+            const submitMarketBtn = document.getElementById('btn-submit-market');
+            if (submitMarketBtn) {
+                submitMarketBtn.addEventListener('click', () => {
+                    const titleEl = document.getElementById('market-title');
+                    const priceEl = document.getElementById('market-price');
+                    const typeEl = document.getElementById('market-type');
+
+                    const title = titleEl ? titleEl.value.trim() : '';
+                    const price = priceEl ? parseInt(priceEl.value) : NaN;
+                    const type = typeEl ? typeEl.value : 'physical';
+
+                    if (!title || isNaN(price)) {
+                        showToast('Please fill all fields correctly');
+                        return;
+                    }
+
+                    state.marketListings.unshift({
+                        id: 'm_' + Date.now(),
+                        title,
+                        price,
+                        seller: 'You',
+                        type
+                    });
+                    persistState();
+                    closeModal();
+                    showToast('🛒 Item added to marketplace!');
+                    renderActiveTab();
+                });
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'bg-gray-900 border border-amber-500/50 text-amber-300 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce pointer-events-auto';
+            toast.innerHTML = `<span>⚡</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast) {
+                    toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3000);
+        }
+
+        // Initialize App on DOM Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initNav();
+            initPeer();
+            renderActiveTab();
+        });
+    </script>
+</body>
+</html>
