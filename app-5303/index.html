@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CampusPortal™ - Mobile Web App</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-body: #f9fafb;
+            --bg-card: #ffffff;
+            --border: #e5e7eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --header-height: 60px;
+            --nav-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            height: var(--header-height);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .brand span {
+            font-size: 1.4rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-badge {
+            font-size: 0.85rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 650;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        main {
+            flex: 1;
+            margin-top: var(--header-height);
+            margin-bottom: calc(var(--nav-height) + var(--safe-bottom));
+            padding: 16px;
+            max-width: 600px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card styles */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            background: #fff;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 650;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-align: center;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Bottom Navigation */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(var(--nav-height) + var(--safe-bottom));
+            padding-bottom: var(--safe-bottom);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            height: var(--nav-height);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Auth Screen overlay */
+        #auth-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        #auth-modal.hidden {
+            display: none;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-header h1 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        /* Dashboard widgets */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-box .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: var(--success);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .toast {
+            position: fixed;
+            top: 76px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #1f2937;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <span>🚀</span> CampusPortal
+        </div>
+        <div class="header-actions">
+            <div id="user-display" class="user-badge">Guest</div>
+            <button id="logout-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; display:none;">Sign Out</button>
+        </div>
+    </header>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Action successful</div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="hidden">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in with your email to access your campus portal & mobile app suite.</p>
+            </div>
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="auth-email">Email Address</label>
+                    <input type="email" id="auth-email" required placeholder="student@campus.edu">
+                </div>
+                <button type="submit" class="btn">Continue with Email</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- View 1: Home / Feed -->
+        <section id="view-home" class="view active">
+            <div class="card">
+                <h2>Campus Feed & Announcements</h2>
+                <p id="live-datetime" style="font-weight: 600; color: var(--primary); margin-bottom: 12px;"></p>
+                <p>Zero platform fees, lightning-fast progressive web app built for high engagement and instant monetization.</p>
+                <button id="btn-publish-web" class="btn">🚀 Launch Web App Campaign</button>
+            </div>
+
+            <div class="card">
+                <h2>Quick Shortcuts</h2>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <button class="btn btn-secondary nav-shortcut" data-target="view-courses">📚 Courses</button>
+                    <button class="btn btn-secondary nav-shortcut" data-target="view-wallet">💰 Monetize</button>
+                    <button class="btn btn-secondary nav-shortcut" data-target="view-ai">🤖 AI Assistant</button>
+                    <button class="btn btn-secondary nav-shortcut" data-target="view-settings">⚙️ Settings</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 2: Courses / Hub -->
+        <section id="view-courses" class="view">
+            <div class="card">
+                <h2>Enrolled Courses</h2>
+                <p>Access your registered semester modules.</p>
+                <div class="list-item">
+                    <div>
+                        <strong>CSC 401: Advanced Web Dev</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Prof. Adebayo • Mon 10 AM</div>
+                    </div>
+                    <span class="badge-success">Active</span>
+                </div>
+                <div class="list-item">
+                    <div>
+                        <strong>MTH 302: Numerical Analysis</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Dr. Okafor • Wed 2 PM</div>
+                    </div>
+                    <span class="badge-success">Active</span>
+                </div>
+                <div class="list-item">
+                    <div>
+                        <strong>GST 411: Entrepreneurship</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Mrs. Bello • Fri 9 AM</div>
+                    </div>
+                    <span class="badge-success">Active</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 3: Wallet / Revenue -->
+        <section id="view-wallet" class="view">
+            <div class="card">
+                <h2>Revenue Dashboard</h2>
+                <p>Track your PWA monetization metrics in real-time without store fees.</p>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="label">Today's Inflow</div>
+                        <div class="value" id="stat-in">₦0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Total Profit</div>
+                        <div class="value" id="stat-profit">₦0</div>
+                    </div>
+                </div>
+                <form id="sale-form">
+                    <div class="form-group">
+                        <label for="sale-desc">Record Sale / Item</label>
+                        <input type="text" id="sale-desc" placeholder="e.g. Past Questions PDF" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sale-amount">Amount (₦)</label>
+                        <input type="number" id="sale-amount" placeholder="2000" required>
+                    </div>
+                    <button type="submit" class="btn">Record Income</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- View 4: AI Tutor -->
+        <section id="view-ai" class="view">
+            <div class="card">
+                <h2>Campus AI Assistant</h2>
+                <p>Ask anything about your courses, timetable, or monetization strategy.</p>
+                <div id="ai-chat-box" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; padding: 12px; height: 180px; overflow-y: auto; margin-bottom: 12px; font-size: 0.9rem;">
+                    <div style="margin-bottom: 8px; color: var(--primary);"><strong>AI:</strong> Hello Boss! How can I assist your campus workflow today?</div>
+                </div>
+                <form id="ai-form" style="display: flex; gap: 8px;">
+                    <input type="text" id="ai-input" placeholder="Type a message..." required style="margin-bottom: 0;">
+                    <button type="submit" class="btn" style="width: 80px;">Send</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- View 5: Settings -->
+        <section id="view-settings" class="view">
+            <div class="card">
+                <h2>App Settings</h2>
+                <p>Manage your account preferences and data.</p>
+                <div class="form-group">
+                    <label>Push Notifications</label>
+                    <button id="btn-toggle-notif" class="btn btn-secondary">Enable Push Alerts</button>
+                </div>
+                <div class="form-group">
+                    <label>Clear Local Data</label>
+                    <button id="btn-clear-data" class="btn btn-danger">Reset App State</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-home">
+            <span class="icon">🏠</span>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" data-target="view-courses">
+            <span class="icon">📚</span>
+            <span>Courses</span>
+        </button>
+        <button class="nav-item" data-target="view-wallet">
+            <span class="icon">💰</span>
+            <span>Wallet</span>
+        </button>
+        <button class="nav-item" data-target="view-ai">
+            <span class="icon">🤖</span>
+            <span>AI Tutor</span>
+        </button>
+        <button class="nav-item" data-target="view-settings">
+            <span class="icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State Management & LocalStorage
+            const STORAGE_KEY = 'campus_portal_state_v1';
+            let state = {
+                userEmail: null,
+                totalIn: 0,
+                totalProfit: 0,
+                sales: []
+            };
+
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    state = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Failed to load localStorage', e);
+            }
+
+            function saveState() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                } catch (e) {
+                    console.error('Failed to save localStorage', e);
+                }
+            }
+
+            // DOM Element Queries
+            const authModal = document.getElementById('auth-modal');
+            const authForm = document.getElementById('auth-form');
+            const authEmail = document.getElementById('auth-email');
+            const userDisplay = document.getElementById('user-display');
+            const logoutBtn = document.getElementById('logout-btn');
+            const toast = document.getElementById('toast');
+            const liveDatetime = document.getElementById('live-datetime');
+            
+            const navItems = document.querySelectorAll('.nav-item, .nav-shortcut');
+            const views = document.querySelectorAll('.view');
+
+            const statIn = document.getElementById('stat-in');
+            const statProfit = document.getElementById('stat-profit');
+            const saleForm = document.getElementById('sale-form');
+            const saleDesc = document.getElementById('sale-desc');
+            const saleAmount = document.getElementById('sale-amount');
+
+            const aiForm = document.getElementById('ai-form');
+            const aiInput = document.getElementById('ai-input');
+            const aiChatBox = document.getElementById('ai-chat-box');
+
+            const btnPublishWeb = document.getElementById('btn-publish-web');
+            const btnToggleNotif = document.getElementById('btn-toggle-notif');
+            const btnClearData = document.getElementById('btn-clear-data');
+
+            // Null checks & defensive UI initialization
+            if (!authModal || !authForm || !userDisplay) return;
+
+            function showToast(message) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2500);
+            }
+
+            // Authentication Handlers
+            function updateAuthUI() {
+                if (state.userEmail) {
+                    userDisplay.textContent = state.userEmail;
+                    if (logoutBtn) logoutBtn.style.display = 'inline-block';
+                    authModal.classList.add('hidden');
+                } else {
+                    userDisplay.textContent = 'Guest';
+                    if (logoutBtn) logoutBtn.style.display = 'none';
+                    authModal.classList.remove('hidden');
+                }
+            }
+
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const emailVal = authEmail.value.trim();
+                if (emailVal) {
+                    state.userEmail = emailVal;
+                    saveState();
+                    updateAuthUI();
+                    showToast('Signed in successfully! 🚀');
+                }
+            });
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    state.userEmail = null;
+                    saveState();
+                    updateAuthUI();
+                    authEmail.value = '';
+                    showToast('Signed out');
+                });
+            }
+
+            updateAuthUI();
+
+            // Navigation Routing
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    if (!targetId) return;
+
+                    views.forEach(v => v.classList.remove('active'));
+                    const targetView = document.getElementById(targetId);
+                    if (targetView) targetView.classList.add('active');
+
+                    // Update bottom nav active status
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        if (nav.getAttribute('data-target') === targetId) {
+                            nav.classList.add('active');
+                        } else {
+                            nav.classList.remove('active');
+                        }
+                    });
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            // Live Date & Time Engine (Fixed timezone/locale Nigeria context)
+            function updateClock() {
+                if (!liveDatetime) return;
+                const now = new Date();
+                const options = { 
+                    weekday: 'short', 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: true 
+                };
+                liveDatetime.textContent = now.toLocaleDateString('en-US', options);
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Wallet / Revenue State Updates
+            function updateWalletUI() {
+                if (statIn) statIn.textContent = `₦${state.totalIn.toLocaleString()}`;
+                if (statProfit) statProfit.textContent = `₦${state.totalProfit.toLocaleString()}`;
+            }
+            updateWalletUI();
+
+            if (saleForm) {
+                saleForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const desc = saleDesc.value.trim();
+                    const amt = parseFloat(saleAmount.value);
+
+                    if (desc && !isNaN(amt) && amt > 0) {
+                        state.totalIn += amt;
+                        state.totalProfit += amt;
+                        state.sales.push({ desc, amount: amt, time: new Date().toLocaleTimeString() });
+                        saveState();
+                        updateWalletUI();
+                        saleForm.reset();
+                        showToast(`Recorded income: ₦${amt.toLocaleString()}`);
+                    }
+                });
+            }
+
+            // AI Chat Assistant
+            if (aiForm && aiInput && aiChatBox) {
+                aiForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const query = aiInput.value.trim();
+                    if (!query) return;
+
+                    // Append User msg
+                    const userMsg = document.createElement('div');
+                    userMsg.style.marginBottom = '8px';
+                    userMsg.innerHTML = `<strong>You:</strong> ${escapeHtml(query)}`;
+                    aiChatBox.appendChild(userMsg);
+                    aiInput.value = '';
+                    aiChatBox.scrollTop = aiChatBox.scrollHeight;
+
+                    // Simulated intelligent response
+                    setTimeout(() => {
+                        const botMsg = document.createElement('div');
+                        botMsg.style.marginBottom = '8px';
+                        botMsg.style.color = 'var(--primary)';
+                        
+                        let reply = "Got it! Keep pushing the web app link across campus for immediate conversions.";
+                        const lower = query.toLowerCase();
+                        if (lower.includes('course') || lower.includes('exam')) {
+                            reply = "Your exams are scheduled for next month. Make sure to download your past questions on the courses tab!";
+                        } else if (lower.includes('money') || lower.includes('profit') || lower.includes('sales')) {
+                            reply = `Your current total profit is ₦${state.totalProfit.toLocaleString()}. Record new sales directly in your Wallet tab!`;
+                        }
+
+                        botMsg.innerHTML = `<strong>AI:</strong> ${reply}`;
+                        aiChatBox.appendChild(botMsg);
+                        aiChatBox.scrollTop = aiChatBox.scrollHeight;
+                    }, 500);
+                });
+            }
+
+            function escapeHtml(str) {
+                return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            // Web App Launch Campaign Button
+            if (btnPublishWeb) {
+                btnPublishWeb.addEventListener('click', () => {
+                    showToast('PWA Web App link copied to clipboard! Share widely 🚀');
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href).catch(() => {});
+                    }
+                });
+            }
+
+            // Settings Action Buttons
+            if (btnToggleNotif) {
+                btnToggleNotif.addEventListener('click', () => {
+                    if ('Notification' in window) {
+                        Notification.requestPermission().then(permission => {
+                            if (permission === 'granted') {
+                                showToast('Push notifications enabled successfully!');
+                            } else {
+                                showToast('Permission denied for notifications.');
+                            }
+                        });
+                    } else {
+                        showToast('Notifications not supported on this browser.');
+                    }
+                });
+            }
+
+            if (btnClearData) {
+                btnClearData.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to reset all local app state?')) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        state = { userEmail: null, totalIn: 0, totalProfit: 0, sales: [] };
+                        updateAuthUI();
+                        updateWalletUI();
+                        showToast('App state reset successfully.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
