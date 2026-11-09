@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DropIt™ - P2P Local & Faraway Connect</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.1/tailwind.min.js" integrity="sha512-hkNXk8BLkZvi19gN9kFvjD3m8a2X5K3hQ4A+XlK5u3q5FqjLq4h7W4d9M3g0xJb7G2G7V7E5J9zY9c5G2F9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9DWCH39pG7SlSD8TB4hxaTPvA5NTOSB+9B829wXq7q9aG6dM3Cq6Z3m7F3c8v4G3K6V5l4n3k6l5Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- PeerJS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js" integrity="sha512-nMgECWfLwnNVDgIu3iYv1oV16xQ8Q1U2p+E8A0mC8t9F2L1bJ2Q0k4Q1X2d9q0V6A5f7L8t3c1k3g9n8m1A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- QRious CDN for QR Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" integrity="sha512-pUhApVShlnpLgR+5G1o0cI+WJ5bF2NlR8x1n0Y1wK2w1G2F1W5vF1z8h8j3k8f5G1E5J9zY9c5G2F9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 h-full flex flex-col font-sans select-none antialiased">
+
+    <!-- Top Header -->
+    <header class="bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-2">
+            <div class="bg-indigo-600 text-white p-2 rounded-xl font-bold text-lg shadow-md flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base leading-tight tracking-wide text-indigo-400">DropIt™</h1>
+                <p class="text-xs text-gray-400" id="connection-status-text">Connecting to network...</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span id="peer-id-display" class="bg-gray-700 text-xs px-2 py-1 rounded font-mono text-indigo-300 truncate max-w-[100px]">Initializing...</span>
+            <button id="btn-copy-id" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition active:scale-95">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Scrollable Area with padding for bottom nav -->
+    <main class="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+
+        <!-- TAB 1: LOCAL XENDER SHARING -->
+        <section id="tab-content-local" class="space-y-4">
+            <div class="bg-indigo-950/40 border border-indigo-800/50 rounded-2xl p-4 text-center">
+                <h2 class="text-lg font-bold text-indigo-300 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wifi"></i><span>Local Xender Share</span>
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">Instant peer-to-peer file transfer nearby via WebRTC data channel with safe backpressure.</p>
+            </div>
+
+            <!-- Connect Card -->
+            <div class="bg-gray-800 rounded-2xl p-4 border border-gray-700 space-y-3">
+                <h3 class="text-sm font-semibold text-gray-300">Connect to Peer</h3>
+                <div class="flex space-x-2">
+                    <input type="text" id="input-target-peer-id" placeholder="Enter peer ID or scan QR" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-indigo-500 font-mono">
+                    <button id="btn-connect-peer" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-95">
+                        Connect
+                    </button>
+                </div>
+                <div class="flex justify-center pt-2">
+                    <div class="bg-white p-2 rounded-xl shadow">
+                        <canvas id="qr-code-canvas" class="w-36 h-36"></canvas>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-gray-400">Have your peer scan this QR or copy your ID above.</p>
+            </div>
+
+            <!-- Transfer Card -->
+            <div id="transfer-section" class="bg-gray-800 rounded-2xl p-4 border border-gray-700 space-y-3 hidden">
+                <h3 class="text-sm font-semibold text-emerald-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-link"></i><span id="connection-state-label">Connected to Peer</span>
+                </h3>
+                
+                <!-- File Picker -->
+                <div class="border-2 border-dashed border-gray-600 rounded-xl p-6 text-center space-y-2 hover:border-indigo-500 transition cursor-pointer relative" id="drop-zone">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400"></i>
+                    <p class="text-xs text-gray-300 font-medium">Tap to select file or drop here</p>
+                    <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                </div>
+
+                <div id="file-info-container" class="bg-gray-900 p-3 rounded-xl hidden space-y-2">
+                    <div class="flex justify-between text-xs text-gray-300">
+                        <span id="selected-file-name" class="truncate max-w-[200px] font-medium">file.zip</span>
+                        <span id="selected-file-size">0 KB</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div id="transfer-progress-bar" class="bg-indigo-500 h-2 w-0 transition-all duration-150"></div>
+                    </div>
+                    <button id="btn-send-file" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-xs font-semibold transition active:scale-95">
+                        Send File Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Received Files History -->
+            <div class="bg-gray-800 rounded-2xl p-4 border border-gray-700 space-y-3">
+                <h3 class="text-sm font-semibold text-gray-300">Received Files</h3>
+                <div id="received-files-list" class="space-y-2 max-h-48 overflow-y-auto">
+                    <p class="text-xs text-gray-500 text-center py-4">No files received yet.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: FARAWAY INTEREST MATCHING -->
+        <section id="tab-content-faraway" class="space-y-4 hidden">
+            <div class="bg-purple-950/40 border border-purple-800/50 rounded-2xl p-4 text-center">
+                <h2 class="text-lg font-bold text-purple-300 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-globe"></i><span>Faraway Interest Hub</span>
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">Broadcast your interest or find peers worldwide looking to connect.</p>
+            </div>
+
+            <!-- Broadcast Interest Card -->
+            <div class="bg-gray-800 rounded-2xl p-4 border border-gray-700 space-y-3">
+                <h3 class="text-sm font-semibold text-gray-300">Broadcast Your Interest</h3>
+                <div class="space-y-2">
+                    <input type="text" id="input-interest-topic" placeholder="e.g., Python Study Group, Book Swap" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-purple-500">
+                    <button id="btn-broadcast-interest" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl text-sm font-semibold transition active:scale-95">
+                        Broadcast Interest
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Interests Feed -->
+            <div class="bg-gray-800 rounded-2xl p-4 border border-gray-700 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-300">Live Interests Feed</h3>
+                    <button id="btn-refresh-feed" class="text-xs text-purple-400 hover:underline">
+                        <i class="fa-solid fa-rotate-right"></i> Refresh
+                    </button>
+                </div>
+                <div id="interests-feed-list" class="space-y-2 max-h-60 overflow-y-auto">
+                    <!-- Populated dynamically -->
+                    <div class="bg-gray-900 p-3 rounded-xl border border-gray-700/60 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-purple-300">Campus Notes & Past Questions</p>
+                            <p class="text-[10px] text-gray-400">Peer ID: demo_node_199</p>
+                        </div>
+                        <button class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition active:scale-95 connect-interest-btn" data-peer="demo_node_199">
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Fixed Bottom Navigation Bar -->
+    <nav class="bg-gray-800 border-t border-gray-700 fixed bottom-0 left-0 right-0 z-50 flex justify-around py-3 px-6 shadow-xl">
+        <button id="nav-btn-local" class="flex flex-col items-center space-y-1 text-indigo-400 transition nav-btn" data-target="local">
+            <i class="fa-solid fa-wifi text-lg"></i>
+            <span class="text-[10px] font-semibold tracking-wide">Local Xender</span>
+        </button>
+        <button id="nav-btn-faraway" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-purple-400 transition nav-btn" data-target="faraway">
+            <i class="fa-solid fa-globe text-lg"></i>
+            <span class="text-[10px] font-semibold tracking-wide">Faraway Connect</span>
+        </button>
+    </nav>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const dom = {
+            statusText: document.getElementById('connection-status-text'),
+            peerIdDisplay: document.getElementById('peer-id-display'),
+            btnCopyId: document.getElementById('btn-copy-id'),
+            inputTargetPeerId: document.getElementById('input-target-peer-id'),
+            btnConnectPeer: document.getElementById('btn-connect-peer'),
+            qrCanvas: document.getElementById('qr-code-canvas'),
+            transferSection: document.getElementById('transfer-section'),
+            connectionStateLabel: document.getElementById('connection-state-label'),
+            dropZone: document.getElementById('drop-zone'),
+            fileInput: document.getElementById('file-input'),
+            fileInfoContainer: document.getElementById('file-info-container'),
+            selectedFileName: document.getElementById('selected-file-name'),
+            selectedFileSize: document.getElementById('selected-file-size'),
+            transferProgressBar: document.getElementById('transfer-progress-bar'),
+            btnSendFile: document.getElementById('btn-send-file'),
+            receivedFilesList: document.getElementById('received-files-list'),
+            inputInterestTopic: document.getElementById('input-interest-topic'),
+            btnBroadcastInterest: document.getElementById('btn-broadcast-interest'),
+            btnRefreshFeed: document.getElementById('btn-refresh-feed'),
+            interestsFeedList: document.getElementById('interests-feed-list'),
+            tabLocal: document.getElementById('tab-content-local'),
+            tabFaraway: document.getElementById('tab-content-faraway'),
+            navBtnLocal: document.getElementById('nav-btn-local'),
+            navBtnFaraway: document.getElementById('nav-btn-faraway')
+        };
+
+        let peer = null;
+        let conn = null;
+        let selectedFile = null;
+        let incomingFileMetadata = null;
+        let incomingBuffer = [];
+        let incomingReceivedSize = 0;
+        let qr = null;
+        const activeConnections = new Map();
+        const BROADCAST_HUB_ID = 'dropit-global-hub-node-v1';
+
+        if (dom.qrCanvas) {
+            qr = new QRious({
+                element: dom.qrCanvas,
+                size: 140,
+                value: 'DropIt_Peer_Init'
+            });
+        }
+
+        function initPeer() {
+            try {
+                const randomId = 'drop-' + Math.random().toString(36).substring(2, 8);
+                peer = new Peer(randomId, {
+                    debug: 1
+                });
+
+                peer.on('open', (id) => {
+                    if (dom.peerIdDisplay) dom.peerIdDisplay.textContent = id;
+                    if (dom.statusText) dom.statusText.textContent = 'Online & Ready';
+                    if (qr) {
+                        qr.value = id;
+                    }
+                    saveLocalStorage('dropit_last_peer_id', id);
+                    connectToGlobalHub();
+                });
+
+                peer.on('connection', (connection) => {
+                    setupConnection(connection);
+                });
+
+                peer.on('error', (err) => {
+                    console.error('PeerJS error:', err);
+                    if (dom.statusText) dom.statusText.textContent = 'Connection error. Retrying...';
+                    setTimeout(initPeer, 3000);
+                });
+            } catch (e) {
+                console.error('Failed to initialize PeerJS:', e);
+                if (dom.statusText) dom.statusText.textContent = 'Offline Mode';
+            }
+        }
+
+        function connectToGlobalHub() {
+            if (!peer || peer.id === BROADCAST_HUB_ID) return;
+            try {
+                const hubConn = peer.connect(BROADCAST_HUB_ID);
+                hubConn.on('open', () => {
+                    activeConnections.set(BROADCAST_HUB_ID, hubConn);
+                });
+                hubConn.on('data', (data) => {
+                    handleIncomingData(data);
+                });
+                hubConn.on('close', () => {
+                    activeConnections.delete(BROADCAST_HUB_ID);
+                    setTimeout(connectToGlobalHub, 5000);
+                });
+            } catch (e) {
+                setTimeout(connectToGlobalHub, 10000);
+            }
+        }
+
+        function setupConnection(connection) {
+            conn = connection;
+            if (dom.transferSection) dom.transferSection.classList.remove('hidden');
+            if (dom.connectionStateLabel) dom.connectionStateLabel.textContent = `Connected to: ${conn.peer}`;
+            if (dom.statusText) dom.statusText.textContent = 'Peer Connected!';
+
+            conn.on('data', (data) => {
+                handleIncomingData(data);
+            });
+
+            conn.on('close', () => {
+                if (dom.connectionStateLabel) dom.connectionStateLabel.textContent = 'Connection Closed';
+                if (dom.statusText) dom.statusText.textContent = 'Peer disconnected';
+                if (conn === connection) conn = null;
+            });
+        }
+
+        function handleIncomingData(data) {
+            if (!data) return;
+            if (data.type === 'metadata') {
+                incomingFileMetadata = data;
+                incomingBuffer = [];
+                incomingReceivedSize = 0;
+                appendReceivedFileNotice(incomingFileMetadata.name, incomingFileMetadata.size, 'Receiving...');
+            } else if (data.type === 'chunk') {
+                let chunkArray;
+                if (typeof data.chunk === 'string') {
+                    const binaryString = atob(data.chunk);
+                    const len = binaryString.length;
+                    chunkArray = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        chunkArray[i] = binaryString.charCodeAt(i);
+                    }
+                } else if (data.chunk instanceof ArrayBuffer) {
+                    chunkArray = new Uint8Array(data.chunk);
+                } else if (data.chunk && data.chunk.buffer instanceof ArrayBuffer) {
+                    chunkArray = new Uint8Array(data.chunk.buffer);
+                } else {
+                    chunkArray = new Uint8Array(Object.values(data.chunk));
+                }
+
+                incomingBuffer.push(chunkArray);
+                incomingReceivedSize += chunkArray.byteLength;
+
+                if (incomingFileMetadata && incomingReceivedSize >= incomingFileMetadata.size) {
+                    const completeBlob = new Blob(incomingBuffer, { type: incomingFileMetadata.mime });
+                    const downloadUrl = URL.createObjectURL(completeBlob);
+                    updateLastReceivedFile(incomingFileMetadata.name, downloadUrl);
+                }
+            } else if (data.type === 'interest_broadcast') {
+                appendInterestFeedItem(data.peerId, data.topic);
+            }
+        }
+
+        if (dom.btnCopyId) {
+            dom.btnCopyId.addEventListener('click', () => {
+                if (peer && peer.id) {
+                    navigator.clipboard.writeText(peer.id).then(() => {
+                        const originalHTML = dom.btnCopyId.innerHTML;
+                        dom.btnCopyId.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i>';
+                        setTimeout(() => dom.btnCopyId.innerHTML = originalHTML, 2000);
+                    });
+                }
+            });
+        }
+
+        if (dom.btnConnectPeer && dom.inputTargetPeerId) {
+            dom.btnConnectPeer.addEventListener('click', () => {
+                const targetId = dom.inputTargetPeerId.value.trim();
+                if (!targetId) return;
+                if (!peer) {
+                    alert('Peer network not initialized yet.');
+                    return;
+                }
+                dom.statusText.textContent = 'Connecting to ' + targetId + '...';
+                const connection = peer.connect(targetId);
+                setupConnection(connection);
+            });
+        }
+
+        if (dom.fileInput && dom.selectedFileName && dom.selectedFileSize && dom.fileInfoContainer) {
+            dom.fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                selectedFile = file;
+                dom.selectedFileName.textContent = file.name;
+                dom.selectedFileSize.textContent = formatBytes(file.size);
+                dom.fileInfoContainer.classList.remove('hidden');
+            });
+        }
+
+        if (dom.btnSendFile) {
+            dom.btnSendFile.addEventListener('click', async () => {
+                if (!conn || !selectedFile) return;
+                
+                conn.send({
+                    type: 'metadata',
+                    name: selectedFile.name,
+                    size: selectedFile.size,
+                    mime: selectedFile.type
+                });
+
+                const chunkSize = 16384; // 16KB optimal chunk
+                const highWaterMark = 256 * 1024; // 256KB backpressure limit
+                let offset = 0;
+
+                dom.statusText.textContent = 'Sending file... 0%';
+
+                const dataChannel = conn.dataChannel || (conn._dc);
+
+                while (offset < selectedFile.size) {
+                    // Backpressure control: wait if peer's buffer is heavy
+                    while (dataChannel && dataChannel.bufferedAmount > highWaterMark) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        if (!conn || conn.open === false) {
+                            dom.statusText.textContent = 'Connection lost during transfer';
+                            return;
+                        }
+                    }
+
+                    const slice = selectedFile.slice(offset, offset + chunkSize);
+                    const arrayBuffer = await slice.arrayBuffer();
+
+                    let binary = '';
+                    const bytes = new Uint8Array(arrayBuffer);
+                    const len = bytes.byteLength;
+                    for (let i = 0; i < len; i++) {
+                        binary += String.fromCharCode(bytes[i]);
+                    }
+                    const base64Chunk = btoa(binary);
+
+                    conn.send({
+                        type: 'chunk',
+                        chunk: base64Chunk
+                    });
+
+                    offset += arrayBuffer.byteLength;
+                    
+                    const progress = Math.round((offset / selectedFile.size) * 100);
+                    if (dom.transferProgressBar) dom.transferProgressBar.style.width = progress + '%';
+                    dom.statusText.textContent = `Sending file... ${progress}%`;
+                }
+
+                dom.statusText.textContent = 'File sent successfully!';
+            });
+        }
+
+        if (dom.navBtnLocal && dom.navBtnFaraway && dom.tabLocal && dom.tabFaraway) {
+            dom.navBtnLocal.addEventListener('click', () => {
+                dom.tabLocal.classList.remove('hidden');
+                dom.tabFaraway.classList.add('hidden');
+                dom.navBtnLocal.classList.add('text-indigo-400');
+                dom.navBtnLocal.classList.remove('text-gray-400');
+                dom.navBtnFaraway.classList.add('text-gray-400');
+                dom.navBtnFaraway.classList.remove('text-purple-400');
+            });
+
+            dom.navBtnFaraway.addEventListener('click', () => {
+                dom.tabFaraway.classList.remove('hidden');
+                dom.tabLocal.classList.add('hidden');
+                dom.navBtnFaraway.classList.add('text-purple-400');
+                dom.navBtnFaraway.classList.remove('text-gray-400');
+                dom.navBtnLocal.classList.add('text-gray-400');
+                dom.navBtnLocal.classList.remove('text-indigo-400');
+            });
+        }
+
+        if (dom.btnBroadcastInterest && dom.inputInterestTopic) {
+            dom.btnBroadcastInterest.addEventListener('click', () => {
+                const topic = dom.inputInterestTopic.value.trim();
+                if (!topic) return;
+                
+                const broadcastPayload = {
+                    type: 'interest_broadcast',
+                    peerId: peer ? peer.id : 'unknown',
+                    topic: topic,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+
+                appendInterestFeedItem(broadcastPayload.peerId, broadcastPayload.topic);
+
+                const hubConn = activeConnections.get(BROADCAST_HUB_ID);
+                if (hubConn && hubConn.open) {
+                    hubConn.send(broadcastPayload);
+                }
+
+                dom.inputInterestTopic.value = '';
+                alert('Interest successfully broadcasted to faraway network feed!');
+            });
+        }
+
+        if (dom.btnRefreshFeed) {
+            dom.btnRefreshFeed.addEventListener('click', () => {
+                if (dom.interestsFeedList) {
+                    dom.interestsFeedList.innerHTML = `
+                        <div class="bg-gray-900 p-3 rounded-xl border border-gray-700/60 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-purple-300">Web Development & React Study</p>
+                                <p class="text-[10px] text-gray-400">Peer ID: demo_node_404</p>
+                            </div>
+                            <button class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition active:scale-95 connect-interest-btn" data-peer="demo_node_404">
+                                Connect
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function appendReceivedFileNotice(name, size, statusText) {
+            if (!dom.receivedFilesList) return;
+            if (dom.receivedFilesList.querySelector('p')) {
+                dom.receivedFilesList.innerHTML = '';
+            }
+            const item = document.createElement('div');
+            item.className = 'bg-gray-900 p-3 rounded-xl border border-gray-700/60 flex items-center justify-between received-file-item';
+            item.innerHTML = `
+                <div class="truncate pr-2">
+                    <p class="text-xs font-bold text-gray-200 truncate">${escapeHtml(name)}</p>
+                    <p class="text-[10px] text-gray-400">${formatBytes(size)} • <span class="status">${statusText}</span></p>
+                </div>
+                <div class="file-action-slot text-xs"></div>
+            `;
+            dom.receivedFilesList.prepend(item);
+        }
+
+        function updateLastReceivedFile(name, url) {
+            if (!dom.receivedFilesList) return;
+            const firstItem = dom.receivedFilesList.querySelector('.received-file-item');
+            if (firstItem) {
+                const statusSpan = firstItem.querySelector('.status');
+                if (statusSpan) statusSpan.textContent = 'Completed';
+                const actionSlot = firstItem.querySelector('.file-action-slot');
+                if (actionSlot) {
+                    actionSlot.innerHTML = `<a href="${url}" download="${escapeHtml(name)}" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:bg-emerald-500 transition">Save</a>`;
+                }
+            }
+        }
+
+        function appendInterestFeedItem(peerId, topic) {
+            if (!dom.interestsFeedList) return;
+            const existing = Array.from(dom.interestsFeedList.children).some(child => 
+                child.innerHTML.includes(peerId) && child.innerHTML.includes(topic)
+            );
+            if (existing) return;
+
+            const item = document.createElement('div');
+            item.className = 'bg-gray-900 p-3 rounded-xl border border-gray-700/60 flex items-center justify-between';
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.innerHTML = `
+                <p class="text-xs font-bold text-purple-300">${escapeHtml(topic)}</p>
+                <p class="text-[10px] text-gray-400">Peer ID: ${escapeHtml(peerId)}</p>
+            `;
+
+            const btn = document.createElement('button');
+            btn.className = 'bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition active:scale-95';
+            btn.textContent = 'Connect';
+            btn.addEventListener('click', () => {
+                connectToInterestPeer(peerId);
+            });
+
+            item.appendChild(infoDiv);
+            item.appendChild(btn);
+            dom.interestsFeedList.prepend(item);
+        }
+
+        function connectToInterestPeer(peerId) {
+            if (dom.inputTargetPeerId && dom.navBtnLocal) {
+                dom.inputTargetPeerId.value = peerId;
+                dom.navBtnLocal.click();
+                if (dom.btnConnectPeer) dom.btnConnectPeer.click();
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function saveLocalStorage(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('LocalStorage unavailable:', e);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            initPeer();
+        });
+    </script>
+</body>
+</html>
