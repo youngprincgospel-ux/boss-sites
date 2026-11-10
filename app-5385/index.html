@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DropIt — Offline Local Share</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E📁%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --primary:#0066ff;
+  --bg:#f9f9f9;
+  --text:#111;
+}
+html,body{
+  margin:0;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  font-family:system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+}
+header{
+  padding:1rem;
+  text-align:center;
+  background:var(--primary);
+  color:#fff;
+}
+h1{
+  margin:0;
+  font-size:1.5rem;
+}
+main{
+  padding:1rem;
+}
+section{
+  margin-bottom:2rem;
+}
+button{
+  display:inline-block;
+  min-height:44px;
+  min-width:44px;
+  padding:.5rem 1rem;
+  font-size:1rem;
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+button:disabled{
+  background:#aaa;
+  cursor:not-allowed;
+}
+input[type="file"]{
+  margin-top:.5rem;
+}
+textarea{
+  width:100%;
+  height:6rem;
+  font-family:monospace;
+  resize:vertical;
+}
+#qr{
+  margin:1rem 0;
+  text-align:center;
+}
+#status{
+  font-weight:bold;
+}
+ul{
+  list-style:none;
+  padding:0;
+}
+li{
+  margin:0.5rem 0;
+}
+a{
+  color:var(--primary);
+  text-decoration:none;
+}
+footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  border-top:1px solid #ddd;
+  padding:0.5rem;
+  text-align:center;
+  font-size:0.9rem;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>DropIt — Offline Local Share</h1>
+</header>
+<main>
+<section id="setup">
+<h2>1️⃣ Setup Connection</h2>
+<button id="createOfferBtn">Create Offer (Sender)</button>
+<div id="offerArea" hidden>
+<p>Share this QR code or copy the text to the receiver:</p>
+<div id="qr"></div>
+<textarea id="offerText" readonly aria-label="Offer SDP"></textarea>
+</div>
+<p>Paste remote answer here (receiver):</p>
+<textarea id="answerInput" placeholder="Paste answer SDP here" aria-label="Answer SDP"></textarea>
+<button id="setAnswerBtn">Set Answer</button>
+<p id="status">Status: <span id="connStatus">Not connected</span></p>
+</section>
+
+<section id="transfer" hidden>
+<h2>2️⃣ Transfer Files</h2>
+<input type="file" id="fileInput" multiple aria-label="Select files to send">
+<button id="sendBtn" disabled>Send Selected Files</button>
+</section>
+
+<section id="received">
+<h2>📥 Received Files</h2>
+<ul id="fileList" aria-live="polite"></ul>
+</section>
+</main>
+
+<footer>
+<span id="time"></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-0K+R2E1vC2yL4GkX5p8tZk9K0g4R1i+7rY6f1V6GQ9ZBzvW4N9Kc6R6Y7J3wS4Xr5J+KJ3M+f8g4V8c9Zp5VQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function(){
+  // Elements
+  const createOfferBtn = document.getElementById('createOfferBtn');
+  const offerArea = document.getElementById('offerArea');
+  const offerText = document.getElementById('offerText');
+  const qrDiv = document.getElementById('qr');
+  const answerInput = document.getElementById('answerInput');
+  const setAnswerBtn = document.getElementById('setAnswerBtn');
+  const connStatus = document.getElementById('connStatus');
+  const transferSection = document.getElementById('transfer');
+  const fileInput = document.getElementById('fileInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const fileList = document.getElementById('fileList');
+  const timeSpan = document.getElementById('time');
+
+  // State
+  let pc = null;
+  let dataChannel = null;
+  let awaitingFile = null; // {meta, chunks}
+  const receivedFiles = [];
+
+  // Helpers
+  function logStatus(msg){
+    connStatus.textContent = msg;
+  }
+  function safeGet(id){
+    const el = document.getElementById(id);
+    return el ? el : null;
+  }
+  function updateTime(){
+    const now = new Date();
+    timeSpan.textContent = now.toLocaleTimeString();
+  }
+  setInterval(updateTime,1000);
+  updateTime();
+
+  // Peer Connection setup
+  function initPeer(isOfferer){
+    const config = {iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+    pc = new RTCPeerConnection(config);
+    pc.onicecandidate = e=>{
+      if(e.candidate) return; // ignore for simplicity; all candidates sent in SDP
+    };
+    pc.onconnectionstatechange = ()=>{
+      logStatus(pc.connectionState);
+      if(pc.connectionState === 'connected'){
+        transferSection.hidden = false;
+        sendBtn.disabled = false;
+      }
+    };
+    if(isOfferer){
+      dataChannel = pc.createDataChannel('files');
+      setupDataChannel();
+      pc.createOffer().then(offer=>{
+        return pc.setLocalDescription(offer);
+      }).then(()=>{
+        const offerObj = {sdp:pc.localDescription};
+        const offerStr = JSON.stringify(offerObj);
+        offerText.value = offerStr;
+        // QR code
+        qrDiv.innerHTML = '';
+        new QRCode(qrDiv,{text:offerStr,width:200,height:200});
+        offerArea.hidden = false;
+      }).catch(console.error);
+    }else{
+      pc.ondatachannel = e=>{
+        dataChannel = e.channel;
+        setupDataChannel();
+      };
+    }
+  }
+
+  function setupDataChannel(){
+    dataChannel.binaryType = 'arraybuffer';
+    dataChannel.onopen = ()=>{
+      logStatus('Data channel open');
+    };
+    dataChannel.onclose = ()=>{
+      logStatus('Data channel closed');
+    };
+    dataChannel.onmessage = e=>{
+      if(typeof e.data === 'string'){
+        try{
+          const msg = JSON.parse(e.data);
+          if(msg.type==='file-meta'){
+            awaitingFile = {meta:msg, chunks:[]};
+          }
+        }catch(err){
+          console.error('Invalid JSON',err);
+        }
+      }else{
+        if(awaitingFile){
+          awaitingFile.chunks.push(e.data);
+          const received = awaitingFile.chunks.reduce((a,b)=>a+b.byteLength,0);
+          if(received >= awaitingFile.meta.size){
+            const blob = new Blob(awaitingFile.chunks, {type:awaitingFile.meta.mime});
+            const url = URL.createObjectURL(blob);
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = awaitingFile.meta.name;
+            a.textContent = `${awaitingFile.meta.name} (${Math.round(awaitingFile.meta.size/1024)} KB)`;
+            li.appendChild(a);
+            fileList.appendChild(li);
+            // reset
+            awaitingFile = null;
+          }
+        }
+      }
+    };
+  }
+
+  // Event Listeners
+  if(createOfferBtn){
+    createOfferBtn.addEventListener('click',()=>{
+      initPeer(true);
+      createOfferBtn.disabled = true;
+    });
+  }
+
+  if(setAnswerBtn){
+    setAnswerBtn.addEventListener('click',()=>{
+      const answerStr = answerInput.value.trim();
+      if(!answerStr) return;
+      try{
+        const answerObj = JSON.parse(answerStr);
+        if(!pc){
+          initPeer(false);
+        }
+        pc.setRemoteDescription(new RTCSessionDescription(answerObj.sdp)).catch(console.error);
+        // If we are the answerer, we need to create answer
+        if(pc && pc.signalingState==='have-remote-offer'){
+          pc.createAnswer().then(ans=>{
+            return pc.setLocalDescription(ans);
+          }).then(()=>{
+            const localAns = JSON.stringify({sdp:pc.localDescription});
+            // Show answer for copy back to offerer
+            offerText.value = localAns;
+            qrDiv.innerHTML = '';
+            new QRCode(qrDiv,{text:localAns,width:200,height:200});
+            offerArea.hidden = false;
+          }).catch(console.error);
+        }
+      }catch(err){
+        console.error('Invalid answer JSON',err);
+      }
+    });
+  }
+
+  if(sendBtn){
+    sendBtn.addEventListener('click',()=>{
+      const files = fileInput.files;
+      if(!files || files.length===0) return;
+      Array.from(files).forEach(file=>{
+        const meta = {type:'file-meta', name:file.name, size:file.size, mime:file.type};
+        dataChannel.send(JSON.stringify(meta));
+        dataChannel.send(file);
+      });
+    });
+  }
+
+  // Load any persisted received files list (metadata only)
+  try{
+    const stored = localStorage.getItem('dropit-received');
+    if(stored){
+      const arr = JSON.parse(stored);
+      arr.forEach(item=>{
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = item.url;
+        a.download = item.name;
+        a.textContent = `${item.name} (${Math.round(item.size/1024)} KB)`;
+        li.appendChild(a);
+        fileList.appendChild(li);
+      });
+    }
+  }catch(e){
+    console.error('localStorage read error',e);
+  }
+
+  // Persist received files metadata when added
+  const observer = new MutationObserver(()=>{
+    const items = [];
+    fileList.querySelectorAll('li a').forEach(a=>{
+      const url = a.href;
+      const name = a.download;
+      const sizeMatch = a.textContent.match(/\((\d+)\sKB\)/);
+      const size = sizeMatch ? parseInt(sizeMatch[1])*1024 : 0;
+      items.push({url,name,size});
+    });
+    try{
+      localStorage.setItem('dropit-received',JSON.stringify(items));
+    }catch(e){
+      console.error('localStorage write error',e);
+    }
+  });
+  observer.observe(fileList,{childList:true, subtree:true});
+})();
+</script>
+</body>
+</html>
