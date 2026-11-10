@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DropIt™ - Offline Local & Faraway P2P Share</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%%3E<text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #161e2e;
+            --surface-hover: #1f293d;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #22c55e;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .connection-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: calc(90px + var(--safe-bottom));
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Banner banner ad */
+        .promo-banner {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .promo-text small {
+            color: var(--warning);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .promo-text p {
+            font-size: 13px;
+            color: var(--text-main);
+            margin-top: 2px;
+        }
+
+        .promo-btn {
+            background: var(--surface-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Local Share Setup Box (Simulating Xender/SHAREit zero-data prep) */
+        .local-prep-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        .radar-animation {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px auto;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .radar-animation::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: radarPulse 2s infinite;
+        }
+
+        @keyframes radarPulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        .local-prep-card h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .local-prep-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .checklist {
+            text-align: left;
+            background: var(--bg-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            padding: 6px 0;
+            color: var(--text-muted);
+        }
+
+        .check-item.active {
+            color: var(--text-main);
+        }
+
+        .check-icon {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Actions & Buttons */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Peer List & File Drop */
+        .peer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .peer-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .peer-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .peer-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--surface-hover);
+            margin: 0 auto 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .peer-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .peer-distance {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* File Transfer Box */
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            background: var(--surface-color);
+            cursor: pointer;
+            transition: border-color 0.2s;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+        }
+
+        .drop-zone input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Transfer Progress */
+        .transfer-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .transfer-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.1s linear;
+        }
+
+        .transfer-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Received Files List */
+        .file-item {
+            background: var(--surface-color);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .file-details h4 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            word-break: break-all;
+        }
+
+        .file-details span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .download-btn {
+            background: var(--surface-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Fixed Bottom Navigation Bar */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--surface-color);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--surface-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Action successful</div>
+
+    <header>
+        <div class="logo-area">
+            <span class="logo-icon">⚡</span>
+            <h1>DropIt™</h1>
+        </div>
+        <div class="connection-status" id="connStatus">
+            <span class="status-dot"></span>
+            <span id="connStatusText">Offline P2P Ready</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: LOCAL SHARE (Zero Data, WLAN/Bluetooth/GPS prep simulated) -->
+        <section id="tab-local" class="tab-content active">
+            <div class="promo-banner">
+                <div class="promo-text">
+                    <small>Campus Sponsor</small>
+                    <p>Get 2GB Free Data on MTN CampusPulse!</p>
+                </div>
+                <button class="promo-btn" id="promoBtn1">Claim</button>
+            </div>
+
+            <div class="local-prep-card" id="localPrepCard">
+                <div class="radar-animation">📡</div>
+                <h2>Zero-Data Local Share</h2>
+                <p>Transfer files instantly device-to-device without using mobile data or internet connection.</p>
+                
+                <div class="checklist">
+                    <div class="check-item active"><span class="check-icon">✓</span> WLAN / Wi-Fi Direct Ready</div>
+                    <div class="check-item active"><span class="check-icon">✓</span> Bluetooth Low Energy Active</div>
+                    <div class="check-item active"><span class="check-icon">✓</span> GPS / Local Mesh Scan Enabled</div>
+                </div>
+
+                <button class="btn" id="startLocalBtn">
+                    <span>🚀</span> Start Local Hotspot / Radar
+                </button>
+            </div>
+
+            <div id="localActiveArea" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <h3 style="font-size: 15px;">Nearby Devices Found</h3>
+                    <button class="promo-btn" id="rescanLocalBtn">🔄 Rescan</button>
+                </div>
+
+                <div class="peer-grid" id="localPeerGrid">
+                    <!-- Dynamic local peers injected here -->
+                </div>
+
+                <div class="drop-zone" id="localDropZone">
+                    <input type="file" id="localFileInput" multiple>
+                    <div style="font-size: 28px; margin-bottom: 8px;">📂</div>
+                    <p style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">Tap or drop files to send locally</p>
+                    <p style="font-size: 12px; color: var(--text-muted);">Zero mobile data consumed</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: FARAWAY MATCH (P2P Over Internet / WebRTC) -->
+        <section id="tab-faraway" class="tab-content">
+            <div class="promo-banner">
+                <div class="promo-text">
+                    <small>Hostel Promo</small>
+                    <p>Book Royal Lodge @ ₦150k/year (Zero Agent fee)</p>
+                </div>
+                <button class="promo-btn" id="promoBtn2">View</button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 15px;">Faraway Global Peers</h3>
+                <button class="promo-btn" id="refreshFarawayBtn">🔄 Refresh Feed</button>
+            </div>
+
+            <div class="peer-grid" id="farawayPeerGrid">
+                <!-- Dynamic faraway peers -->
+            </div>
+
+            <div class="drop-zone" id="farawayDropZone">
+                <input type="file" id="farawayFileInput" multiple>
+                <div style="font-size: 28px; margin-bottom: 8px;">🌐</div>
+                <p style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">Share files across the web</p>
+                <p style="font-size: 12px; color: var(--text-muted);">Encrypted WebRTC data channel</p>
+            </div>
+        </section>
+
+        <!-- TAB 3: TRANSFERS & HISTORY -->
+        <section id="tab-transfers" class="tab-content">
+            <h3 style="font-size: 16px; margin-bottom: 14px;">Active Transmissions</h3>
+            <div id="activeTransfersList">
+                <p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No active file transfers.</p>
+            </div>
+
+            <h3 style="font-size: 16px; margin: 24px 0 14px 0;">Received Files Archive</h3>
+            <div id="receivedFilesList">
+                <p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No received files yet.</p>
+            </div>
+        </section>
+
+        <!-- TAB 4: SETTINGS & BRAND -->
+        <section id="tab-settings" class="tab-content">
+            <div class="local-prep-card" style="text-align: left;">
+                <h2 style="font-size: 18px; margin-bottom: 6px;">Device Profile</h2>
+                <p style="margin-bottom: 16px;">Configure your public appearance for local & faraway peers.</p>
+                
+                <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">YOUR DEVICE NAME</label>
+                <input type="text" id="deviceNameInput" value="Campus User 4285" style="width: 100%; background: var(--bg-color); border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: var(--text-main); font-size: 14px; margin-bottom: 16px;">
+                
+                <button class="btn" id="saveProfileBtn">Save Profile</button>
+            </div>
+
+            <div class="local-prep-card" style="text-align: left;">
+                <h2 style="font-size: 18px; margin-bottom: 6px;">About DropIt™</h2>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                    DropIt is built for instant local zero-data transfers and encrypted faraway sharing. 100% free for students with clean sponsored campus tiles keeping servers running.
+                </p>
+                <div style="margin-top: 14px; font-size: 12px; color: var(--accent);">
+                    ✓ Secure local mesh active<br>
+                    ✓ Live date: <span id="liveDateSpan"></span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="tab-local">
+            <span class="nav-icon">📡</span>
+            <span>Local Share</span>
+        </button>
+        <button class="nav-item" data-target="tab-faraway">
+            <span class="nav-icon">🌐</span>
+            <span>Faraway</span>
+        </button>
+        <button class="nav-item" data-target="tab-transfers">
+            <span class="nav-icon">📥</span>
+            <span>Transfers</span>
+        </button>
+        <button class="nav-item" data-target="tab-settings">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js" integrity="sha512-9n94N24u+2eA+4V5b+bM2yWJ5rN38XfE12Xf8vN84XvFmY/2Z3vC5zR4cW1w2vV3C+ZqX3s8w6xQ9+z3vQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        (function() {
+            // Live Date & Time Engine (Nigeria 10 Nov 2026, 11:46 AM baseline)
+            function updateLiveTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateString = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                const liveDateSpan = document.getElementById('liveDateSpan');
+                if (liveDateSpan) {
+                    liveDateSpan.textContent = `${dateString} - ${timeString}`;
+                }
+            }
+            setInterval(updateLiveTime, 1000);
+            updateLiveTime();
+
+            // Toast helper
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2500);
+            }
+
+            // Tab Navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    
+                    navItems.forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+
+                    tabContents.forEach(tab => {
+                        tab.classList.remove('active');
+                        if (tab.id === targetId) {
+                            tab.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            // Local Share Toggle & Radar Simulation
+            const startLocalBtn = document.getElementById('startLocalBtn');
+            const localPrepCard = document.getElementById('localPrepCard');
+            const localActiveArea = document.getElementById('localActiveArea');
+            const rescanLocalBtn = document.getElementById('rescanLocalBtn');
+
+            if (startLocalBtn) {
+                startLocalBtn.addEventListener('click', () => {
+                    localPrepCard.style.display = 'none';
+                    localActiveArea.style.display = 'block';
+                    renderLocalPeers();
+                    showToast('Local WLAN & Bluetooth mesh active!');
+                });
+            }
+
+            if (rescanLocalBtn) {
+                rescanLocalBtn.addEventListener('click', () => {
+                    showToast('Scanning local radio waves...');
+                    renderLocalPeers();
+                });
+            }
+
+            // Mock Local Peers Data
+            const localPeersData = [
+                { id: 'l1', name: 'Hostel Room 302', avatar: '💻', distance: '1.2m • WLAN' },
+                { id: 'l2', name: 'Campus Infinix Note', avatar: '📱', distance: '3.5m • Bluetooth' },
+                { id: 'l3', name: 'Library Desk 14', avatar: '🎒', distance: '5.0m • Wi-Fi Direct' },
+                { id: 'l4', name: 'Lecture Hall Mac', avatar: '🖥️', distance: '8.1m • Hotspot' }
+            ];
+
+            function renderLocalPeers() {
+                const grid = document.getElementById('localPeerGrid');
+                if (!grid) return;
+                grid.innerHTML = '';
+                localPeersData.forEach(peer => {
+                    const card = document.createElement('div');
+                    card.className = 'peer-card';
+                    card.innerHTML = `
+                        <div class="peer-avatar">${peer.avatar}</div>
+                        <div class="peer-name">${peer.name}</div>
+                        <div class="peer-distance">${peer.distance}</div>
+                    `;
+                    card.addEventListener('click', () => {
+                        showToast(`Connected to ${peer.name}. Choose file to send.`);
+                    });
+                    grid.appendChild(card);
+                });
+            }
+
+            // Mock Faraway Peers Data
+            const farawayPeersData = [
+                { id: 'f1', name: 'Ada (Lagos)', avatar: '👩🏾', distance: 'Online • 420km' },
+                { id: 'f2', name: 'Emeka (Abuja)', avatar: '👨🏾', distance: 'Online • 610km' },
+                { id: 'f3', name: 'Zainab (Kano)', avatar: '🧕🏽', distance: 'Online • 850km' },
+                { id: 'f4', name: 'Tunde (Port Harcourt)', avatar: '👨🏿', distance: 'Online • 530km' }
+            ];
+
+            function renderFarawayPeers() {
+                const grid = document.getElementById('farawayPeerGrid');
+                if (!grid) return;
+                grid.innerHTML = '';
+                farawayPeersData.forEach(peer => {
+                    const card = document.createElement('div');
+                    card.className = 'peer-card';
+                    card.innerHTML = `
+                        <div class="peer-avatar">${peer.avatar}</div>
+                        <div class="peer-name">${peer.name}</div>
+                        <div class="peer-distance">${peer.distance}</div>
+                    `;
+                    card.addEventListener('click', () => {
+                        showToast(`Secure WebRTC tunnel opened with ${peer.name}`);
+                    });
+                    grid.appendChild(card);
+                });
+            }
+            renderFarawayPeers();
+
+            const refreshFarawayBtn = document.getElementById('refreshFarawayBtn');
+            if (refreshFarawayBtn) {
+                refreshFarawayBtn.addEventListener('click', () => {
+                    showToast('Refreshing faraway nodes...');
+                    renderFarawayPeers();
+                });
+            }
+
+            // File Transfer Simulation & State Management
+            let receivedFiles = [];
+            try {
+                const savedFiles = localStorage.getItem('dropit_received');
+                if (savedFiles) receivedFiles = JSON.parse(savedFiles);
+            } catch (e) {}
+
+            function saveReceivedFilesStorage() {
+                try {
+                    localStorage.setItem('dropit_received', JSON.stringify(receivedFiles));
+                } catch (e) {}
+            }
+
+            function renderReceivedFiles() {
+                const container = document.getElementById('receivedFilesList');
+                if (!container) return;
+                if (receivedFiles.length === 0) {
+                    container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No received files yet.</p>';
+                    return;
+                }
+                container.innerHTML = '';
+                receivedFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.innerHTML = `
+                        <div class="file-details">
+                            <h4>${file.name}</h4>
+                            <span>${file.size} • Received via P2P</span>
+                        </div>
+                        <button class="download-btn" data-index="${index}">📥 Download</button>
+                    `;
+                    const btn = item.querySelector('.download-btn');
+                    btn.addEventListener('click', () => {
+                        showToast(`Successfully downloaded ${file.name}`);
+                    });
+                    container.appendChild(item);
+                });
+            }
+            renderReceivedFiles();
+
+            // Handle File Drop / Selection simulation with speed & ETA
+            function handleFileSelection(files) {
+                if (!files || files.length === 0) return;
+                const activeList = document.getElementById('activeTransfersList');
+                if (!activeList) return;
+
+                if (activeList.querySelector('p')) {
+                    activeList.innerHTML = '';
+                }
+
+                Array.from(files).forEach(file => {
+                    const card = document.createElement('div');
+                    card.className = 'transfer-card';
+                    card.innerHTML = `
+                        <div class="transfer-info">
+                            <strong>${file.name}</strong>
+                            <span class="transfer-status">Sending...</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="transfer-meta">
+                            <span class="speed">14.2 MB/s</span>
+                            <span class="eta">ETA: 2s</span>
+                        </div>
+                    `;
+                    activeList.prepend(card);
+
+                    let progress = 0;
+                    const progressBar = card.querySelector('.progress-bar');
+                    const statusSpan = card.querySelector('.transfer-status');
+                    
+                    const interval = setInterval(() => {
+                        progress += Math.floor(Math.random() * 25) + 15;
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                            statusSpan.textContent = 'Completed ✓';
+                            statusSpan.style.color = 'var(--accent)';
+                            
+                            // Add to received archive for demonstration
+                            const fileSizeFormatted = (file.size / (1024*1024)).toFixed(2) + ' MB';
+                            receivedFiles.unshift({ name: file.name, size: fileSizeFormatted });
+                            saveReceivedFilesStorage();
+                            renderReceivedFiles();
+                            showToast(`File ${file.name} transferred successfully!`);
+                        }
+                        progressBar.style.width = progress + '%';
+                    }, 250);
+                });
+            }
+
+            const localFileInput = document.getElementById('localFileInput');
+            if (localFileInput) {
+                localFileInput.addEventListener('change', (e) => {
+                    handleFileSelection(e.target.files);
+                });
+            }
+
+            const farawayFileInput = document.getElementById('farawayFileInput');
+            if (farawayFileInput) {
+                farawayFileInput.addEventListener('change', (e) => {
+                    handleFileSelection(e.target.files);
+                });
+            }
+
+            // Promo Banner & Settings Buttons
+            const promoBtn1 = document.getElementById('promoBtn1');
+            const promoBtn2 = document.getElementById('promoBtn2');
+            if (promoBtn1) promoBtn1.addEventListener('click', () => showToast('MTN CampusPulse 2GB unlocked!'));
+            if (promoBtn2) promoBtn2.addEventListener('click', () => showToast('Redirecting to Royal Lodge booking...'));
+
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
+            const deviceNameInput = document.getElementById('deviceNameInput');
+            if (saveProfileBtn && deviceNameInput) {
+                saveProfileBtn.addEventListener('click', () => {
+                    showToast(`Profile updated to: ${deviceNameInput.value}`);
+                });
+            }
+
+        })();
+    </script>
+</body>
+</html>
