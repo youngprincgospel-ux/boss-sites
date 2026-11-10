@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NaijaWAEC Tracker - Result Date Estimator & Prep Hub</title>
+<meta name="description" content="a free tool that helps Nigerian students check WAEC result dates">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0B3D91;
+      --primary-dark: #07255B;
+      --accent: #F58220;
+      --accent-hover: #D76E12;
+      --bg-color: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --success: #10B981;
+      --success-bg: #ECFDF5;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(11, 61, 145, 0.08);
+      --radius: 16px;
+      --safe-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2.5rem 1rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: var(--bg-color);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+
+    .header-content {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(245, 130, 32, 0.7);
+      animation: pulse-animation 2s infinite;
+    }
+
+    @keyframes pulse-animation {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 130, 32, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(245, 130, 32, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 130, 32, 0); }
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 680px;
+      margin: -2rem auto 0;
+      padding: 0 1rem calc(160px + var(--safe-bottom));
+      position: relative;
+      z-index: 2;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    select, input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      background-color: var(--accent);
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 12px rgba(245, 130, 32, 0.25);
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      box-shadow: none;
+      margin-top: 0.75rem;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(11, 61, 145, 0.05);
+    }
+
+    /* Results Box Styles */
+    .result-container {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background: var(--success-bg);
+      border: 1px solid #A7F3D0;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .result-container.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .count-box {
+      background: white;
+      padding: 0.75rem 0.25rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .count-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .count-lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* Checklist Styles */
+    .checklist {
+      list-style: none;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .checklist-item.checked span {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Saved History List */
+    .history-list {
+      list-style: none;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: #F1F5F9;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .history-item button {
+      background: none;
+      border: none;
+      color: #EF4444;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+    }
+
+    /* Fixed Bottom Nav Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.75rem 0.5rem calc(0.75rem + var(--safe-bottom));
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+      z-index: 1000;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s;
+      flex: 1;
+    }
+
+    .nav-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-btn.active {
+      color: var(--primary);
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    .info-badge {
+      display: inline-block;
+      background: #E0F2FE;
+      color: #0369A1;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <div class="badge-live">
+        <span class="pulse"></span>
+        <span id="live-time-display">Loading local time...</span>
+      </div>
+      <h1>NaijaWAEC Tracker</h1>
+      <p>Accurate result date estimates, live countdowns, and result checking guides for Nigerian students.</p>
+    </div>
+  </header>
+
+  <main>
+    <!-- VIEW 1: ESTIMATOR & TRACKER -->
+    <section id="view-estimator" class="view-section active">
+      <div class="card">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Result Date Estimator
+        </h2>
+        <div class="form-group">
+          <label for="exam-type">Select Exam Type</label>
+          <select id="exam-type">
+            <option value="WASSCE-SCHOOL">WASSCE for School Candidates (May/June)</option>
+            <option value="WASSCE-GCE">WASSCE GCE (Private / Nov/Dec)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="exam-year">Select Examination Year</label>
+          <select id="exam-year">
+            <option value="2026" selected>2026 (Current Year)</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+
+        <button type="button" id="btn-estimate" class="btn">Calculate Expected Date</button>
+
+        <div id="result-box" class="result-container">
+          <span class="info-badge" id="result-status-badge">Estimated Release Window</span>
+          <h3 id="result-date-title" style="font-size: 1.1rem; color: #065F46; margin-bottom: 0.25rem;"></h3>
+          <p id="result-date-desc" style="font-size: 0.9rem; color: #047857; margin-bottom: 0.5rem;"></p>
+          
+          <div class="countdown-grid" id="countdown-area">
+            <div class="count-box"><div class="count-num" id="cd-days">00</div><div class="count-lbl">Days</div></div>
+            <div class="count-box"><div class="count-num" id="cd-hours">00</div><div class="count-lbl">Hours</div></div>
+            <div class="count-box"><div class="count-num" id="cd-mins">00</div><div class="count-lbl">Mins</div></div>
+            <div class="count-box"><div class="count-num" id="cd-secs">00</div><div class="count-lbl">Secs</div></div>
+          </div>
+
+          <button type="button" id="btn-save-target" class="btn btn-secondary">Save to My Trackers</button>
+        </div>
+      </div>
+
+      <!-- Quick Check Guide Card -->
+      <div class="card">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          How to Check WAEC Results
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Requirements to access your grades on the official portal when released:</p>
+        <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-main); display: flex; flex-direction: column; gap: 0.5rem;">
+          <li>10-Digit WAEC Examination Number.</li>
+          <li>Scratch Card / e-PIN (Token) purchased via Interswitch or WAEC portal.</li>
+          <li>Exam Year and Type (School / Private GCE).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- VIEW 2: MY SAVED TRACKERS -->
+    <section id="view-trackers" class="view-section">
+      <div class="card">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Saved Result Trackers
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Your pinned examinations for quick countdown monitoring.</p>
+        <ul id="saved-history-list" class="history-list">
+          <!-- Populated by JS -->
+        </ul>
+        <div id="no-saved-msg" style="text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.9rem;">
+          No saved trackers yet. Use the Estimator to save an exam date!
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: PREP CHECKLIST -->
+    <section id="view-checklist" class="view-section">
+      <div class="card">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Result Release Readiness
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Check off items as you prepare for your result deployment:</p>
+        <ul class="checklist" id="prep-checklist">
+          <li class="checklist-item">
+            <input type="checkbox" id="chk-1" data-id="1">
+            <span>Keep WAEC Photo Card / Exam Slip safe</span>
+          </li>
+          <li class="checklist-item">
+            <input type="checkbox" id="chk-2" data-id="2">
+            <span>Ensure NIN and personal details match records</span>
+          </li>
+          <li class="checklist-item">
+            <input type="checkbox" id="chk-3" data-id="3">
+            <span>Budget funds for scratch card / e-PIN</span>
+          </li>
+          <li class="checklist-item">
+            <input type="checkbox" id="chk-4" data-id="4">
+            <span>Prepare email for university admission screening</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- Fixed Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button type="button" class="nav-btn active" data-target="view-estimator">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Estimator
+    </button>
+    <button type="button" class="nav-btn" data-target="view-trackers">
+      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      Trackers
+    </button>
+    <button type="button" class="nav-btn" data-target="view-checklist">
+      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Checklist
+    </button>
+  </nav>
+
+  <script>
+    // Live clock and date calculation in JS
+    function updateLiveTime() {
+      const timeEl = document.getElementById('live-time-display');
+      if (!timeEl) return;
+      const now = new Date();
+      const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      timeEl.textContent = now.toLocaleDateString('en-NG', options) + ' (WAT)';
+    }
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
+
+    // Navigation switching logic
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const sections = document.querySelectorAll('.view-section');
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        sections.forEach(sec => {
+          if (sec.id === targetId) {
+            sec.classList.add('active');
+          } else {
+            sec.classList.remove('active');
+          }
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Estimator Logic
+    const btnEstimate = document.getElementById('btn-estimate');
+    const resultBox = document.getElementById('result-box');
+    const resultDateTitle = document.getElementById('result-date-title');
+    const resultDateDesc = document.getElementById('result-date-desc');
+    const btnSaveTarget = document.getElementById('btn-save-target');
+
+    let currentEstimation = null;
+    let countdownInterval = null;
+
+    function calculateEstimate() {
+      const examTypeEl = document.getElementById('exam-type');
+      const examYearEl = document.getElementById('exam-year');
+      if (!examTypeEl || !examYearEl) return;
+
+      const examType = examTypeEl.value;
+      const examYear = parseInt(examYearEl.value, 10);
+
+      let targetDate;
+      let labelName;
+
+      if (examType === 'WASSCE-SCHOOL') {
+        targetDate = new Date(examYear, 7, 5, 8, 0, 0);
+        labelName = `WASSCE School (${examYear})`;
+      } else {
+        targetDate = new Date(examYear + 1, 1, 10, 8, 0, 0);
+        labelName = `WASSCE GCE (${examYear})`;
+      }
+
+      currentEstimation = {
+        id: examType + '-' + examYear,
+        name: labelName,
+        timestamp: targetDate.getTime()
+      };
+
+      if (resultBox) resultBox.classList.add('active');
+      if (resultDateTitle) resultDateTitle.textContent = `${labelName} Expected Release`;
+      if (resultDateDesc) resultDateDesc.textContent = `Estimated Window: ${targetDate.toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+      if (countdownInterval) clearInterval(countdownInterval);
+      startCountdown(targetDate.getTime());
+    }
+
+    if (btnEstimate) {
+      btnEstimate.addEventListener('click', calculateEstimate);
+    }
+
+    function startCountdown(targetTime) {
+      const daysEl = document.getElementById('cd-days');
+      const hoursEl = document.getElementById('cd-hours');
+      const minsEl = document.getElementById('cd-mins');
+      const secsEl = document.getElementById('cd-secs');
+
+      function updateTimer() {
+        const now = new Date().getTime();
+        const distance = targetTime - now;
+
+        if (distance < 0) {
+          if (daysEl) daysEl.textContent = '00';
+          if (hoursEl) hoursEl.textContent = '00';
+          if (minsEl) minsEl.textContent = '00';
+          if (secsEl) secsEl.textContent = '00';
+          if (resultDateDesc) resultDateDesc.textContent = 'Status: Results are expected any moment or already released!';
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minsEl) minsEl.textContent = String(minutes).padStart(2, '0');
+        if (secsEl) secsEl.textContent = String(seconds).padStart(2, '0');
+      }
+
+      updateTimer();
+      countdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    // LocalStorage Saved Trackers
+    const STORAGE_KEY = 'naijawaec_saved_trackers_v1';
+    
+    function getSavedTrackers() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveTracker() {
+      if (!currentEstimation) return;
+      let saved = getSavedTrackers();
+      if (!saved.some(item => item.id === currentEstimation.id)) {
+        saved.push(currentEstimation);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+          renderSavedTrackers();
+          alert('Tracker saved successfully! Check your "Trackers" tab.');
+        } catch (e) {
+          alert('Unable to save tracker to local storage.');
+        }
+      } else {
+        alert('This tracker is already saved in your list.');
+      }
+    }
+
+    if (btnSaveTarget) {
+      btnSaveTarget.addEventListener('click', saveTracker);
+    }
+
+    function renderSavedTrackers() {
+      const listEl = document.getElementById('saved-history-list');
+      const noMsgEl = document.getElementById('no-saved-msg');
+      if (!listEl || !noMsgEl) return;
+
+      const saved = getSavedTrackers();
+      listEl.innerHTML = '';
+
+      if (saved.length === 0) {
+        noMsgEl.style.display = 'block';
+        return;
+      }
+
+      noMsgEl.style.display = 'none';
+      saved.forEach(item => {
+        const targetDateStr = new Date(item.timestamp).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        li.innerHTML = `
+          <div>
+            <strong>${item.name}</strong><br>
+            <small style="color:var(--text-muted);">Target: ${targetDateStr}</small>
+          </div>
+          <button type="button" data-id="${item.id}">Remove</button>
+        `;
+        listEl.appendChild(li);
+      });
+
+      listEl.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idToRemove = e.target.getAttribute('data-id');
+          let currentList = getSavedTrackers();
+          currentList = currentList.filter(i => i.id !== idToRemove);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(currentList));
+            renderSavedTrackers();
+          } catch (err) {}
+        });
+      });
+    }
+
+    renderSavedTrackers();
+
+    // Checklist interactive persistence
+    const CHECKLIST_KEY = 'naijawaec_checklist_v1';
+    const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+
+    function loadChecklistState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {};
+        checkboxes.forEach(chk => {
+          const id = chk.getAttribute('data-id');
+          if (state[id]) {
+            chk.checked = true;
+            const parentLi = chk.closest('.checklist-item');
+            if (parentLi) parentLi.classList.add('checked');
+          }
+        });
+      } catch (e) {}
+    }
+
+    checkboxes.forEach(chk => {
+      chk.addEventListener('change', () => {
+        const itemLi = chk.closest('.checklist-item');
+        if (itemLi) {
+          if (chk.checked) {
+            itemLi.classList.add('checked');
+          } else {
+            itemLi.classList.remove('checked');
+          }
+        }
+
+        let state = {};
+        checkboxes.forEach(c => {
+          state[c.getAttribute('data-id')] = c.checked;
+        });
+        try {
+          localStorage.setItem(CHECKLIST_KEY, JSON.stringify(state));
+        } catch (err) {}
+      });
+    });
+
+    loadChecklistState();
+  </script>
+
+<form id="bossLeadForm" style="max-width:420px;margin:24px auto;padding:20px;border-radius:14px;background:rgba(0,0,0,.04)">
+<h3 style="margin-top:0">Interested? Leave your details</h3>
+<input id="blName" placeholder="Your name" required style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc">
+<input id="blContact" placeholder="Email or WhatsApp" required style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc">
+<textarea id="blMsg" placeholder="Tell us what you need" rows="3" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc"></textarea>
+<button type="submit" style="width:100%;padding:12px;border:0;border-radius:8px;background:#128c5a;color:#fff;font-weight:bold">Send</button>
+<div id="blStatus" style="margin-top:8px;font-size:14px"></div>
+</form>
+<script>
+document.getElementById("bossLeadForm").addEventListener("submit",function(e){
+e.preventDefault();
+fetch("https://script.google.com/macros/s/AKfycbzheFHvRSe7A_XaEqrNvp7FhAZaOID3C6j__JnzQF14EZEnOCzdqtm5EHmgKhgah2ep/exec",{method:"POST",body:JSON.stringify({lead:true,key:"6ac23e89e0294985bd1ae8565e82debe",source:location.href,name:document.getElementById("blName").value,contact:document.getElementById("blContact").value,message:document.getElementById("blMsg").value})});
+document.getElementById("blStatus").textContent="Thanks! We will reach out soon.";
+this.reset();
+});
+</script>
+</body>
+</html>
