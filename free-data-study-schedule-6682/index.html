@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>StudySync Nigeria — Smart Free-Data Study Scheduler</title>
+    <meta name="description" content="Optimize your study sessions around free-data night browsing windows. Track exams, schedules, and build your future.">
+    <link rel="icon" href="📚">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-stack);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--bg-secondary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-pro {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: calc(90px + var(--safe-bottom));
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards & UI Elements */
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background-color: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 4px;
+        }
+
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            box-shadow: none;
+            margin-top: 10px;
+        }
+
+        /* Task List */
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-card);
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .task-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .badge-night {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Ad Banner */
+        .ad-banner {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .ad-banner .ad-tag {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .ad-banner .ad-content {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .ad-banner .ad-sub {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-top: 4px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Fixed Bottom Navigation */
+        nav.bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 1000;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            flex: 1;
+            padding: 6px 0;
+            transition: color 0.2s;
+        }
+
+        .nav-item span {
+            font-size: 1.25rem;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .modal p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            float: right;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            📚 StudySync <span style="font-size:0.75rem; color:var(--text-muted);">Nigeria</span>
+        </div>
+        <div id="pro-badge-container">
+            <span class="badge-pro" id="proStatusBadge" style="cursor: pointer;">Free Tier</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: DASHBOARD -->
+        <section id="view-dashboard" class="view active">
+            <div class="card">
+                <h1>⏳ Exam Countdown</h2>
+                <div id="examCountdownDisplay" style="font-size: 1.1rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
+                    Loading your exam countdown...
+                </div>
+                <p id="examNameDisplay" style="font-size: 0.85rem; color: var(--text-muted);">Set your target exam in settings.</p>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="label">Today's Progress</div>
+                    <div class="number" id="statProgress">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Free-Data Window</div>
+                    <div class="number" id="statNightWindow" style="font-size: 1.1rem; align-self: center;">11 PM – 5 AM</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎯 Today's Scheduled Tasks</h2>
+                <div id="dashboardTaskList">
+                    <!-- Dynamic Tasks -->
+                </div>
+                <button class="btn btn-secondary" id="btnAddQuickTask" style="margin-top: 12px;">+ Add Custom Study Task</button>
+            </div>
+
+            <!-- Ad-tech Revenue Placement -->
+            <div class="ad-banner" id="edTechAdBanner">
+                <div class="ad-tag">Sponsored EdTech Partner</div>
+                <div class="ad-content">Pass JAMB & WAEC with 300+ Score — Get the 2027 Ultimate CBT Practice App!</div>
+                <div class="ad-sub" id="btnClickAd">Download Free Practice Kit &rarr;</div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: SCHEDULE -->
+        <section id="view-schedule" class="view">
+            <div class="card">
+                <h2>🗓 Daily Study Schedule</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Generated automatically to match Nigerian network free-data browsing windows (Airtel/MTN night plans).
+                </p>
+                <div class="form-group">
+                    <label for="studyFocusSelect">Primary Exam Focus</label>
+                    <select id="studyFocusSelect">
+                        <option value="JAMB">JAMB UTME (CBT Practice & Core Subjects)</option>
+                        <option value="WAEC">WAEC SSCE (Theory & Objectives)</option>
+                        <option value="NECO">NECO SSCE</option>
+                        <option value="POST-UTME">University Post-UTME</option>
+                    </select>
+                </div>
+                <button class="btn" id="btnRegenerateSchedule">Generate Smart Schedule</button>
+            </div>
+
+            <div class="card">
+                <h2>📋 Full Schedule Breakdown</h2>
+                <div id="fullScheduleList">
+                    <!-- Full list -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: AI TIPS & PREMIUM -->
+        <section id="view-tips" class="view">
+            <div class="card">
+                <h2>🤖 AI Study Tips & Assistant</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Get proven study hacks tailored for Nigerian students to retain formulas and beat exam tension.
+                </p>
+                <div id="aiTipBox" style="background-color: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+                    Click below to generate a fresh high-yield study strategy.
+                </div>
+                <button class="btn" id="btnGenerateTip">✨ Generate AI Study Tip</button>
+            </div>
+
+            <div class="card" style="border: 1px solid #f59e0b;">
+                <h2 style="color: #f59e0b;">⭐ Upgrade to Pro (₦1,200/mo)</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Unlock Google/Outlook Calendar sync, offline PDF study guide export, unlimited AI study tips, and zero ads.
+                </p>
+                <button class="btn" id="btnUpgradePro" style="background: linear-gradient(135deg, #f59e0b, #d97706);">Activate Pro Membership</button>
+            </div>
+        </section>
+
+        <!-- VIEW 4: SETTINGS -->
+        <section id="view-settings" class="view">
+            <div class="card">
+                <h2>⚙️ Exam & Notification Setup</h2>
+                <div class="form-group">
+                    <label for="inputExamName">Target Exam Title</label>
+                    <input type="text" id="inputExamName" value="JAMB UTME 2027">
+                </div>
+                <div class="form-group">
+                    <label for="inputExamDate">Exam Date & Time</label>
+                    <input type="datetime-local" id="inputExamDate">
+                </div>
+                <div class="form-group">
+                    <label for="inputNightStart">Free-Data Night Window Start</label>
+                    <input type="time" id="inputNightStart" value="23:00">
+                </div>
+                <div class="form-group">
+                    <label for="inputNightEnd">Free-Data Night Window End</label>
+                    <input type="time" id="inputNightEnd" value="05:00">
+                </div>
+                <button class="btn" id="btnSaveSettings">Save Preferences</button>
+            </div>
+
+            <div class="card">
+                <h2>🔔 Push Notifications</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Enable browser alerts so you never miss your free-data study window or exam milestones.
+                </p>
+                <button class="btn btn-secondary" id="btnEnableNotifications">Enable Push Reminders</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-bar">
+        <button class="nav-item active" data-target="view-dashboard">
+            <span>🏠</span>
+            Dashboard
+        </button>
+        <button class="nav-item" data-target="view-schedule">
+            <span>🗓</span>
+            Schedule
+        </button>
+        <button class="nav-item" data-target="view-tips">
+            <span>🤖</span>
+            AI Tips
+        </button>
+        <button class="nav-item" data-target="view-settings">
+            <span>⚙️</span>
+            Settings
+        </button>
+    </nav>
+
+    <!-- Modal for Pro / Custom Task / Ads -->
+    <div class="modal-overlay" id="appModal">
+        <div class="modal">
+            <button class="close-modal" id="btnCloseModal">&times;</button>
+            <h3 id="modalTitle">Notice</h3>
+            <p id="modalBody">Modal content goes here.</p>
+            <div id="modalActionContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Application State & Storage
+        const STORAGE_KEY = 'studysync_nigeria_state_v1';
+        
+        let appState = {
+            examName: 'JAMB UTME 2027',
+            examDate: '2027-04-19T08:00',
+            nightStart: '23:00',
+            nightEnd: '05:00',
+            studyFocus: 'JAMB',
+            isPro: false,
+            tasks: [
+                { id: 1, title: 'Read Physics: Mechanics & Motion Formulas', time: '11:00 PM - 01:00 AM', night: true, completed: false },
+                { id: 2, title: 'Chemistry Past Questions (2022-2025)', time: '01:00 AM - 03:00 AM', night: true, completed: false },
+                { id: 3, title: 'English Language Comprehension Drill', time: '03:00 AM - 05:00 AM', night: true, completed: false },
+                { id: 4, title: 'General Mathematics Revision', time: '04:00 PM - 06:00 PM', night: false, completed: false }
+            ],
+            aiTips: [
+                "Always tackle your hardest subject during the 11 PM - 2 AM free-data window when your brain is sharpest and notifications are quiet.",
+                "For JAMB CBT, time management is key. Spend a maximum of 45 seconds per question during practice tests.",
+                "Use mnemonic devices to remember complex biology classification orders (Kingdom, Phylum, Class...).",
+                "Review your wrong answers immediately after every past question practice session. That is where true learning happens."
+            ]
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    appState = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Failed to load storage', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error('Failed to save storage', e);
+            }
+        }
+
+        // DOM Elements
+        const views = document.querySelectorAll('.view');
+        const navItems = document.querySelectorAll('.nav-item');
+        const examCountdownDisplay = document.getElementById('examCountdownDisplay');
+        const examNameDisplay = document.getElementById('examNameDisplay');
+        const statProgress = document.getElementById('statProgress');
+        const statNightWindow = document.getElementById('statNightWindow');
+        const dashboardTaskList = document.getElementById('dashboardTaskList');
+        const fullScheduleList = document.getElementById('fullScheduleList');
+        const btnAddQuickTask = document.getElementById('btnAddQuickTask');
+        const btnRegenerateSchedule = document.getElementById('btnRegenerateSchedule');
+        const studyFocusSelect = document.getElementById('studyFocusSelect');
+        const aiTipBox = document.getElementById('aiTipBox');
+        const btnGenerateTip = document.getElementById('btnGenerateTip');
+        const btnUpgradePro = document.getElementById('btnUpgradePro');
+        const proStatusBadge = document.getElementById('proStatusBadge');
+        const inputExamName = document.getElementById('inputExamName');
+        const inputExamDate = document.getElementById('inputExamDate');
+        const inputNightStart = document.getElementById('inputNightStart');
+        const inputNightEnd = document.getElementById('inputNightEnd');
+        const btnSaveSettings = document.getElementById('btnSaveSettings');
+        const btnEnableNotifications = document.getElementById('btnEnableNotifications');
+        const edTechAdBanner = document.getElementById('edTechAdBanner');
+        const btnClickAd = document.getElementById('btnClickAd');
+
+        // Modal Elements
+        const appModal = document.getElementById('appModal');
+        const closeModal = document.getElementById('btnCloseModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalActionContainer = document.getElementById('modalActionContainer');
+
+        function showModal(title, bodyHtml, actionHtml = '') {
+            if (modalTitle) modalTitle.textContent = title;
+            if (modalBody) modalBody.innerHTML = bodyHtml;
+            if (modalActionContainer) modalActionContainer.innerHTML = actionHtml;
+            if (appModal) appModal.classList.add('open');
+        }
+
+        function hideModal() {
+            if (appModal) appModal.classList.remove('open');
+        }
+
+        if (closeModal) {
+            closeModal.addEventListener('click', hideModal);
+        }
+        if (appModal) {
+            appModal.addEventListener('click', (e) => {
+                if (e.target === appModal) hideModal();
+            });
+        }
+
+        // Navigation Switching
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetViewId = item.getAttribute('data-target');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                views.forEach(view => {
+                    view.classList.remove('active');
+                    if (view.id === targetViewId) {
+                        view.classList.add('active');
+                    }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Countdown & Live Clock Logic
+        function updateCountdown() {
+            if (!examCountdownDisplay || !examNameDisplay) return;
+
+            const examTime = new Date(appState.examDate).getTime();
+            const now = new Date().getTime();
+            const diff = examTime - now;
+
+            if (isNaN(examTime)) {
+                examCountdownDisplay.textContent = "Invalid exam date set in settings.";
+                return;
+            }
+
+            if (diff <= 0) {
+                examCountdownDisplay.textContent = "🎉 Exam Day is Here! Give it your best!";
+                examNameDisplay.textContent = appState.examName;
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            examCountdownDisplay.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
+            examNameDisplay.textContent = `Target: ${appState.examName}`;
+        }
+
+        setInterval(updateCountdown, 1000);
+
+        // Render Tasks & Progress
+        function renderTasks() {
+            if (!dashboardTaskList || !fullScheduleList) return;
+
+            let htmlDashboard = '';
+            let htmlFull = '';
+
+            if (appState.tasks.length === 0) {
+                htmlDashboard = '<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">No study tasks scheduled yet.</p>';
+                htmlFull = htmlDashboard;
+            } else {
+                appState.tasks.forEach((task, index) => {
+                    const taskCardHtml = `
+                        <div class="task-item">
+                            <div class="task-info">
+                                <input type="checkbox" class="task-checkbox" data-id="${task.id}" ${task.completed ? 'checked' : ''}>
+                                <div>
+                                    <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
+                                    <div class="task-meta">
+                                        ${task.time} ${task.night ? '<span class="badge-night">Night Free Data</span>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    if (index < 4) {
+                        htmlDashboard += taskCardHtml;
+                    }
+                    htmlFull += taskCardHtml;
+                });
+            }
+
+            dashboardTaskList.innerHTML = htmlDashboard;
+            fullScheduleList.innerHTML = htmlFull;
+
+            // Bind checkbox events
+            document.querySelectorAll('.task-checkbox').forEach(chk => {
+                chk.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    const task = appState.tasks.find(t => t.id === id);
+                    if (task) {
+                        task.completed = e.target.checked;
+                        saveState();
+                        renderTasks();
+                        updateProgress();
+                    }
+                });
+            });
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            if (!statProgress) return;
+            if (appState.tasks.length === 0) {
+                statProgress.textContent = '0%';
+                return;
+            }
+            const completedCount = appState.tasks.filter(t => t.completed).length;
+            const pct = Math.round((completedCount / appState.tasks.length) * 100);
+            statProgress.textContent = `${pct}%`;
+        }
+
+        // Night Window & Settings UI Sync
+        function syncSettingsUI() {
+            if (inputExamName) inputExamName.value = appState.examName;
+            if (inputExamDate) inputExamDate.value = appState.examDate;
+            if (inputNightStart) inputNightStart.value = appState.nightStart;
+            if (inputNightEnd) inputNightEnd.value = appState.nightEnd;
+            if (studyFocusSelect) studyFocusSelect.value = appState.studyFocus;
+            if (statNightWindow) statNightWindow.textContent = `${appState.nightStart} – ${appState.nightEnd}`;
+            
+            if (proStatusBadge) {
+                proStatusBadge.textContent = appState.isPro ? '⭐ Pro Active' : 'Free Tier';
+                proStatusBadge.style.background = appState.isPro ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)';
+            }
+
+            if (appState.isPro && edTechAdBanner) {
+                edTechAdBanner.style.display = 'none'; // Ad-free for Pro
+            }
+        }
+
+        // Save Settings Listener
+        if (btnSaveSettings) {
+            btnSaveSettings.addEventListener('click', () => {
+                if (inputExamName && inputExamName.value.trim()) appState.examName = inputExamName.value.trim();
+                if (inputExamDate && inputExamDate.value) appState.examDate = inputExamDate.value;
+                if (inputNightStart && inputNightStart.value) appState.nightStart = inputNightStart.value;
+                if (inputNightEnd && inputNightEnd.value) appState.nightEnd = inputNightEnd.value;
+                
+                saveState();
+                syncSettingsUI();
+                updateCountdown();
+                showModal('Settings Saved', 'Your exam target and night schedules have been updated successfully.');
+            });
+        }
+
+        // Regenerate Schedule based on focus
+        if (btnRegenerateSchedule) {
+            btnRegenerateSchedule.addEventListener('click', () => {
+                if (studyFocusSelect) appState.studyFocus = studyFocusSelect.value;
+                
+                const focus = appState.studyFocus;
+                appState.tasks = [
+                    { id: Date.now() + 1, title: `${focus} Core Syllabus Masterclass`, time: `${appState.nightStart} - 01:30 AM`, night: true, completed: false },
+                    { id: Date.now() + 2, title: `Timed Past Questions Drill (2020-2026)`, time: `01:30 AM - 03:30 AM`, night: true, completed: false },
+                    { id: Date.now() + 3, title: `Weak Area Review & Formula Memorization`, time: `03:30 AM - ${appState.nightEnd}`, night: true, completed: false },
+                    { id: Date.now() + 4, title: `Evening Mock CBT Practice`, time: `04:00 PM - 06:00 PM`, night: false, completed: false }
+                ];
+
+                saveState();
+                renderTasks();
+                showModal('Schedule Updated', `New smart study schedule generated for ${focus}! Check your Dashboard.`);
+            });
+        }
+
+        // Add Quick Task Modal
+        if (btnAddQuickTask) {
+            btnAddQuickTask.addEventListener('click', () => {
+                const bodyHtml = `
+                    <div class="form-group">
+                        <label>Task Title</label>
+                        <input type="text" id="quickTaskTitle" placeholder="e.g., Read Biology Chapter 3">
+                    </div>
+                    <div class="form-group">
+                        <label>Time Slot</label>
+                        <input type="text" id="quickTaskTime" placeholder="e.g., 11:00 PM - 12:30 AM">
+                    </div>
+                    <button class="btn" id="btnConfirmAddTask">Add Task</button>
+                `;
+                showModal('Add Study Task', bodyHtml);
+
+                const btnConfirmAddTask = document.getElementById('btnConfirmAddTask');
+                if (btnConfirmAddTask) {
+                    btnConfirmAddTask.addEventListener('click', () => {
+                        const titleInput = document.getElementById('quickTaskTitle');
+                        const timeInput = document.getElementById('quickTaskTime');
+                        if (titleInput && titleInput.value.trim()) {
+                            appState.tasks.push({
+                                id: Date.now(),
+                                title: titleInput.value.trim(),
+                                time: timeInput && timeInput.value.trim() ? timeInput.value.trim() : 'Flexible',
+                                night: true,
+                                completed: false
+                            });
+                            saveState();
+                            renderTasks();
+                            hideModal();
+                        }
+                    });
+                }
+            });
+        }
+
+        // AI Study Tips Generator
+        if (btnGenerateTip) {
+            btnGenerateTip.addEventListener('click', () => {
+                const tips = appState.aiTips;
+                const randomTip = tips[Math.floor(Math.random() * tips.length)];
+                if (aiTipBox) {
+                    aiTipBox.innerHTML = `💡 <strong>AI Strategy:</strong> ${randomTip}`;
+                }
+            });
+        }
+
+        // Upgrade to Pro Modal / Action
+        if (btnUpgradePro || proStatusBadge) {
+            const triggerProModal = () => {
+                if (appState.isPro) {
+                    showModal('Pro Member', 'You are already enjoying Pro status with calendar sync, offline PDF exports, and zero ads!');
+                    return;
+                }
+                const bodyHtml = `
+                    <p>Upgrade to StudySync Pro for just <strong>₦1,200/month</strong> and unlock:</p>
+                    <ul style="font-size:0.9rem; color:var(--text-muted); margin-left:20px; margin-bottom:16px; line-height:1.6;">
+                        <li>One-click Google & Outlook Calendar Sync</li>
+                        <li>Downloadable Offline PDF Study Guides</li>
+                        <li>Unlimited AI Study Prompt Assistant</li>
+                        <li>100% Ad-Free Study Experience</li>
+                    </ul>
+                    <button class="btn" id="btnPaystackSimulate" style="background: linear-gradient(135deg, #10b981, #059669);">Pay ₦1,200 Securely via Paystack</button>
+                `;
+                showModal('StudySync Pro Subscription', bodyHtml);
+
+                const btnPaystackSimulate = document.getElementById('btnPaystackSimulate');
+                if (btnPaystackSimulate) {
+                    btnPaystackSimulate.addEventListener('click', () => {
+                        appState.isPro = true;
+                        saveState();
+                        syncSettingsUI();
+                        hideModal();
+                        showModal('Payment Successful!', '🎉 Welcome to StudySync Pro! All premium features have been unlocked instantly.');
+                    });
+                }
+            };
+
+            if (btnUpgradePro) btnUpgradePro.addEventListener('click', triggerProModal);
+            if (proStatusBadge) proStatusBadge.addEventListener('click', triggerProModal);
+        }
+
+        // Push Notification Simulation
+        if (btnEnableNotifications) {
+            btnEnableNotifications.addEventListener('click', () => {
+                if (!("Notification" in window)) {
+                    showModal('Not Supported', 'Your browser does not support desktop/mobile push notifications.');
+                    return;
+                }
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showModal('Notifications Enabled', 'Success! StudySync will now alert you when your free-data night browsing sessions begin.');
+                        new Notification("StudySync Nigeria", { body: "Notifications successfully enabled! Let's smash your exams." });
+                    } else {
+                        showModal('Permission Denied', 'Notifications were blocked. Please enable them in your browser settings.');
+                    }
+                });
+            });
+        }
+
+        // Ad Banner Click Handler
+        if (btnClickAd) {
+            btnClickAd.addEventListener('click', () => {
+                showModal('Sponsored Partner', `
+                    <p>You clicked our featured edtech sponsor offer for Nigerian students.</p>
+                    <p style="margin-top:10px; font-weight:600; color:var(--accent);">Get your 2027 CBT Practice Software and offline video lectures today at zero extra data cost.</p>
+                `, '<button class="btn" onclick="document.getElementById(\'appModal\').classList.remove(\'open\')">Close & Continue Studying</button>');
+            });
+        }
+
+        // Initialize App on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            syncSettingsUI();
+            renderTasks();
+            updateCountdown();
+            if (aiTipBox && appState.aiTips.length > 0) {
+                aiTipBox.innerHTML = `💡 <strong>AI Strategy:</strong> ${appState.aiTips[0]}`;
+            }
+        });
+    </script>
+</body>
+</html>
