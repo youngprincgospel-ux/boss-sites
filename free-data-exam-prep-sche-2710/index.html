@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🛒 Jumia‑Style Deals for Students</title>
+<meta name="description" content="Free‑Data Exam‑Prep Scheduler Web App. This should help: Students input their exam dates and free‑data windows; the app auto‑generates a daily study timeta">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🛒%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+    --primary:#ff5722;
+    --bg:#fafafa;
+    --text:#212121;
+    --contrast-bg:#212121;
+    --contrast-text:#fafafa;
+}
+@media (prefers-color-scheme: dark){
+    :root{
+        --bg:#212121;
+        --text:#fafafa;
+    }
+}
+html,body{
+    margin:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:var(--bg);
+    color:var(--text);
+    font-family:system-ui,Arial,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+header{
+    padding:1rem;
+    text-align:center;
+    background:var(--primary);
+    color:#fff;
+}
+header h1{
+    margin:0;
+    font-size:1.5rem;
+}
+#clock{
+    font-size:0.9rem;
+    margin-top:0.3rem;
+}
+main{
+    flex:1 0 auto;
+    padding:1rem;
+    padding-bottom:calc(60px + env(safe-area-inset-bottom));
+    display:grid;
+    gap:1rem;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+}
+.product{
+    background:#fff;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    display:flex;
+    flex-direction:column;
+}
+.product img{
+    width:100%;
+    height:auto;
+    aspect-ratio:4/3;
+    object-fit:cover;
+}
+.product .info{
+    padding:0.5rem;
+    flex:1;
+}
+.product .info h2{
+    margin:0;
+    font-size:1rem;
+    line-height:1.2;
+}
+.product .info p{
+    margin:0.3rem 0;
+    font-weight:bold;
+    color:var(--primary);
+}
+.product button{
+    margin:0.5rem;
+    padding:0.8rem;
+    font-size:1rem;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    min-height:44px;
+}
+.product button:focus{
+    outline:2px solid #fff;
+}
+footer{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    height:60px;
+    background:var(--primary);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 1rem;
+    box-sizing:border-box;
+    z-index:1000;
+}
+footer button{
+    background:transparent;
+    border:none;
+    color:#fff;
+    font-size:1rem;
+    cursor:pointer;
+    min-height:44px;
+}
+footer .cart-count{
+    font-weight:bold;
+}
+@media (prefers-color-scheme: dark){
+    .product{
+        background:#2c2c2c;
+    }
+    .product button{
+        background:#ff7043;
+    }
+}
+</style>
+</head>
+<body>
+<header>
+    <h1>Student Deals Hub</h1>
+    <div id="clock" aria-live="polite"></div>
+</header>
+<main id="product-list">
+    <!-- Products will be injected by JS -->
+</main>
+<footer>
+    <button id="toggle-theme" aria-label="Toggle dark mode">🌓</button>
+    <div>Cart: <span class="cart-count" id="cart-count">0</span></div>
+    <button id="clear-cart" aria-label="Clear cart">🗑️ Clear</button>
+</footer>
+<script>
+(function(){
+    const productList = document.getElementById('product-list');
+    const clockEl = document.getElementById('clock');
+    const cartCountEl = document.getElementById('cart-count');
+    const clearCartBtn = document.getElementById('clear-cart');
+    const toggleThemeBtn = document.getElementById('toggle-theme');
+
+    if(!productList||!clockEl||!cartCountEl||!clearCartBtn||!toggleThemeBtn){
+        console.error('Essential element missing');
+        return;
+    }
+
+    const products = [
+        {
+            id:'p1',
+            name:'Power Bank 20,000mAh',
+            price:7566,
+            img:'https://cdn.jsdelivr.net/gh/aksharjain/placeholder-images@master/400x300.png?text=Power+Bank',
+            alt:'Power Bank 20,000mAh'
+        },
+        {
+            id:'p2',
+            name:'Blender Pro',
+            price:12500,
+            img:'https://cdn.jsdelivr.net/gh/aksharjain/placeholder-images@master/400x300.png?text=Blender',
+            alt:'Blender Pro'
+        },
+        {
+            id:'p3',
+            name:'Standing Fan',
+            price:8200,
+            img:'https://cdn.jsdelivr.net/gh/aksharjain/placeholder-images@master/400x300.png?text=Fan',
+            alt:'Standing Fan'
+        }
+    ];
+
+    let cart = [];
+    try{
+        const stored = localStorage.getItem('cart');
+        if(stored) cart = JSON.parse(stored);
+    }catch(e){
+        console.warn('LocalStorage read error',e);
+    }
+
+    function saveCart(){
+        try{
+            localStorage.setItem('cart',JSON.stringify(cart));
+        }catch(e){
+            console.warn('LocalStorage write error',e);
+        }
+        updateCartDisplay();
+    }
+
+    function updateCartDisplay(){
+        cartCountEl.textContent = cart.length;
+    }
+
+    function addToCart(id){
+        const product = products.find(p=>p.id===id);
+        if(product){
+            cart.push(product);
+            saveCart();
+        }
+    }
+
+    function clearCart(){
+        cart = [];
+        saveCart();
+    }
+
+    function renderProducts(){
+        productList.innerHTML = '';
+        products.forEach(p=>{
+            const article = document.createElement('article');
+            article.className = 'product';
+            article.innerHTML = `
+                <img src="${p.img}" alt="${p.alt}">
+                <div class="info">
+                    <h2>${p.name}</h2>
+                    <p>₦${p.price.toLocaleString()}</p>
+                </div>
+                <button data-id="${p.id}" aria-label="Add ${p.name} to cart">Add to Cart</button>
+            `;
+            productList.appendChild(article);
+        });
+
+        productList.querySelectorAll('button[data-id]').forEach(btn=>{
+            btn.addEventListener('click',function(){
+                const id = this.getAttribute('data-id');
+                if(id) addToCart(id);
+            });
+        });
+    }
+
+    function updateClock(){
+        const now = new Date();
+        const options = {
+            weekday:'short',
+            year:'numeric',
+            month:'short',
+            day:'numeric',
+            hour:'numeric',
+            minute:'numeric',
+            second:'numeric'
+        };
+        clockEl.textContent = now.toLocaleString(undefined,options);
+    }
+    setInterval(updateClock,1000);
+    updateClock();
+
+    clearCartBtn.addEventListener('click',function(){
+        if(confirm('Clear all items from cart?')) clearCart();
+    });
+
+    function setTheme(dark){
+        if(dark){
+            document.documentElement.style.setProperty('--bg','#212121');
+            document.documentElement.style.setProperty('--text','#fafafa');
+        }else{
+            document.documentElement.style.setProperty('--bg','#fafafa');
+            document.documentElement.style.setProperty('--text','#212121');
+        }
+    }
+
+    function toggleTheme(){
+        const currentBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+        const isDark = currentBg === '#212121';
+        setTheme(!isDark);
+    }
+
+    toggleThemeBtn.addEventListener('click',toggleTheme);
+
+    renderProducts();
+    updateCartDisplay();
+})();
+</script>
+</body>
+</html>
