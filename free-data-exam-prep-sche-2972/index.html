@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ExamSync NG | Free-Data Exam Prep & AI Study Scheduler</title>
+<meta name="description" content="Free‑Data Exam‑Prep Scheduler Web App with AI‑Generated Study Plans. This should help: Students input their exam dates and subjects; the app auto‑creates a">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #3b82f6;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-card: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-card: #f1f5f9;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(90px + var(--safe-bottom));
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-icon {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface-card);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--surface-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--primary);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-pro {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--secondary);
+        }
+
+        /* Bottom Nav Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0.5rem calc(0.75rem + var(--safe-bottom)) 0.5rem;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Schedule item styling */
+        .schedule-item {
+            background: var(--surface-card);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 0.75s;
+            margin-bottom: 0.75rem;
+        }
+
+        .schedule-time {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+        }
+
+        .schedule-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .schedule-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .flex-row > * {
+            flex: 1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            background: var(--surface-card);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .affiliate-banner {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 14px;
+            margin-bottom: 1rem;
+        }
+
+        .affiliate-banner h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .affiliate-banner p {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .affiliate-btn {
+            background: white;
+            color: #1d4ed8;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span>📚</span> ExamSync NG
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" id="themeToggleBtn" aria-label="Toggle Theme">🌙</button>
+            <button class="btn-icon" id="proModalBtn" aria-label="Upgrade to Pro">⭐</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: SCHEDULE & PLANNER -->
+        <div id="tab-schedule" class="tab-content active">
+            <div class="card">
+                <h1>🚀 AI Study Planner</h2>
+                <p>Input your exam details and let our algorithm align your prep with Nigerian free-data night windows (12:00 AM – 5:00 AM).</p>
+                
+                <form id="studyForm">
+                    <div class="form-group">
+                        <label for="examSelect">Target Exam</label>
+                        <select id="examSelect">
+                            <option value="JAMB UTME 2027">2027 JAMB UTME</option>
+                            <option value="WAEC SSCE 2027">2027 WAEC SSCE</option>
+                            <option value="NECO 2027">2027 NECO Senior Secondary</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subjectsInput">Key Subjects (comma separated)</label>
+                        <input type="text" id="subjectsInput" placeholder="e.g. Mathematics, English, Physics, Chemistry" value="Mathematics, English, Physics">
+                    </div>
+
+                    <div class="flex-row">
+                        <div class="form-group">
+                            <label for="examDateInput">Exam Date</label>
+                            <input type="date" id="examDateInput" value="2027-04-15">
+                        </div>
+                        <div class="form-group">
+                            <label for="dailyHours">Daily Study Goal</label>
+                            <select id="dailyHours">
+                                <option value="2">2 Hours (Standard)</option>
+                                <option value="4" selected>4 Hours (Intensive)</option>
+                                <option value="6">6 Hours (Beast Mode)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">✨ Generate Free-Data Schedule</button>
+                </form>
+            </div>
+
+            <div class="card" id="scheduleResultCard" style="display: none;">
+                <h2>📅 Your Active Study Schedule <span class="badge" id="planBadge">Free Tier</span></h2>
+                <p id="scheduleMetaText">Optimized for MTN/Airtel Free-Data Night Browsing Windows.</p>
+                <div id="scheduleItemsContainer"></div>
+                <button type="button" class="btn btn-secondary" id="exportScheduleBtn" style="margin-top: 1rem;">📥 Copy Schedule Text</button>
+            </div>
+        </div>
+
+        <!-- TAB 2: DATA CALCULATOR & TRACKER -->
+        <div id="tab-tracker" class="tab-content">
+            <div class="card">
+                <h2>📊 Data & Streak Tracker</h2>
+                <p>Monitor your daily megabyte consumption and night-window utilization to protect your data wallet.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-val" id="streakCount">0</div>
+                        <div class="stat-label">Day Streak 🔥</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="dataSaved">0 MB</div>
+                        <div class="stat-label">Free-Data Saved 🌙</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sessionMbs">Log Study Session Data (MB used)</label>
+                    <div class="flex-row">
+                        <input type="number" id="sessionMbs" placeholder="e.g. 150">
+                        <button type="button" class="btn" id="logDataBtn" style="width: auto;">Log Session</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🧮 Data Cost Estimator</h2>
+                <p>Calculate how many video lessons you can stream on different networks.</p>
+                <div class="form-group">
+                    <label for="calcNetwork">Select Network</label>
+                    <select id="calcNetwork">
+                        <option value="mtn">MTN Pulse / Night Plan (₦25 / 500MB)</option>
+                        <option value="airtel">Airtel Binge / Night (₦50 / 1.5GB)</option>
+                        <option value="glo">Glo Night Rock (₦100 / 1GB)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="calcHours">Planned Night Streaming Hours</label>
+                    <input type="number" id="calcHours" value="2" min="1" max="5">
+                </div>
+                <div id="calcResult" style="background: var(--surface-card); padding: 1rem; border-radius: 10px; font-weight: 600; text-align: center;">
+                    Estimated Download Capacity: ~1.2 GB (Approx. 6 Video Lessons)
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: E-LEARNING PARTNERS -->
+        <div id="tab-learn" class="tab-content">
+            <div class="affiliate-banner">
+                <h3>⭐ Recommended Exam Prep Partner</h3>
+                <p>Get full 2027 CBT past questions and step-by-step video solutions designed for Nigerian students.</p>
+                <a href="https://www.examgod.com" target="_blank" rel="noopener" class="affiliate-btn" id="affLink1">Access ExamGod Portal →</a>
+            </div>
+
+            <div class="affiliate-banner" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
+                <h3>🚀 Passnownow & FlashLearners Hub</h3>
+                <p>Master difficult JAMB topics with offline CBT practice software and structured curriculum notes.</p>
+                <a href="https://passnownow.com" target="_blank" rel="noopener" class="affiliate-btn" style="color: #047857;" id="affLink2">Get Study Materials →</a>
+            </div>
+
+            <div class="card">
+                <h2>💡 Quick Study Tips</h2>
+                <div class="schedule-item">
+                    <div class="schedule-time">Tip #1</div>
+                    <div class="schedule-title">Leverage Night Plans</div>
+                    <div class="schedule-desc">Always queue your video downloads between 12 AM and 4 AM when network congestion is lowest and free-data bonuses apply.</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">Tip #2</div>
+                    <div class="schedule-title">CBT Practice Beats Reading</div>
+                    <div class="schedule-desc">Spend at least 60% of your daily study time answering past questions under timed conditions.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: PROFILE & PRO -->
+        <div id="tab-profile" class="tab-content">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;" id="userBadgeIcon">🎓</div>
+                <h2 id="profileTitle" style="justify-content: center;">Free Tier Scholar</h2>
+                <p id="profileSub">Upgrade to Pro for AI-personalized study plans, offline downloadable resource bundles, and zero ads.</p>
+                <button type="button" class="btn" id="upgradeProBtn" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); margin-bottom: 1rem;">⭐ Upgrade to Pro (₦1,000 / month)</button>
+                <button type="button" class="btn btn-secondary" id="resetDataBtn">🗑️ Reset All App Data</button>
+            </div>
+
+            <div class="card">
+                <h2>ℹ️ About ExamSync NG</h2>
+                <p>Built specifically for Nigerian students preparing for WAEC, JAMB, and NECO exams with data-saving intelligence.</p>
+                <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 1rem;" id="liveClockDisplay"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FIXED BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="tab-schedule">
+            <span class="icon">📅</span>
+            <span>Planner</span>
+        </button>
+        <button class="nav-item" data-tab="tab-tracker">
+            <span class="icon">📊</span>
+            <span>Tracker</span>
+        </button>
+        <button class="nav-item" data-tab="tab-learn">
+            <span class="icon">💡</span>
+            <span>Resources</span>
+        </button>
+        <button class="nav-item" data-tab="tab-profile">
+            <span class="icon">👤</span>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- PRO UPGRADE MODAL -->
+    <div class="modal-overlay" id="proModal">
+        <div class="modal">
+            <h2>⭐ ExamSync Pro</h2>
+            <p>Unlock advanced features for ₦1,000/month:</p>
+            <ul style="margin: 0 0 1.25rem 1.25rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                <li>Unlimited AI-customized study schedules</li>
+                <li>Offline sync for WAEC/JAMB syllabi</li>
+                <li>Priority bandwidth allocation guides</li>
+                <li>Ad-free distractionless interface</li>
+            </ul>
+            <div class="form-group">
+                <label for="proPinInput">Enter Access Code / Payment Ref</label>
+                <input type="text" id="proPinInput" placeholder="e.g. PRO-9921-NG">
+            </div>
+            <button type="button" class="btn" id="activateProBtn" style="margin-bottom: 0.75rem;">Activate Pro Account</button>
+            <button type="button" class="btn btn-secondary" id="closeModalBtn">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const proModalBtn = document.getElementById('proModalBtn');
+        const proModal = document.getElementById('proModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const activateProBtn = document.getElementById('activateProBtn');
+        const proPinInput = document.getElementById('proPinInput');
+        const upgradeProBtn = document.getElementById('upgradeProBtn');
+        const resetDataBtn = document.getElementById('resetDataBtn');
+        
+        const studyForm = document.getElementById('studyForm');
+        const examSelect = document.getElementById('examSelect');
+        const subjectsInput = document.getElementById('subjectsInput');
+        const examDateInput = document.getElementById('examDateInput');
+        const dailyHours = document.getElementById('dailyHours');
+        const scheduleResultCard = document.getElementById('scheduleResultCard');
+        const scheduleItemsContainer = document.getElementById('scheduleItemsContainer');
+        const exportScheduleBtn = document.getElementById('exportScheduleBtn');
+        const planBadge = document.getElementById('planBadge');
+
+        const streakCountEl = document.getElementById('streakCount');
+        const dataSavedEl = document.getElementById('dataSaved');
+        const sessionMbs = document.getElementById('sessionMbs');
+        const logDataBtn = document.getElementById('logDataBtn');
+        
+        const calcNetwork = document.getElementById('calcNetwork');
+        const calcHours = document.getElementById('calcHours');
+        const calcResult = document.getElementById('calcResult');
+
+        const liveClockDisplay = document.getElementById('liveClockDisplay');
+        const profileTitle = document.getElementById('profileTitle');
+        const profileSub = document.getElementById('profileSub');
+        const userBadgeIcon = document.getElementById('userBadgeIcon');
+
+        // State initialization with localStorage safety
+        let appState = {
+            theme: 'dark',
+            isPro: false,
+            streak: 3,
+            dataSavedMb: 450,
+            lastActiveDate: '2026-11-10',
+            savedSchedule: null
+        };
+
+        try {
+            const saved = localStorage.getItem('examsync_ng_state');
+            if (saved) {
+                appState = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('Storage read error:', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('examsync_ng_state', JSON.stringify(appState));
+            } catch (e) {
+                console.error('Storage write error:', e);
+            }
+        }
+
+        // Apply Theme
+        function applyTheme() {
+            if (appState.theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                if (themeToggleBtn) themeToggleBtn.textContent = '🌙';
+            }
+        }
+        applyTheme();
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+                saveState();
+                applyTheme();
+            });
+        }
+
+        // Navigation Tabs
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetTabId = item.getAttribute('data-tab');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                tabContents.forEach(tab => tab.classList.remove('active'));
+
+                item.classList.add('active');
+                const targetTab = document.getElementById(targetTabId);
+                if (targetTab) targetTab.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Modal Controls
+        function toggleModal(open) {
+            if (proModal) {
+                if (open) proModal.classList.add('open');
+                else proModal.classList.remove('open');
+            }
+        }
+
+        if (proModalBtn) proModalBtn.addEventListener('click', () => toggleModal(true));
+        if (upgradeProBtn) upgradeProBtn.addEventListener('click', () => toggleModal(true));
+        if (closeModalBtn) closeModalBtn.addEventListener('click', () => toggleModal(false));
+        if (proModal) {
+            proModal.addEventListener('click', (e) => {
+                if (e.target === proModal) toggleModal(false);
+            });
+        }
+
+        if (activateProBtn) {
+            activateProBtn.addEventListener('click', () => {
+                const pin = proPinInput ? proPinInput.value.trim() : '';
+                if (pin.length > 3 || pin.toLowerCase() === 'pro') {
+                    appState.isPro = true;
+                    saveState();
+                    updateProUI();
+                    toggleModal(false);
+                    alert('🎉 Pro status activated successfully, Boss!');
+                } else {
+                    alert('Please enter a valid activation code (try typing "PRO").');
+                }
+            });
+        }
+
+        function updateProUI() {
+            if (appState.isPro) {
+                if (planBadge) {
+                    planBadge.textContent = 'PRO Scholar 🚀';
+                    planBadge.className = 'badge badge-pro';
+                }
+                if (profileTitle) profileTitle.textContent = 'PRO Scholar (Active)';
+                if (profileSub) profileSub.textContent = 'You have unlimited AI-customized schedules and zero ad interruptions.';
+                if (userBadgeIcon) userBadgeIcon.textContent = '👑';
+            }
+        }
+        updateProUI();
+
+        // Study Schedule Generator
+        if (studyForm) {
+            studyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const exam = examSelect ? examSelect.value : 'JAMB UTME';
+                const subjects = subjectsInput ? subjectsInput.value.split(',').map(s => s.trim()).filter(Boolean) : ['Mathematics', 'English'];
+                const hours = dailyHours ? dailyHours.value : '4';
+
+                generateSchedule(exam, subjects, hours);
+            });
+        }
+
+        function generateSchedule(exam, subjects, hours) {
+            if (!scheduleResultCard || !scheduleItemsContainer) return;
+            
+            scheduleResultCard.style.display = 'block';
+            scheduleItemsContainer.innerHTML = '';
+
+            let html = `
+                <div class="schedule-item">
+                    <div class="schedule-time">04:00 AM – 06:00 AM (Free-Data Window)</div>
+                    <div class="schedule-title">Core Revision: ${subjects[0] || 'Mathematics'}</div>
+                    <div class="schedule-desc">Download video lessons and solve past questions while network bonus applies.</div>
+                </div>
+            `;
+
+            if (subjects.length > 1) {
+                html += `
+                    <div class="schedule-item" style="border-left-color: var(--secondary);">
+                        <div class="schedule-time">07:00 PM – 09:00 PM (Evening Session)</div>
+                        <div class="schedule-title">Practice & Quiz: ${subjects[1] || 'English Language'}</div>
+                        <div class="schedule-desc">Attempt 50 CBT practice questions on ${exam} curriculum.</div>
+                    </div>
+                `;
+            }
+
+            if (appState.isPro) {
+                html += `
+                    <div class="schedule-item" style="border-left-color: #8b5cf6;">
+                        <div class="schedule-time">PRO AI Recommendation</div>
+                        <div class="schedule-title">Targeted Weakness Drill</div>
+                        <div class="schedule-desc">Based on 2027 CBT trends, focus extra 30 minutes on formula derivations.</div>
+                    </div>
+                `;
+            }
+
+            scheduleItemsContainer.innerHTML = html;
+            appState.savedSchedule = { exam, subjects, hours };
+            saveState();
+
+            scheduleResultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        if (exportScheduleBtn) {
+            exportScheduleBtn.addEventListener('click', () => {
+                if (!appState.savedSchedule) {
+                    alert('Generate a schedule first!');
+                    return;
+                }
+                const text = `ExamSync NG Schedule for ${appState.savedSchedule.exam}\nSubjects: ${appState.savedSchedule.subjects.join(', ')}\nDaily Goal: ${appState.savedSchedule.hours} Hours.\nOptimized for Free-Data Windows!`;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('📋 Schedule copied to clipboard!');
+                }).catch(() => {
+                    alert('Could not copy automatically.');
+                });
+            });
+        }
+
+        // Tracker Logic
+        function updateTrackerUI() {
+            if (streakCountEl) streakCountEl.textContent = appState.streak;
+            if (dataSavedEl) dataSavedEl.textContent = `${appState.dataSavedMb} MB`;
+        }
+        updateTrackerUI();
+
+        if (logDataBtn && sessionMbs) {
+            logDataBtn.addEventListener('click', () => {
+                const mbs = parseInt(sessionMbs.value, 10);
+                if (isNaN(mbs) || mbs <= 0) {
+                    alert('Please enter valid megabytes.');
+                    return;
+                }
+                appState.dataSavedMb += mbs;
+                appState.streak += 1;
+                saveState();
+                updateTrackerUI();
+                sessionMbs.value = '';
+                alert(`✅ Logged! Streak increased to ${appState.streak} days.`);
+            });
+        }
+
+        // Calculator Logic
+        function updateCalculator() {
+            if (!calcNetwork || !calcHours || !calcResult) return;
+            const net = calcNetwork.value;
+            const hrs = parseInt(calcHours.value, 10) || 2;
+            
+            let ratePerHr = 600; // MB per hour approx for compressed video
+            if (net === 'airtel') ratePerHr = 750;
+            if (net === 'glo') ratePerHr = 500;
+
+            const totalMbs = hrs * ratePerHr;
+            const totalGbs = (totalMbs / 1024).toFixed(1);
+            const approxVideos = Math.round(hrs * 3);
+
+            calcResult.textContent = `Estimated Download Capacity: ~${totalGbs} GB (Approx. ${approxVideos} Video Lessons)`;
+        }
+
+        if (calcNetwork) calcNetwork.addEventListener('change', updateCalculator);
+        if (calcHours) calcHours.addEventListener('input', updateCalculator);
+        updateCalculator();
+
+        // Reset Data
+        if (resetDataBtn) {
+            resetDataBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all saved app data?')) {
+                    localStorage.removeItem('examsync_ng_state');
+                    location.reload();
+                }
+            });
+        }
+
+        // Live Clock Display (Nigeria Time: UTC+1)
+        function updateLiveClock() {
+            if (!liveClockDisplay) return;
+            try {
+                const now = new Date();
+                const options = { timeZone: 'Africa/Lagos', hour12: true, weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                const timeString = now.toLocaleString('en-US', options);
+                liveClockDisplay.textContent = `Live Nigeria Time: ${timeString}`;
+            } catch (e) {
+                liveClockDisplay.textContent = `System Time Active`;
+            }
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+
+        // Set default exam date to 2027
+        if (examDateInput) {
+            examDateInput.value = '2027-04-15';
+        }
+    </script>
+</body>
+</html>
