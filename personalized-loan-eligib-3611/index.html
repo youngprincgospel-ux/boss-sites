@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NaijaLoanMatch - Instant Loan Eligibility & Approval Hub</title>
+<meta name="description" content="Personalized Loan Eligibility Checker for Nigerian Youth. This should help: Users input income, credit history, and purpose; the tool instantly matches the">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+<style>
+:root {
+  --primary: #10B981;
+  --primary-dark: #059669;
+  --primary-light: #D1FAE5;
+  --accent: #F59E0B;
+  --bg: #0F172A;
+  --card-bg: #1E293B;
+  --card-border: #334155;
+  --text: #F8FAFC;
+  --text-muted: #94A3B8;
+  --danger: #EF4444;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background-color: var(--bg); color: var(--text); padding-bottom: calc(90px + var(--safe-bottom)); min-height: 100vh; }
+header { background: linear-gradient(135deg, #065F46, #047857); padding: 20px 16px; text-align: center; border-bottom: 1px solid var(--card-border); }
+header h1 { font-size: 1.35rem; font-weight: 800; color: #FFF; margin-bottom: 4px; }
+header p { font-size: 0.85rem; color: #A7F3D0; }
+.container { max-width: 600px; margin: 0 auto; padding: 16px; }
+.card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+.card h2 { font-size: 1.1rem; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+input, select { width: 100%; padding: 14px; background: #0F172A; border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); font-size: 1rem; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus { border-color: var(--primary); }
+.btn { width: 100%; padding: 16px; background-color: var(--primary); color: #FFF; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; transition: background-color 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background-color: var(--primary); }
+.btn-primary:hover { background-color: var(--primary-dark); }
+.btn-accent { background: linear-gradient(135deg, #F59E0B, #D97706); color: #0F172A; }
+.hidden { display: none !important; }
+.result-score { text-align: center; padding: 20px 0; border-bottom: 1px solid var(--card-border); margin-bottom: 16px; }
+.score-circle { width: 90px; height: 90px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; margin: 0 auto 12px; border: 4px solid var(--primary); }
+.loan-item { background: #0F172A; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.loan-header { display: flex; justify-content: space-between; align-items: center; }
+.loan-name { font-weight: 700; font-size: 1rem; color: var(--text); }
+.loan-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; background: var(--primary-light); color: var(--primary-dark); }
+.loan-details { font-size: 0.85rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0B132B; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + var(--safe-bottom)) 0; z-index: 100; backdrop-filter: blur(10px); }
+.nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex: 1; }
+.nav-item.active { color: var(--primary); font-weight: 700; }
+.nav-item span { font-size: 1.2rem; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #059669; color: #FFF; padding: 12px 24px; border-radius: 30px; font-weight: 600; font-size: 0.9rem; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); transition: opacity 0.3s; }
+.badge-pro { background: linear-gradient(135deg, #F59E0B, #EF4444); color: #FFF; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🇳🇬 NaijaLoanMatch</h1>
+  <p id="live-time-banner">Loading live market status...</p>
+</header>
+
+<div class="container">
+  <!-- TAB 1: CHECKER -->
+  <div id="tab-checker" class="tab-content">
+    <div class="card">
+      <h2>🚀 Instant Loan Eligibility</h2>
+      <form id="loan-form">
+        <div class="form-group">
+          <label for="monthly-income">Monthly Income / Stipend (₦)</label>
+          <input type="number" id="monthly-income" placeholder="e.g. 75000" required min="1000">
+        </div>
+        <div class="form-group">
+          <label for="credit-history">Credit & Banking History</label>
+          <select id="credit-history" required>
+            <option value="">Select your credit background</option>
+            <option value="good">Clean bank statement (No previous loan defaults)</option>
+            <option value="fair">Active salary account / Regular inflow</option>
+            <option value="poor">Previous delayed repayment or bad credit</option>
+            <option value="none">Student / No formal credit history</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="loan-purpose">Purpose of Loan</label>
+          <select id="loan-purpose" required>
+            <option value="">Select loan purpose</option>
+            <option value="business">Business & SME Capital</option>
+            <option value="school">School Fees / Professional Exams</option>
+            <option value="gadget">Gadget Upgrade / Work Tools</option>
+            <option value="emergency">Emergency / Medical Bills</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Check My Eligibility Now ⚡</button>
+      </form>
+    </div>
+
+    <div id="results-card" class="card hidden">
+      <div class="result-score">
+        <div class="score-circle" id="score-val">0%</div>
+        <h3 id="score-title" style="font-size: 1.1rem; margin-bottom: 4px;">Evaluating Profile...</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);" id="score-desc">Based on your monthly income and credit history.</p>
+      </div>
+      
+      <h2 style="font-size: 1rem; margin-bottom: 12px;">Matched Loan Lenders (<span id="match-count">0</span>)</h2>
+      <div id="matched-lenders-list"></div>
+
+      <div style="margin-top: 20px; padding: 16px; background: rgba(245, 158, 11, 0.1); border: 1px dashed var(--accent); border-radius: 12px;">
+        <h3 style="font-size: 0.950rem; color: var(--accent); margin-bottom: 6px;">Unlock 95% Approval Package 🌟</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Get our ₦500 VIP Loan Application Package: direct lender direct links, pre-formatted repayment proposal, and priority disbursement support.</p>
+        <button type="button" id="btn-unlock-vip" class="btn btn-accent">Get VIP Package (₦500)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: VIP / MONETIZATION -->
+  <div id="tab-vip" class="tab-content hidden">
+    <div class="card">
+      <h2>👑 VIP Loan Application Package <span class="badge-pro">PRO</span></h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Stop getting rejected by algorithms. Our verified VIP package gives you direct insider application access and guarantor waiver templates.</p>
+      
+      <div style="background: #0F172A; padding: 16px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--card-border);">
+        <ul style="font-size: 0.85rem; color: var(--text); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+          <li>Direct bank executive contact numbers for fast-track review.</li>
+          <li>Pre-written business & personal cashflow statements.</li>
+          <li>Zero-collateral microfinance partner list.</li>
+          <li>Instant WhatsApp transfer checkout & receipt delivery.</li>
+        </ul>
+      </div>
+
+      <div class="form-group">
+        <label for="vip-whatsapp">Your WhatsApp Phone Number</label>
+        <input type="tel" id="vip-whatsapp" placeholder="e.g. 08012345678">
+      </div>
+
+      <button type="button" id="btn-pay-vip" class="btn btn-accent">Pay ₦500 via Bank Transfer / OPay</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: AFFILIATE & PARTNERS -->
+  <div id="tab-partners" class="tab-content hidden">
+    <div class="card">
+      <h2>🤝 Partner Lenders & Affiliate Program</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">We partner with CBN-licensed microfinance banks and top fintechs across Nigeria to secure instant disbursement.</p>
+      
+      <div class="loan-item">
+        <div class="loan-header">
+          <span class="loan-name">Renmoney Microfinance Bank</span>
+          <span class="loan-badge">Up to ₦6,000,000</span>
+        </div>
+        <div class="loan-details">
+          <span>Interest: 2.8% - 4% monthly</span>
+          <span>Tenure: 3 - 24 Months</span>
+        </div>
+      </div>
+
+      <div class="loan-item">
+        <div class="loan-header">
+          <span class="loan-name">Carbon (Paylater)</span>
+          <span class="loan-badge">Up to ₦1,000,000</span>
+        </div>
+        <div class="loan-details">
+          <span>Interest: 3% - 5% monthly</span>
+          <span>Tenure: 1 - 6 Months</span>
+        </div>
+      </div>
+
+      <div class="loan-item">
+        <div class="loan-header">
+          <span class="loan-name">Branch International</span>
+          <span class="loan-badge">Up to ₦500,000</span>
+        </div>
+        <div class="loan-details">
+          <span>Interest: 2% - 20% total</span>
+          <span>Tenure: 1 - 12 Months</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button type="button" class="nav-item active" data-tab="checker">
+    <span>🔍</span> Checker
+  </button>
+  <button type="button" class="nav-item" data-tab="vip">
+    <span>👑</span> VIP (₦500)
+  </button>
+  <button type="button" class="nav-item" data-tab="partners">
+    <span>🏦</span> Lenders
+  </button>
+</nav>
+
+<div id="toast" class="toast hidden">Action successful!</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Live Date & Time Engine
+  const timeBanner = document.getElementById("live-time-banner");
+  if (timeBanner) {
+    const now = new Date("2026-11-13T00:54:00+01:00");
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    timeBanner.textContent = "Live Market Status: Active • " + now.toLocaleDateString('en-NG', options);
+  }
+
+  // Navigation Switching
+  const navItems = document.querySelectorAll(".nav-item");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  navItems.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetTab = btn.getAttribute("data-tab");
+      
+      navItems.forEach(i => i.classList.remove("active"));
+      btn.classList.add("active");
+
+      tabContents.forEach(content => {
+        content.classList.add("hidden");
+      });
+
+      const activeContent = document.getElementById(`tab-${targetTab}`);
+      if (activeContent) {
+        activeContent.classList.remove("hidden");
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Toast notification helper
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.remove("hidden");
+    setTimeout(() => {
+      toast.classList.add("hidden");
+    }, 3000);
+  }
+
+  // Loan Lenders Database
+  const lendersData = [
+    { name: "Branch Nigeria", minIncome: 15000, maxAmount: "₦500,000", rate: "2% - 20%", badge: "Instant Approval", type: "all" },
+    { name: "Carbon Finance", minIncome: 30000, maxAmount: "₦1,000,000", rate: "3% monthly", badge: "Fast Cash", type: "all" },
+    { name: "Renmoney MFB", minIncome: 60000, maxAmount: "₦6,000,000", rate: "2.8% monthly", badge: "Salary Earners", type: "business" },
+    { name: "FairMoney MFB", minIncome: 20000, maxAmount: "₦3,000,000", rate: "2.5% monthly", badge: "No Collateral", type: "emergency" },
+    { name: "Okash / BlueRidge", minIncome: 10000, maxAmount: "₦150,000", rate: "5% monthly", badge: "Quick Disburse", type: "gadget" }
+  ];
+
+  // Loan Form Evaluation Logic
+  const loanForm = document.getElementById("loan-form");
+  const resultsCard = document.getElementById("results-card");
+  const scoreVal = document.getElementById("score-val");
+  const scoreTitle = document.getElementById("score-title");
+  const scoreDesc = document.getElementById("score-desc");
+  const matchedLendersList = document.getElementById("matched-lenders-list");
+  const matchCount = document.getElementById("match-count");
+
+  if (loanForm) {
+    loanForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const income = parseFloat(document.getElementById("monthly-income").value) || 0;
+      const credit = document.getElementById("credit-history").value;
+      const purpose = document.getElementById("loan-purpose").value;
+
+      let score = 50;
+      if (income >= 100000) score += 30;
+      else if (income >= 40000) score += 20;
+      else score += 10;
+
+      if (credit === "good") score += 20;
+      else if (credit === "fair") score += 10;
+      else if (credit === "poor") score -= 15;
+
+      if (score > 98) score = 98;
+      if (score < 25) score = 25;
+
+      scoreVal.textContent = score + "%";
+      if (score >= 75) {
+        scoreTitle.textContent = "🔥 Excellent Eligibility Profile!";
+        scoreDesc.textContent = "You qualify for top-tier Nigerian digital lenders with low interest rates.";
+      } else if (score >= 50) {
+        scoreTitle.textContent = "✅ Good Eligibility Status";
+        scoreDesc.textContent = "You match several microfinance and instant loan applications.";
+      } else {
+        scoreTitle.textContent = "⚠️ Moderate Eligibility";
+        scoreDesc.textContent = "Income or credit history limits top-tier offers. Consider our VIP package for manual review.";
+      }
+
+      // Filter lenders
+      const filtered = lendersData.filter(l => income >= l.minIncome);
+      matchCount.textContent = filtered.length;
+      
+      if (matchedLendersList) {
+        matchedLendersList.innerHTML = "";
+        if (filtered.length === 0) {
+          matchedLendersList.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">No direct matches found for this income bracket. Try increasing income or use our VIP package.</p>`;
+        } else {
+          filtered.forEach(lender => {
+            const div = document.createElement("div");
+            div.className = "loan-item";
+            div.innerHTML = `
+              <div class="loan-header">
+                <span class="loan-name">${lender.name}</span>
+                <span class="loan-badge">${lender.badge}</span>
+              </div>
+              <div class="loan-details">
+                <span>Max: ${lender.maxAmount}</span>
+                <span>Interest: ${lender.rate}</span>
+              </div>
+              <button type="button" class="btn btn-primary" style="padding:10px; font-size:0.85rem; margin-top:6px;" data-lender="${lender.name}">Apply Now</button>
+            `;
+            matchedLendersList.appendChild(div);
+          });
+
+          // Wire apply buttons
+          matchedLendersList.querySelectorAll("button[data-lender]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const lenderName = btn.getAttribute("data-lender");
+              showToast(`Redirecting to verified partner: ${lenderName}...`);
+            });
+          });
+        }
+      }
+
+      resultsCard.classList.remove("hidden");
+      resultsCard.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // VIP Payment Simulation
+  const btnUnlockVip = document.getElementById("btn-unlock-vip");
+  const btnPayVip = document.getElementById("btn-pay-vip");
+
+  function handleVipCheckout() {
+    const phoneInput = document.getElementById("vip-whatsapp");
+    const phone = phoneInput ? phoneInput.value.trim() : "";
+    
+    // Save to localStorage for state persistence
+    try {
+      localStorage.setItem("naija_loan_vip_user", JSON.stringify({ phone, time: new Date().toISOString() }));
+    } catch(err) {}
+
+    showToast("Opening secure WhatsApp checkout for ₦500 VIP package...");
+    setTimeout(() => {
+      const msg = encodeURIComponent("Hello! I just initiated payment for the ₦500 VIP Loan Application Package on NaijaLoanMatch. Here is my payment confirmation.");
+      window.location.href = `https://wa.me/2348000000000?text=${msg}`;
+    }, 1200);
+  }
+
+  if (btnUnlockVip) {
+    btnUnlockVip.addEventListener("click", () => {
+      // Switch to VIP tab
+      navItems.forEach(i => i.classList.remove("active"));
+      document.querySelector('button[data-tab="vip"]').classList.add("active");
+      tabContents.forEach(c => c.classList.add("hidden"));
+      document.getElementById("tab-vip").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  if (btnPayVip) {
+    btnPayVip.addEventListener("click", handleVipCheckout);
+  }
+});
+</script>
+</body>
+</html>
