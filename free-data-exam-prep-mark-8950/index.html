@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ExamConnect NG | Free-Data Tutors & Micro-Sessions</title>
+<meta name="description" content="Free‑Data Exam Prep Marketplace Web App. This should help: Connects students with vetted freelance tutors who offer short, paid micro‑sessions (15‑30 min) ">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7ssCVkqoXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --primary: #f27a1a;
+            --primary-dark: #d56210;
+            --secondary: #232f3e;
+            --accent: #ff9900;
+            --bg: #f4f4f6;
+            --card-bg: #ffffff;
+            --text: #111111;
+            --text-muted: #555555;
+            --border: #dddddd;
+            --success: #007600;
+            --danger: #b12704;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #ff9900;
+            --primary-dark: #e88b00;
+            --secondary: #131a22;
+            --accent: #f27a1a;
+            --bg: #0f1111;
+            --card-bg: #1a1e23;
+            --text: #ffffff;
+            --text-muted: #aaaaaa;
+            --border: #333333;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: calc(80px + var(--safe-bottom));
+            line-height: 1.4;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--secondary);
+            color: #ffffff;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border-radius: 8px;
+            border: none;
+            background: #ffffff;
+            color: #111;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+            padding: 4px;
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -2px;
+            right: -6px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .sub-header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .live-ticker {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .banner {
+            background: linear-gradient(135deg, #232f3e, #37475a);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .banner h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .banner p {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            opacity: 0.9;
+        }
+
+        .banner-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .banner-btn:active {
+            transform: scale(0.98);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+
+        .filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .card-badge.sponsored {
+            background: #8e44ad;
+        }
+
+        .card-header-img {
+            height: 120px;
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            position: relative;
+        }
+
+        .card-body {
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tutor-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-icon {
+            color: #3498db;
+            font-size: 0.85rem;
+        }
+
+        .tutor-subject {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .session-info {
+            background: rgba(242, 122, 26, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 8px;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .session-info strong {
+            color: var(--primary);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .price {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        .book-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .book-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Fixed Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        /* Modal / Dialog */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 750;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: calc(75px + var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--secondary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .ad-banner {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .ad-banner h3 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .ad-banner p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .ad-btn {
+            background: white;
+            color: #11998e;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            color: var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <a href="#" class="logo" id="logoLink">
+                <i class="fa-solid fa-graduation-cap"></i> ExamConnect<span>NG</span>
+            </a>
+            <div class="search-container">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" class="search-bar" id="searchInput" placeholder="Search tutors, subjects, exams (WAEC, JAMB)...">
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle theme">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="sub-header">
+        <div class="live-ticker">
+            <div class="live-dot"></div>
+            <span id="liveWindowText">Free Data Window Active: MTN Night (11PM - 6AM)</span>
+        </div>
+        <span id="liveClock" style="font-weight:700;">12:00 AM</span>
+    </div>
+
+    <main class="container">
+        <!-- HOME VIEW -->
+        <section id="viewHome" class="view-section active">
+            <div class="banner">
+                <h1>Zero Data Cost Exam Prep</h1>
+                <p>Connect with vetted freelance student tutors for rapid 15-30 min micro-sessions timed right before free-data windows open!</p>
+                <button class="banner-btn" id="exploreBtn">Book First Session</button>
+            </div>
+
+            <!-- Ad-Tech Sponsor Banner -->
+            <div class="ad-banner">
+                <div>
+                    <h3>🚀 PassJAMB & WAEC AI Tutor</h3>
+                    <p>Get 24/7 offline practice questions with zero browsing data required. Sponsored by Passnownow.</p>
+                </div>
+                <button class="ad-btn" id="adSponsorBtn">Claim Free Trial</button>
+            </div>
+
+            <div class="section-title">
+                <span>Featured Tutors</span>
+                <span style="font-size: 0.85rem; color: var(--primary); cursor: pointer;" id="viewAllTutors">View All</span>
+            </div>
+
+            <div class="filters" id="subjectFilters">
+                <button class="filter-chip active" data-subject="All">All Subjects</button>
+                <button class="filter-chip" data-subject="Mathematics">Mathematics</button>
+                <button class="filter-chip" data-subject="Physics">Physics</button>
+                <button class="filter-chip" data-subject="Chemistry">Chemistry</button>
+                <button class="filter-chip" data-subject="Biology">Biology</button>
+                <button class="filter-chip" data-subject="English">English</button>
+            </div>
+
+            <div class="grid" id="tutorsGrid">
+                <!-- Tutors populated via JS -->
+            </div>
+        </section>
+
+        <!-- SESSIONS VIEW -->
+        <section id="viewBookings" class="view-section">
+            <div class="section-title">My Booked Micro-Sessions</div>
+            <div id="bookingsList">
+                <!-- Bookings populated via JS -->
+            </div>
+        </section>
+
+        <!-- TUTOR REGISTRATION / PREMIUM VIEW -->
+        <section id="viewTutor" class="view-section">
+            <div class="banner" style="background: linear-gradient(135deg, #8e44ad, #3498db);">
+                <h1>Earn as a Free-Data Tutor</h1>
+                <p>Teach eager Nigerian students for 15-30 mins. Keep 85% of earnings or upgrade to Top Listing for ₦2,000/mo!</p>
+                <button class="banner-btn" id="openRegisterModal">Register as Tutor</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Platform Commission</div>
+                    <div class="stat-value">15%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Tutors</div>
+                    <div class="stat-value" id="tutorCountStat">142</div>
+                </div>
+            </div>
+
+            <div class="section-title">Tutor Management & Promotion</div>
+            <div class="card" style="padding: 16px;">
+                <p style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-muted);">Boost your student bookings instantly by pinning your profile to the top of search results.</p>
+                <button class="btn-full" id="boostProfileBtn" style="background: #8e44ad; margin-top: 0;">Upgrade to Top Listing (₦2,000/mo)</button>
+            </div>
+        </section>
+
+        <!-- WALLET / REVENUE VIEW -->
+        <section id="viewWallet" class="view-section">
+            <div class="section-title">Fleet & Earnings Dashboard</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="totalRevenueDisplay">₦0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Completed Sessions</div>
+                    <div class="stat-value" id="completedSessionsCount">0</div>
+                </div>
+            </div>
+
+            <div class="section-title">Recent Transactions</div>
+            <div id="transactionsList">
+                <!-- Transactions populated via JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="viewHome">
+            <i class="fa-solid fa-house"></i>
+            <span>Explore</span>
+        </button>
+        <button class="nav-item" data-target="viewBookings">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>My Sessions</span>
+            <span class="badge-count" id="bookingBadge" style="display: none;">0</span>
+        </button>
+        <button class="nav-item" data-target="viewTutor">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>Tutors</span>
+        </button>
+        <button class="nav-item" data-target="viewWallet">
+            <i class="fa-solid fa-wallet"></i>
+            <span>Earnings</span>
+        </button>
+    </nav>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="bookingModalTitle">Book Micro-Session</div>
+                <button class="close-btn" id="closeBookingModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="bookingForm">
+                <input type="hidden" id="modalTutorId">
+                <div class="form-group">
+                    <label class="form-label">Student Name</label>
+                    <input type="text" class="form-input" id="studentName" required placeholder="e.g. Tunde Johnson">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Exam Focus</label>
+                    <select class="form-select" id="examFocus">
+                        <option value="WAEC">WAEC (West African Examination)</option>
+                        <option value="JAMB">JAMB UTME</option>
+                        <option value="NECO">NECO</option>
+                        <option value="Post-UTME">Post-UTME</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select Free-Data Window Time</label>
+                    <select class="form-select" id="sessionTimeWindow">
+                        <option value="11:00 PM - 11:30 PM (MTN Night)">11:00 PM - 11:30 PM (MTN Night)</option>
+                        <option value="1:00 AM - 1:30 AM (Airtel Night)">1:00 AM - 1:30 AM (Airtel Night)</option>
+                        <option value="4:00 AM - 4:30 AM (Glo Free Browse)">4:00 AM - 4:30 AM (Glo Free Browse)</option>
+                    </select>
+                </div>
+                <div style="background: rgba(0,118,0,0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 14px; color: var(--success);">
+                    <i class="fa-solid fa-shield-check"></i> Session timed precisely before data window opens. 15% platform commission included.
+                </div>
+                <button type="submit" class="btn-full" id="confirmBookingBtn">Confirm & Pay ₦500</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Tutor Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Register as Freelance Tutor</div>
+                <button class="close-btn" id="closeRegisterModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="regName" required placeholder="e.g. Dr. Chinedu Okafor">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expert Subject</label>
+                    <select class="form-select" id="regSubject">
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="English">English</option>
+                        <option value="Economics">Economics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Session Fee (₦)</label>
+                    <input type="number" class="form-input" id="regFee" value="500" min="200" max="2000" required>
+                </div>
+                <button type="submit" class="btn-full">Submit Tutor Application</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Action successful!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State Management & LocalStorage
+            let state = {
+                theme: localStorage.getItem('examconnect_theme') || 'light',
+                bookings: JSON.parse(localStorage.getItem('examconnect_bookings') || '[]'),
+                revenue: parseInt(localStorage.getItem('examconnect_revenue') || '0', 10),
+                tutors: JSON.parse(localStorage.getItem('examconnect_tutors') || JSON.stringify([
+                    { id: 1, name: 'Engr. Emeka Obi', subject: 'Mathematics', rating: 4.9, sessions: 124, fee: 500, timeWindow: '11:00 PM (MTN)', sponsored: true, verified: true },
+                    { id: 2, name: 'Miss Amina Bello', subject: 'Physics', rating: 4.8, sessions: 98, fee: 500, timeWindow: '1:00 AM (Airtel)', sponsored: true, verified: true },
+                    { id: 3, name: 'Dr. Tunde Bakare', subject: 'Chemistry', rating: 4.95, sessions: 156, fee: 600, timeWindow: '4:00 AM (Glo)', sponsored: false, verified: true },
+                    { id: 4, name: 'Blessing Okoro', subject: 'Biology', rating: 4.7, sessions: 76, fee: 400, timeWindow: '11:30 PM (MTN)', sponsored: false, verified: true },
+                    { id: 5, name: 'Samuel Adebayo', subject: 'English', rating: 4.85, sessions: 110, fee: 500, timeWindow: '2:00 AM (MTN)', sponsored: false, verified: true }
+                ])),
+                transactions: JSON.parse(localStorage.getItem('examconnect_transactions') || '[]')
+            };
+
+            // Apply Theme
+            document.documentElement.setAttribute('data-theme', state.theme);
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.className = state.theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+
+            // Live Clock & Dynamic Time Ticker
+            function updateClock() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const seconds = now.getSeconds();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const formattedHours = hours % 12 || 12;
+                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+                
+                const clockEl = document.getElementById('liveClock');
+                if (clockEl) {
+                    clockEl.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
+                }
+
+                const windowText = document.getElementById('liveWindowText');
+                if (windowText) {
+                    if (hours >= 23 || hours < 6) {
+                        windowText.textContent = "🔥 Active Free-Data Window: Night Browsing Live!";
+                    } else if (hours >= 12 && hours < 16) {
+                        windowText.textContent = "⚡ Afternoon Study Rush: Pre-book for 11PM Window";
+                    } else {
+                        windowText.textContent = "💡 Free-Data Window: MTN Night / Airtel Open Soon";
+                    }
+                }
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // DOM Elements Query & Null Checks
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const searchInput = document.getElementById('searchInput');
+            const exploreBtn = document.getElementById('exploreBtn');
+            const viewAllTutors = document.getElementById('viewAllTutors');
+            const adSponsorBtn = document.getElementById('adSponsorBtn');
+            const subjectFilters = document.getElementById('subjectFilters');
+            const tutorsGrid = document.getElementById('tutorsGrid');
+            const bookingsList = document.getElementById('bookingsList');
+            const transactionsList = document.getElementById('transactionsList');
+            const bookingModal = document.getElementById('bookingModal');
+            const closeBookingModal = document.getElementById('closeBookingModal');
+            const bookingForm = document.getElementById('bookingForm');
+            const registerModal = document.getElementById('registerModal');
+            const openRegisterModal = document.getElementById('openRegisterModal');
+            const closeRegisterModal = document.getElementById('closeRegisterModal');
+            const registerForm = document.getElementById('registerForm');
+            const boostProfileBtn = document.getElementById('boostProfileBtn');
+            const bookingBadge = document.getElementById('bookingBadge');
+            const totalRevenueDisplay = document.getElementById('totalRevenueDisplay');
+            const completedSessionsCount = document.getElementById('completedSessionsCount');
+            const tutorCountStat = document.getElementById('tutorCountStat');
+            const toast = document.getElementById('toast');
+
+            // Navigation Handling
+            const navItems = document.querySelectorAll('.nav-item');
+            const viewSections = document.querySelectorAll('.view-section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetViewId = item.getAttribute('data-target');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+
+                    viewSections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetViewId) {
+                            section.classList.add('active');
+                        }
+                    });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            // Theme Toggle
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    state.theme = state.theme === 'light' ? 'dark' : 'light';
+                    localStorage.setItem('examconnect_theme', state.theme);
+                    document.documentElement.setAttribute('data-theme', state.theme);
+                    themeIcon.className = state.theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    showToast(`Switched to ${state.theme} mode`);
+                });
+            }
+
+            // Render Tutors Grid
+            function renderTutors(filterSubject = 'All', searchQuery = '') {
+                if (!tutorsGrid) return;
+                tutorsGrid.innerHTML = '';
+
+                // Sort: sponsored first, then rating
+                let sortedTutors = [...state.tutors].sort((a, b) => (b.sponsored ? 1 : 0) - (a.sponsored ? 1 : 0));
+
+                let filtered = sortedTutors.filter(tutor => {
+                    const matchesSubject = filterSubject === 'All' || tutor.subject.toLowerCase() === filterSubject.toLowerCase();
+                    const matchesSearch = tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                          tutor.subject.toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesSubject && matchesSearch;
+                });
+
+                if (filtered.length === 0) {
+                    tutorsGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <i class="fa-solid fa-search"></i>
+                            <p>No tutors found matching your criteria.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                filtered.forEach(tutor => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        ${tutor.sponsored ? '<div class="card-badge sponsored">Top Listing</div>' : '<div class="card-badge">Vetted</div>'}
+                        <div class="card-header-img">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="tutor-name">
+                                ${tutor.name} ${tutor.verified ? '<i class="fa-solid fa-circle-check verified-icon" title="Verified Tutor"></i>' : ''}
+                            </div>
+                            <div class="tutor-subject">${tutor.subject} Tutor • ⭐ ${tutor.rating} (${tutor.sessions} sessions)</div>
+                            <div class="session-info">
+                                <i class="fa-solid fa-clock"></i> Optimal Window: <strong>${tutor.timeWindow}</strong>
+                            </div>
+                            <div class="card-footer">
+                                <div class="price">₦${tutor.fee.toLocaleString()}</div>
+                                <button class="book-btn" data-id="${tutor.id}">Book 15m</button>
+                            </div>
+                        </div>
+                    `;
+                    tutorsGrid.appendChild(card);
+                });
+
+                // Bind booking buttons
+                document.querySelectorAll('.book-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const tutorId = parseInt(e.target.getAttribute('data-id'), 10);
+                        openBookingModalForTutor(tutorId);
+                    });
+                });
+            }
+
+            // Initial render
+            renderTutors();
+
+            // Filter Chips Event
+            if (subjectFilters) {
+                const chips = subjectFilters.querySelectorAll('.filter-chip');
+                chips.forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        chips.forEach(c => c.classList.remove('active'));
+                        chip.classList.add('active');
+                        const subject = chip.getAttribute('data-subject');
+                        renderTutors(subject, searchInput ? searchInput.value : '');
+                    });
+                });
+            }
+
+            // Search Input Event
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value;
+                    const activeChip = subjectFilters ? subjectFilters.querySelector('.filter-chip.active') : null;
+                    const subject = activeChip ? activeChip.getAttribute('data-subject') : 'All';
+                    renderTutors(subject, query);
+                });
+            }
+
+            // Explore & Quick action buttons
+            if (exploreBtn) {
+                exploreBtn.addEventListener('click', () => {
+                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                });
+            }
+
+            if (viewAllTutors) {
+                viewAllTutors.addEventListener('click', () => {
+                    renderTutors('All', '');
+                });
+            }
+
+            if (adSponsorBtn) {
+                adSponsorBtn.addEventListener('click', () => {
+                    showToast("Sponsored EdTech Trial Activated! Zero data required.");
+                });
+            }
+
+            // Booking Modal Handling
+            function openBookingModalForTutor(tutorId) {
+                const tutor = state.tutors.find(t => t.id === tutorId);
+                if (!tutor) return;
+
+                const modalTitle = document.getElementById('bookingModalTitle');
+                const modalTutorId = document.getElementById('modalTutorId');
+                const confirmBtn = document.getElementById('confirmBookingBtn');
+
+                if (modalTitle) modalTitle.textContent = `Book ${tutor.name} (${tutor.subject})`;
+                if (modalTutorId) modalTutorId.value = tutor.id;
+                if (confirmBtn) confirmBtn.textContent = `Confirm & Pay ₦${tutor.fee}`;
+
+                if (bookingModal) bookingModal.classList.add('open');
+            }
+
+            if (closeBookingModal) {
+                closeBookingModal.addEventListener('click', () => {
+                    if (bookingModal) bookingModal.classList.remove('open');
+                });
+            }
+
+            if (bookingModal) {
+                bookingModal.addEventListener('click', (e) => {
+                    if (e.target === bookingModal) bookingModal.classList.remove('open');
+                });
+            }
+
+            // Handle Booking Form Submission
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const tutorId = parseInt(document.getElementById('modalTutorId').value, 10);
+                    const studentName = document.getElementById('studentName').value;
+                    const examFocus = document.getElementById('examFocus').value;
+                    const timeWindow = document.getElementById('sessionTimeWindow').value;
+                    const tutor = state.tutors.find(t => t.id === tutorId);
+
+                    if (!tutor) return;
+
+                    const newBooking = {
+                        id: Date.now(),
+                        tutorName: tutor.name,
+                        subject: tutor.subject,
+                        studentName,
+                        examFocus,
+                        timeWindow,
+                        fee: tutor.fee,
+                        status: 'Confirmed'
+                    };
+
+                    state.bookings.unshift(newBooking);
+                    
+                    // Calculate revenue (15% platform commission)
+                    const commission = Math.round(tutor.fee * 0.15);
+                    state.revenue += commission;
+
+                    state.transactions.unshift({
+                        id: Date.now(),
+                        desc: `Micro-session commission (${tutor.name} - ${tutor.subject})`,
+                        amount: commission,
+                        type: 'in'
+                    });
+
+                    localStorage.setItem('examconnect_bookings', JSON.stringify(state.bookings));
+                    localStorage.setItem('examconnect_revenue', state.revenue);
+                    localStorage.setItem('examconnect_transactions', JSON.stringify(state.transactions));
+
+                    if (bookingModal) bookingModal.classList.remove('open');
+                    bookingForm.reset();
+                    updateDashboard();
+                    showToast("🎉 Session booked successfully! Data window sync active.");
+                });
+            }
+
+            // Register Tutor Modal
+            if (openRegisterModal) {
+                openRegisterModal.addEventListener('click', () => {
+                    if (registerModal) registerModal.classList.add('open');
+                });
+            }
+
+            if (closeRegisterModal) {
+                closeRegisterModal.addEventListener('click', () => {
+                    if (registerModal) registerModal.classList.remove('open');
+                });
+            }
+
+            if (registerModal) {
+                registerModal.addEventListener('click', (e) => {
+                    if (e.target === registerModal) registerModal.classList.remove('open');
+                });
+            }
+
+            if (registerForm) {
+                registerForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('regName').value;
+                    const subject = document.getElementById('regSubject').value;
+                    const fee = parseInt(document.getElementById('regFee').value, 10);
+
+                    const newTutor = {
+                        id: Date.now(),
+                        name,
+                        subject,
+                        rating: 5.0,
+                        sessions: 1,
+                        fee,
+                        timeWindow: '11:00 PM (MTN)',
+                        sponsored: false,
+                        verified: true
+                    };
+
+                    state.tutors.unshift(newTutor);
+                    localStorage.setItem('examconnect_tutors', JSON.stringify(state.tutors));
+
+                    if (registerModal) registerModal.classList.remove('open');
+                    registerForm.reset();
+                    renderTutors();
+                    updateDashboard();
+                    showToast("🚀 Tutor profile created successfully!");
+                });
+            }
+
+            // Boost Profile / Top Listing Subscription (₦2,000/mo)
+            if (boostProfileBtn) {
+                boostProfileBtn.addEventListener('click', () => {
+                    state.revenue += 2000;
+                    state.transactions.unshift({
+                        id: Date.now(),
+                        desc: 'Top Listing Tutor Subscription (1 Month)',
+                        amount: 2000,
+                        type: 'in'
+                    });
+                    localStorage.setItem('examconnect_revenue', state.revenue);
+                    localStorage.setItem('examconnect_transactions', JSON.stringify(state.transactions));
+                    updateDashboard();
+                    showToast("⭐ Top Listing Activated! Profile pinned to search top.");
+                });
+            }
+
+            // Update Bookings, Wallet & Stats UI
+            function updateDashboard() {
+                // Bookings
+                if (bookingsList) {
+                    if (state.bookings.length === 0) {
+                        bookingsList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fa-solid fa-calendar-xmark"></i>
+                                <p>No micro-sessions booked yet. Explore tutors and book your zero-data session!</p>
+                            </div>
+                        `;
+                        if (bookingBadge) bookingBadge.style.display = 'none';
+                    } else {
+                        bookingsList.innerHTML = '';
+                        if (bookingBadge) {
+                            bookingBadge.style.display = 'inline-block';
+                            bookingBadge.textContent = state.bookings.length;
+                        }
+                        state.bookings.forEach(b => {
+                            const div = document.createElement('div');
+                            div.className = 'card';
+                            div.style.marginBottom = '12px';
+                            div.style.padding = '14px';
+                            div.innerHTML = `
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 1rem;">${b.subject} with ${b.tutorName}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">Student: ${b.studentName} (${b.examFocus})</div>
+                                    </div>
+                                    <span style="background: rgba(0,118,0,0.1); color: var(--success); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">${b.status}</span>
+                                </div>
+                                <div class="session-info" style="margin-bottom: 0;">
+                                    <i class="fa-solid fa-clock"></i> Time Window: <strong>${b.timeWindow}</strong> (Zero Data Cost)
+                                </div>
+                            `;
+                            bookingsList.appendChild(div);
+                        });
+                    }
+                }
+
+                // Transactions / Wallet
+                if (totalRevenueDisplay) totalRevenueDisplay.textContent = `₦${state.revenue.toLocaleString()}`;
+                if (completedSessionsCount) completedSessionsCount.textContent = state.bookings.length;
+                if (tutorCountStat) tutorCountStat.textContent = state.tutors.length;
+
+                if (transactionsList) {
+                    if (state.transactions.length === 0) {
+                        transactionsList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fa-solid fa-receipt"></i>
+                                <p>No revenue recorded yet. Platform takes 15% commission per booking.</p>
+                            </div>
+                        `;
+                    } else {
+                        transactionsList.innerHTML = '';
+                        state.transactions.forEach(tx => {
+                            const div = document.createElement('div');
+                            div.className = 'card';
+                            div.style.marginBottom = '8px';
+                            div.style.padding = '12px';
+                            div.style.flexDirection = 'row';
+                            div.style.justifyContent = 'space-between';
+                            div.style.alignItems = 'center';
+                            div.innerHTML = `
+                                <div>
+                                    <div style="font-size: 0.9rem; font-weight: 600;">${tx.desc}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Platform Commission & Ad Fleet</div>
+                                </div>
+                                <div style="font-weight: 800; color: var(--success); font-size: 1rem;">+₦${tx.amount.toLocaleString()}</div>
+                            `;
+                            transactionsList.appendChild(div);
+                        });
+                    }
+                }
+            }
+
+            updateDashboard();
+
+            // Toast Helper
+            function showToast(message) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
