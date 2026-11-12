@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaStudent Blast & Exam Hub 🚀</title>
+<meta name="description" content="">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #006b40;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 90px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 135, 81, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+            flex: 1;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 135, 81, 0.2);
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: #fcfdfe;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 135, 81, 0.25);
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #eff6ff;
+            color: #1d4ed8;
+            box-shadow: none;
+            margin-top: 8px;
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-card .val {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .stat-card .lbl {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .preview-box {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            border: 1px dashed var(--border);
+            margin-bottom: 12px;
+            color: #334155;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .platform-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .platform-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fcfdfe;
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            border-radius: 10px;
+        }
+
+        .platform-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .platform-info p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .badge {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.pending {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        /* Bottom Fixed Navigation Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 8px calc(10px + var(--safe-bottom)) 8px;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-light);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.3rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .countdown-display {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .countdown-display h3 {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .countdown-timer {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🇳🇬 NaijaStudent Blast & Exam Hub</h1>
+        <p>Automated Traffic Generator & Study Monetizer</p>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="lbl">Total Blasts Sent</div>
+                <div class="val" id="totalBlasts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="lbl">Est. Reach</div>
+                <div class="val" id="totalReach">0</div>
+            </div>
+        </div>
+
+        <!-- TAB 1: BLAST GENERATOR -->
+        <div id="panel-blast" class="panel active">
+            <div class="card">
+                <h2>📢 Create Promo Blast</h2>
+                <div class="form-group">
+                    <label for="blastTarget">Target Audience</label>
+                    <select id="blastTarget">
+                        <option value="whatsapp">WhatsApp Student Groups (WAEC/JAMB)</option>
+                        <option value="nairaland">Nairaland Education Forum</option>
+                        <option value="facebook">Facebook Nigerian Students Group</option>
+                        <option value="telegram">Telegram Study Channels</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="offerType">Monetization Offer</label>
+                    <select id="offerType">
+                        <option value="jamb">JAMB CBT Pass Questions PDF (₦1,000)</option>
+                        <option value="waec">WAEC Verified Answers & Guide (₦1,000)</option>
+                        <option value="data">Free Night Data Setup Guide (₦500)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Generated Promo Copy</label>
+                    <div class="preview-box" id="promoPreview">Select options above to generate viral promo text...</div>
+                </div>
+                <button class="btn btn-whatsapp" id="btnCopyPromo">
+                    📋 Copy Promo Text for Group
+                </button>
+                <button class="btn btn-secondary" id="btnRecordBlast">
+                    ✅ Log Blast & Track Reach
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>⚡ Quick Action Channels</h2>
+                <div class="platform-list">
+                    <div class="platform-item">
+                        <div class="platform-info">
+                            <h4>WhatsApp Study Groups</h4>
+                            <p>Direct broadcast to 12 active groups (~3,400 students)</p>
+                        </div>
+                        <span class="badge">Ready</span>
+                    </div>
+                    <div class="platform-item">
+                        <div class="platform-info">
+                            <h4>Nairaland Education Board</h4>
+                            <p>Thread post layout for instant student replies</p>
+                        </div>
+                        <span class="badge">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: EXAM SCHEDULER & TIMER -->
+        <div id="panel-exam" class="panel">
+            <div class="countdown-display">
+                <h3>⏱️ Next Major Exam Countdown (UTME)</h3>
+                <div class="countdown-timer" id="examTimer">Loading...</div>
+            </div>
+
+            <div class="card">
+                <h2>📚 Exam Setup & Data Window</h2>
+                <div class="form-group">
+                    <label for="examName">Select Exam</label>
+                    <select id="examName">
+                        <option value="JAMB UTME">JAMB UTME 2026</option>
+                        <option value="WAEC SSCE">WAEC SSCE 2026</option>
+                        <option value="NECO SSCE">NECO SSCE 2026</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="networkProvider">Preferred Night Network</label>
+                    <select id="networkProvider">
+                        <option value="MTN">MTN (Pulse ₦25 / 250MB)</option>
+                        <option value="Airtel">Airtel (SmartTrybe ₦50 / 1GB)</option>
+                        <option value="Glo">Glo (Night Plan ₦100 / 1GB)</option>
+                        <option value="9mobile">9mobile (Weekend/Night)</option>
+                    </select>
+                </div>
+                <button class="btn" id="btnSaveExam">Save Schedule & Get Study Kit</button>
+            </div>
+        </div>
+
+        <!-- TAB 3: REVENUE LEDGER -->
+        <div id="panel-revenue" class="panel">
+            <div class="card">
+                <h2>💰 Shannon's Account & Ledger</h2>
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="lbl">Today In</div>
+                        <div class="val" id="revToday">₦0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="lbl">Total Profit</div>
+                        <div class="val" id="revProfit">₦0</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="manualIncome">Simulate / Log Incoming Sale</label>
+                    <select id="saleAmount">
+                        <option value="500">₦500 - Free Data Guide Sale</option>
+                        <option value="1000">₦1,000 - Exam PDF Guide Sale</option>
+                        <option value="2500">₦2,500 - Complete Bundle Sale</option>
+                    </select>
+                </div>
+                <button class="btn" id="btnAddSale">⚡ Confirm Sale Received</button>
+                <button class="btn btn-secondary" id="btnClearLedger">Reset Ledger</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-bar">
+        <button class="nav-item active" data-target="panel-blast">
+            <span class="icon">📢</span>
+            <span>Blast</span>
+        </button>
+        <button class="nav-item" data-target="panel-exam">
+            <span class="icon">⏳</span>
+            <span>Exam & Timer</span>
+        </button>
+        <button class="nav-item" data-target="panel-revenue">
+            <span class="icon">💸</span>
+            <span>Ledger</span>
+        </button>
+    </nav>
+
+    <div class="toast" id="toast">Action completed successfully!</div>
+
+    <script>
+        // State Management with localStorage
+        const STORAGE_KEY = 'naija_student_hub_state_v1';
+        let state = {
+            blastsCount: 0,
+            reachCount: 0,
+            revenue: 0,
+            salesCount: 0,
+            target: 'whatsapp',
+            offer: 'jamb',
+            exam: 'JAMB UTME',
+            network: 'MTN'
+        };
+
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                state = { ...state, ...JSON.parse(saved) };
+            }
+        } catch (e) {
+            console.error('Storage load error:', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error('Storage save error:', e);
+            }
+        }
+
+        // DOM Elements
+        const totalBlastsEl = document.getElementById('totalBlasts');
+        const totalReachEl = document.getElementById('totalReach');
+        const revTodayEl = document.getElementById('revToday');
+        const revProfitEl = document.getElementById('revProfit');
+        const blastTargetEl = document.getElementById('blastTarget');
+        const offerTypeEl = document.getElementById('offerType');
+        const promoPreviewEl = document.getElementById('promoPreview');
+        const btnCopyPromo = document.getElementById('btnCopyPromo');
+        const btnRecordBlast = document.getElementById('btnRecordBlast');
+        const examTimerEl = document.getElementById('examTimer');
+        const examNameEl = document.getElementById('examName');
+        const networkProviderEl = document.getElementById('networkProvider');
+        const btnSaveExam = document.getElementById('btnSaveExam');
+        const saleAmountEl = document.getElementById('saleAmount');
+        const btnAddSale = document.getElementById('btnAddSale');
+        const btnClearLedger = document.getElementById('btnClearLedger');
+        const toastEl = document.getElementById('toast');
+        const tabBtns = document.querySelectorAll('.tab-btn, .nav-item');
+        const panels = document.querySelectorAll('.panel');
+
+        function showToast(message) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 2500);
+        }
+
+        // Promo Copy Generator
+        const promoTemplates = {
+            jamb: "🚨 ATTENTION 2026 JAMBITE! 🚨\n\nStop guessing! Get the verified JAMB CBT Past Questions & Complete Answer Key PDF right now. Proven to boost scores by 80+ marks.\n\n🔥 Price: Only ₦1,000!\n📱 Instant delivery via WhatsApp.\n\nClick link to secure your admission this year: https://youngprincgospel-ux.github.io/boss-sites/free-data-exam-prep-sche-2710/",
+            waec: "📚 WAEC 2026 CANDIDATES CHECK IN! 📚\n\nSecure your A1s in core subjects with our comprehensive leaked practice notes and verified exam guide.\n\n🔥 Price: Only ₦1,000!\n\nMessage now to get your PDF copy instantly: https://youngprincgospel-ux.github.io/boss-sites/free-data-exam-prep-sche-2710/",
+            data: "🌙 FREE NIGHT DATA + STUDY SCHEDULER 🌙\n\nBrowse all night for your exam prep without exhausting your data bundle! Get the complete setup guide + study timetables.\n\n🔥 Price: Only ₦500!\n\nGet yours now: https://youngprincgospel-ux.github.io/boss-sites/free-data-exam-prep-sche-2710/"
+        };
+
+        function updatePromoPreview() {
+            if (!promoPreviewEl || !offerTypeEl) return;
+            state.offer = offerTypeEl.value;
+            state.target = blastTargetEl.value;
+            promoPreviewEl.textContent = promoTemplates[state.offer] || promoTemplates.jamb;
+            saveState();
+        }
+
+        if (blastTargetEl && offerTypeEl) {
+            blastTargetEl.value = state.target;
+            offerTypeEl.value = state.offer;
+            blastTargetEl.addEventListener('change', updatePromoPreview);
+            offerTypeEl.addEventListener('change', updatePromoPreview);
+            updatePromoPreview();
+        }
+
+        // Copy Promo Button
+        if (btnCopyPromo) {
+            btnCopyPromo.addEventListener('click', () => {
+                const text = promoPreviewEl.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('📋 Promo text copied to clipboard!');
+                }).catch(() => {
+                    showToast('⚠️ Copy failed, please select manually.');
+                });
+            });
+        }
+
+        // Record Blast
+        if (btnRecordBlast) {
+            btnRecordBlast.addEventListener('click', () => {
+                state.blastsCount += 1;
+                state.reachCount += Math.floor(Math.random() * 150) + 200;
+                saveState();
+                updateUI();
+                showToast('🚀 Blast logged! Reach estimated.');
+            });
+        }
+
+        // Add Sale / Revenue
+        if (btnAddSale) {
+            btnAddSale.addEventListener('click', () => {
+                const amount = parseInt(saleAmountEl.value, 10);
+                state.revenue += amount;
+                state.salesCount += 1;
+                saveState();
+                updateUI();
+                showToast(`💰 ₦${amount.toLocaleString()} Sale Recorded! Alert received! 🎉`);
+            });
+        }
+
+        if (btnClearLedger) {
+            btnClearLedger.addEventListener('click', () => {
+                if (confirm('Reset ledger data?')) {
+                    state.revenue = 0;
+                    state.salesCount = 0;
+                    state.blastsCount = 0;
+                    state.reachCount = 0;
+                    saveState();
+                    updateUI();
+                    showToast('Ledger reset successfully.');
+                }
+            });
+        }
+
+        // Exam Settings
+        if (examNameEl && networkProviderEl && btnSaveExam) {
+            examNameEl.value = state.exam;
+            networkProviderEl.value = state.network;
+            btnSaveExam.addEventListener('click', () => {
+                state.exam = examNameEl.value;
+                state.network = networkProviderEl.value;
+                saveState();
+                showToast(`✅ Saved! Target network: ${state.network}`);
+            });
+        }
+
+        // UI Updater
+        function updateUI() {
+            if (totalBlastsEl) totalBlastsEl.textContent = state.blastsCount;
+            if (totalReachEl) totalReachEl.textContent = state.reachCount.toLocaleString();
+            if (revTodayEl) revTodayEl.textContent = '₦' + state.revenue.toLocaleString();
+            if (revProfitEl) revProfitEl.textContent = '₦' + state.revenue.toLocaleString();
+        }
+        updateUI();
+
+        // Tab Navigation Switching
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                if (!targetId) return;
+
+                panels.forEach(p => p.classList.remove('active'));
+                const targetPanel = document.getElementById(targetId);
+                if (targetPanel) targetPanel.classList.add('active');
+
+                tabBtns.forEach(b => {
+                    if (b.getAttribute('data-target') === targetId) {
+                        b.classList.add('active');
+                    } else {
+                        b.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Live Countdown Timer (JAMB UTME target approx April 2026)
+        function updateCountdown() {
+            if (!examTimerEl) return;
+            // Target: April 19, 2026 08:00:00 WAT
+            const targetDate = new Date('2026-04-19T08:00:00+01:00');
+            const now = new Date();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                examTimerEl.textContent = "EXAM DAY IS HERE! 🚀";
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 65); // Standard calc
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            examTimerEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>
