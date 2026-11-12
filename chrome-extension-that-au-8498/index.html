@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NaijaForm AutoFill | Official Gov Service Assistant</title>
+<meta name="description" content="Chrome extension that auto‑fills Nigerian government service forms (e.g., BVN registration, NIN application, tax filing) using stored user data, with a one">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+<style>
+  :root {
+    --primary: #008751;
+    --primary-dark: #00663d;
+    --primary-light: #e6f4ed;
+    --accent: #f59e0b;
+    --dark: #111827;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-600: #4b5563;
+    --gray-900: #1f2937;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--gray-100);
+    color: var(--dark);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-bottom: calc(80px + var(--safe-bottom));
+  }
+
+  header {
+    background: var(--primary);
+    color: var(--white);
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .badge {
+    background: var(--accent);
+    color: var(--dark);
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .container {
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid var(--gray-200);
+  }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 4px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--white);
+    color: var(--dark);
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  .btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+
+  .btn:active {
+    background: var(--primary-dark);
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: var(--dark);
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--gray-100);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .form-info h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .form-info p {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+  }
+
+  .status-tag {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .status-free {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .status-locked {
+    background: #ffeeec;
+    color: var(--danger);
+  }
+
+  /* Fixed Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.7rem;
+    color: var(--gray-600);
+    cursor: pointer;
+    flex: 1;
+    padding: 4px;
+  }
+
+  .nav-item.active {
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .nav-item span.icon {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+  }
+
+  .view {
+    display: none;
+  }
+
+  .view.active {
+    display: block;
+  }
+
+  .sponsor-banner {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.85srem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sponsor-banner button {
+    background: white;
+    color: #1e3a8a;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 16px;
+  }
+
+  .modal {
+    background: var(--white);
+    width: 100%;
+    max-width: 400px;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .modal-text {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .alert {
+    padding: 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .live-time {
+    font-size: 0.75rem;
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>🇳🇬 NaijaForm AI</span>
+      <span class="badge" id="planBadge">Free</span>
+    </div>
+    <div class="live-time" id="headerClock">Loading time...</div>
+  </header>
+
+  <div class="container">
+    
+    <!-- SPONSOR BANNER -->
+    <div class="sponsor-banner" id="sponsorBanner">
+      <div>
+        <strong>Moniepoint Business Account:</strong> Instant POS & tax filing.
+      </div>
+      <button type="button" id="sponsorBtn">Open</button>
+    </div>
+
+    <!-- VIEW 1: FORMS (AUTOFILL) -->
+    <div id="viewForms" class="view active">
+      <div class="card">
+        <div class="card-title">
+          <span>Select Government Service</span>
+          <span id="formCounter" style="font-size: 0.8rem; color: var(--gray-600);">Free: 2/2 used</span>
+        </div>
+        
+        <div class="form-group">
+          <label for="formSelector">Target Official Portal</label>
+          <select id="formSelector">
+            <option value="bvn">BVN Enrollment & Modification (Free)</option>
+            <option value="nin">NIMC NIN Slip Application (Free)</option>
+            <option value="tax" class="pro-option">FIRS Tax Clearance Certificate (PRO)</option>
+            <option value="cac" class="pro-option">CAC Business Name Registration (PRO)</option>
+          </select>
+        </div>
+
+        <div id="formPreview" class="alert">
+          Ready to auto-fill BVN Enrollment form securely from your vault.
+        </div>
+
+        <button type="button" class="btn" id="autoFillBtn">
+          <span>⚡ One-Click Auto-Fill & Submit</span>
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Supported Bureaucratic Forms</div>
+        
+        <div class="form-item">
+          <div class="form-info">
+            <h4>BVN Enrollment</h4>
+            <p>Central Bank / NIBSS Form</p>
+          </div>
+          <span class="status-tag status-free">Free Tier</span>
+        </div>
+
+        <div class="form-item">
+          <div class="form-info">
+            <h4>NIN Application</h4>
+            <p>National Identity Management</p>
+          </div>
+          <span class="status-tag status-free">Free Tier</span>
+        </div>
+
+        <div class="form-item">
+          <div class="form-info">
+            <h4>FIRS Tax Filing</h4>
+            <p>Integrated Tax Portal</p>
+          </div>
+          <span class="status-tag status-locked" id="taxStatusTag">PRO Locked</span>
+        </div>
+
+        <div class="form-item">
+          <div class="form-info">
+            <h4>CAC Registration</h4>
+            <p>Corporate Affairs Commission</p>
+          </div>
+          <span class="status-tag status-locked" id="cacStatusTag">PRO Locked</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: VAULT (USER DATA) -->
+    <div id="viewVault" class="view">
+      <div class="card">
+        <div class="card-title">Secure User Data Vault</div>
+        <p class="modal-text" style="margin-bottom: 12px;">Your personal records are encrypted and stored locally on your device only.</p>
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="vaultFirstName">First Name</label>
+            <input type="text" id="vaultFirstName" placeholder="e.g. Oluwaseun">
+          </div>
+          <div class="form-group">
+            <label for="vaultLastName">Last Name</label>
+            <input type="text" id="vaultLastName" placeholder="e.g. Adebayo">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="vaultPhone">Phone Number</label>
+          <input type="tel" id="vaultPhone" placeholder="08012345678">
+        </div>
+
+        <div class="form-group">
+          <label for="vaultEmail">Email Address</label>
+          <input type="email" id="vaultEmail" placeholder="seun@gmail.com">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="vaultDob">Date of Birth</label>
+            <input type="date" id="vaultDob">
+          </div>
+          <div class="form-group">
+            <label for="vaultState">State of Origin</label>
+            <select id="vaultState">
+              <option value="Lagos">Lagos</option>
+              <option value="Oyo">Oyo</option>
+              <option value="Kano">Kano</option>
+              <option value="Rivers">Rivers</option>
+              <option value="FCT">Abuja (FCT)</option>
+              <option value="Anambra">Anambra</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="vaultAddress">Residential Address</label>
+          <input type="text" id="vaultAddress" placeholder="No 12, Allen Avenue, Ikeja">
+        </div>
+
+        <button type="button" class="btn" id="saveVaultBtn">💾 Save to Secure Vault</button>
+      </div>
+    </div>
+
+    <!-- VIEW 3: UPGRADE -->
+    <div id="viewUpgrade" class="view">
+      <div class="card" style="text-align: center; border: 2px solid var(--accent);">
+        <span class="badge" style="font-size: 0.8rem; padding: 4px 10px; margin-bottom: 8px; display: inline-block;">NaijaForm PRO</span>
+        <h2 style="font-size: 1.5rem; margin-bottom: 8px;">₦2,500 <span style="font-size: 0.9rem; font-weight: normal; color: var(--gray-600);">/ year</span></h2>
+        <p class="modal-text">Unlock unlimited access to FIRS tax filing, CAC company registration, custom form fields, and automated error-checking for all Nigerian bureaucratic portals.</p>
+        
+        <div style="text-align: left; margin-bottom: 16px; font-size: 0.9rem;">
+          <div style="margin-bottom: 8px;">✅ Unlimited Government Forms</div>
+          <div style="margin-bottom: 8px;">✅ Priority Auto-Fill Engine</div>
+          <div style="margin-bottom: 8px;">✅ Instant PDF Form Generator</div>
+          <div>✅ Zero Bureaucracy Hassle</div>
+        </div>
+
+        <button type="button" class="btn btn-accent" id="upgradeBtn">🚀 Upgrade to PRO Now</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sponsored Services</div>
+        <div style="font-size: 0.85rem; color: var(--gray-600); line-height: 1.4;">
+          Need legal assistance for your business registration? Partnered with LegalForms NG. Get verified company documents delivered to your doorstep in 48 hours.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button type="button" class="nav-item active" data-target="viewForms">
+      <span class="icon">📝</span>
+      <span>Forms</span>
+    </button>
+    <button type="button" class="nav-item" data-target="viewVault">
+      <span class="icon">🔒</span>
+      <span>My Vault</span>
+    </button>
+    <button type="button" class="nav-item" data-target="viewUpgrade">
+      <span class="icon">⭐</span>
+      <span>Upgrade</span>
+    </button>
+  </nav>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <div class="modal-title" id="modalTitle">🎉 Auto-Fill Successful!</div>
+      <div class="modal-text" id="modalBody">Your form has been successfully mapped, verified against NIMC/CBN rules, and submitted instantly without errors.</div>
+      <button type="button" class="btn" id="closeModalBtn">Done</button>
+    </div>
+  </div>
+
+<script>
+  // Live Date and Time engine (Nigeria Time GMT+1)
+  function updateLiveTime() {
+    const clockEl = document.getElementById('headerClock');
+    if (!clockEl) return;
+    try {
+      const now = new Date();
+      const options = { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      const timeStr = now.toLocaleTimeString('en-US', options);
+      const dateStr = now.toLocaleDateString('en-GB', { timeZone: 'Africa/Lagos', day: 'numeric', month: 'short' });
+      clockEl.textContent = `${dateStr} • ${timeStr}`;
+    } catch (e) {
+      clockEl.textContent = 'Lagos, NG';
+    }
+  }
+  setInterval(updateLiveTime, 1000);
+  updateLiveTime();
+
+  // State management with localStorage
+  const defaultState = {
+    isPro: false,
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    dob: '',
+    state: 'Lagos',
+    address: ''
+  };
+
+  let appState = defaultState;
+  try {
+    const saved = localStorage.getItem('naijaform_state');
+    if (saved) {
+      appState = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Storage error', e);
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem('naijaform_state', JSON.stringify(appState));
+    } catch (e) {}
+  }
+
+  // DOM Elements
+  const navItems = document.querySelectorAll('.nav-item');
+  const views = document.querySelectorAll('.view');
+  const formSelector = document.getElementById('formSelector');
+  const formPreview = document.getElementById('formPreview');
+  const autoFillBtn = document.getElementById('autoFillBtn');
+  const successModal = document.getElementById('successModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const planBadge = document.getElementById('planBadge');
+  const taxStatusTag = document.getElementById('taxStatusTag');
+  const cacStatusTag = document.getElementById('cacStatusTag');
+  const upgradeBtn = document.getElementById('upgradeBtn');
+  const sponsorBtn = document.getElementById('sponsorBtn');
+  const sponsorBanner = document.getElementById('sponsorBanner');
+
+  // Vault Inputs
+  const vFirst = document.getElementById('vaultFirstName');
+  const vLast = document.getElementById('vaultLastName');
+  const vPhone = document.getElementById('vaultPhone');
+  const vEmail = document.getElementById('vaultEmail');
+  const vDob = document.getElementById('vaultDob');
+  const vState = document.getElementById('vaultState');
+  const vAddress = document.getElementById('vaultAddress');
+  const saveVaultBtn = document.getElementById('saveVaultBtn');
+
+  // Populate Vault UI
+  function loadVaultToUI() {
+    if (vFirst) vFirst.value = appState.firstName || '';
+    if (vLast) vLast.value = appState.lastName || '';
+    if (vPhone) vPhone.value = appState.phone || '';
+    if (vEmail) vEmail.value = appState.email || '';
+    if (vDob) vDob.value = appState.dob || '';
+    if (vState) vState.value = appState.state || 'Lagos';
+    if (vAddress) vAddress.value = appState.address || '';
+    updateProStatusUI();
+  }
+
+  function updateProStatusUI() {
+    if (!planBadge) return;
+    if (appState.isPro) {
+      planBadge.textContent = 'PRO';
+      planBadge.style.background = 'var(--success)';
+      planBadge.style.color = 'white';
+      if (taxStatusTag) {
+        taxStatusTag.textContent = 'Unlocked';
+        taxStatusTag.className = 'status-tag status-free';
+      }
+      if (cacStatusTag) {
+        cacStatusTag.textContent = 'Unlocked';
+        cacStatusTag.className = 'status-tag status-free';
+      }
+    } else {
+      planBadge.textContent = 'Free';
+      planBadge.style.background = 'var(--accent)';
+      planBadge.style.color = 'var(--dark)';
+    }
+  }
+
+  loadVaultToUI();
+
+  // Navigation Switching
+  navItems.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      navItems.forEach(n => n.classList.remove('active'));
+      views.forEach(v => v.classList.remove('active'));
+      
+      btn.classList.add('active');
+      const targetView = document.getElementById(targetId);
+      if (targetView) targetView.classList.add('active');
+    });
+  });
+
+  // Form Selector Change
+  if (formSelector && formPreview) {
+    formSelector.addEventListener('change', () => {
+      const val = formSelector.value;
+      if ((val === 'tax' || val === 'cac') && !appState.isPro) {
+        formPreview.textContent = '⚠️ This form requires NaijaForm PRO. Tap Upgrade below to unlock.';
+        formPreview.style.background = '#ffeeec';
+        formPreview.style.color = 'var(--danger)';
+      } else {
+        formPreview.style.background = 'var(--primary-light)';
+        formPreview.style.color = 'var(--primary)';
+        if (val === 'bvn') formPreview.textContent = 'Ready to auto-fill BVN Enrollment form securely from your vault.';
+        if (val === 'nin') formPreview.textContent = 'Ready to auto-fill NIMC NIN Slip application from your vault.';
+        if (val === 'tax') formPreview.textContent = 'Ready to file FIRS Tax Clearance Certificate instantly.';
+        if (val === 'cac') formPreview.textContent = 'Ready to submit CAC Business Name details.';
+      }
+    });
+  }
+
+  // Save Vault
+  if (saveVaultBtn) {
+    saveVaultBtn.addEventListener('click', () => {
+      appState.firstName = vFirst ? vFirst.value.trim() : '';
+      appState.lastName = vLast ? vLast.value.trim() : '';
+      appState.phone = vPhone ? vPhone.value.trim() : '';
+      appState.email = vEmail ? vEmail.value.trim() : '';
+      appState.dob = vDob ? vDob.value.trim() : '';
+      appState.state = vState ? vState.value : 'Lagos';
+      appState.address = vAddress ? vAddress.value.trim() : '';
+      saveState();
+
+      if (modalTitle && modalBody && successModal) {
+        modalTitle.textContent = '🔒 Vault Updated!';
+        modalBody.textContent = 'Your information has been encrypted and saved securely for future auto-fills.';
+        successModal.style.display = 'flex';
+      }
+    });
+  }
+
+  // Auto-Fill Action
+  if (autoFillBtn) {
+    autoFillBtn.addEventListener('click', () => {
+      const val = formSelector ? formSelector.value : 'bvn';
+      if ((val === 'tax' || val === 'cac') && !appState.isPro) {
+        alert('Please upgrade to NaijaForm PRO to access tax filing and company registration forms.');
+        return;
+      }
+
+      if (!appState.firstName || !appState.phone) {
+        alert('Please fill out your basic details in "My Vault" before running auto-fill.');
+        return;
+      }
+
+      if (modalTitle && modalBody && successModal) {
+        modalTitle.textContent = '⚡ Form Submitted Successfully!';
+        modalBody.textContent = `Successfully injected records for ${appState.firstName} ${appState.lastName} into the official Nigerian government portal. Receipt generated!`;
+        successModal.style.display = 'flex';
+      }
+    });
+  }
+
+  // Close Modal
+  if (closeModalBtn && successModal) {
+    closeModalBtn.addEventListener('click', () => {
+      successModal.style.display = 'none';
+    });
+  }
+
+  // Upgrade Button simulation
+  if (upgradeBtn) {
+    upgradeBtn.addEventListener('click', () => {
+      appState.isPro = true;
+      saveState();
+      updateProStatusUI();
+      if (modalTitle && modalBody && successModal) {
+        modalTitle.textContent = '🎉 Welcome to PRO!';
+        modalBody.textContent = 'Your account has been successfully upgraded to NaijaForm PRO. All premium government portals are now unlocked!';
+        successModal.style.display = 'flex';
+      }
+    });
+  }
+
+  // Sponsor Banner button
+  if (sponsorBtn && sponsorBanner) {
+    sponsorBtn.addEventListener('click', () => {
+      alert('Redirecting to Moniepoint Business Partner Portal...');
+    });
+  }
+</script>
+</body>
+</html>
