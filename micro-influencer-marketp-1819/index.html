@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaGig - Micro-Influencer Marketplace</title>
+<meta name="description" content="Micro‑Influencer Marketplace platform. This should help: Matches small Nigerian creators (10‑50k followers) with local SMEs looking for affordable sponsore">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js" integrity="sha512-8gy5wOAOBZthor+ODkUTkE+PrcN88gmd1YziUYIhWHzINs5xN5gWlUcl2e9tD8Q43u+uL/dK7E8+zR4jM+XhJw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --secondary: #1F2937;
+            --bg: #F9FAFB;
+            --surface: #FFFFFF;
+            --text: #111827;
+            --text-secondary: #4B5563;
+            --border: #E5E7EB;
+            --danger: #EF4444;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: calc(80px + var(--safe-bottom));
+            line-height: 1.5;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge {
+            background: #DEF7EC;
+            color: #03543F;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #F3F4F6;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .influencer-card, .deal-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: var(--surface);
+        }
+
+        .featured {
+            border-color: #F59E0B;
+            background: #FFFBEB;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .nav-item span {
+            font-size: 1.25rem;
+            margin-bottom: 2px;
+        }
+
+        .stats-box {
+            display: flex;
+            background: #F3F4F6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .stat-item {
+            flex: 1;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .stat-lbl {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            width: 100%;
+            max-height: 90vh;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            padding: 20px;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #E0F2FE;
+            color: #0369A1;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body x-data="marketplace()" x-init="init()">
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            ⚡ NaijaGig <span class="badge">Micro-Influencers</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 600;" x-text="'₦' + balance.toLocaleString()"></div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+
+        <!-- TAB 1: DISCOVER CREATORS & DEALS -->
+        <template x-if="currentTab === 'discover'">
+            <div>
+                <div class="card" style="background: linear-gradient(135deg, #059669, #10B981); color: white; border: none;">
+                    <h1 style="font-size: 1.25rem; margin-bottom: 6px;">Monetize Your Hustle 🚀</h2>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 12px;">Connect Nigerian SMEs with active nano & micro creators (10k-50k followers). Guaranteed secure escrow deals.</p>
+                    <button class="btn" style="background: white; color: var(--primary-dark);" @click="currentTab = 'post-deal'">Post a Sponsored Gig ₦</button>
+                </div>
+
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <div class="stat-val" x-text="creators.length"></div>
+                        <div class="stat-lbl">Verified Creators</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" x-text="deals.length"></div>
+                        <div class="stat-lbl">Active Deals</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" x-text="'₦' + totalVolume.toLocaleString()"></div>
+                        <div class="stat-lbl">Volume Processed</div>
+                    </div>
+                </div>
+
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h3 style="font-size: 1rem;">🔥 Featured Creators</h3>
+                    <button style="background:none; border:none; color:var(--primary); font-size:0.85.rem; font-weight:600;" @click="currentTab = 'creators'">View All</button>
+                </div>
+
+                <template x-for="creator in creators.slice(0, 3)" :key="creator.id">
+                    <div class="influencer-card" :class="{ 'featured': creator.featured }">
+                        <div class="flex-between">
+                            <div style="font-weight: 700;" x-text="creator.name"></div>
+                            <span class="badge" x-text="creator.platform + ' • ' + creator.followers"></span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 6px 0;" x-text="creator.niche"></p>
+                        <div class="flex-between" style="margin-top: 10px;">
+                            <span style="font-weight: 700; font-size: 0.9rem;" x-text="'₦' + creator.rate.toLocaleString() + ' / post'"></span>
+                            <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" @click="openHireModal(creator)">Hire Creator</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- TAB 2: CREATORS DIRECTORY -->
+        <template x-if="currentTab === 'creators'">
+            <div>
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h2 style="font-size: 1.1rem;">All Verified Creators</h2>
+                    <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" @click="showAddCreatorModal = true">+ Join as Creator</button>
+                </div>
+
+                <input type="text" placeholder="Search creators by niche or name..." x-model="searchQuery">
+
+                <template x-for="creator in filteredCreators" :key="creator.id">
+                    <div class="influencer-card" :class="{ 'featured': creator.featured }">
+                        <div class="flex-between">
+                            <div style="font-weight: 700;" x-text="creator.name"></div>
+                            <span class="badge" x-text="creator.platform + ' • ' + creator.followers"></span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 6px 0;" x-text="creator.niche"></p>
+                        <div style="margin-bottom: 8px;">
+                            <span class="tag" x-text="creator.location"></span>
+                            <span class="tag" x-text="creator.engagement"></span>
+                        </div>
+                        <div class="flex-between" style="margin-top: 10px;">
+                            <span style="font-weight: 700; font-size: 0.9rem;" x-text="'₦' + creator.rate.toLocaleString() + ' / post'"></span>
+                            <div style="display: flex; gap: 6px;">
+                                <template x-if="!creator.featured">
+                                    <button class="btn btn-secondary" style="width: auto; padding: 6px 10px; font-size: 0.75rem;" @click="featureCreator(creator.id)">Promote ₦1k</button>
+                                </template>
+                                <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" @click="openHireModal(creator)">Hire</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- TAB 3: DEALS MARKETPLACE -->
+        <template x-if="currentTab === 'deals'">
+            <div>
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h2 style="font-size: 1.1rem;">SME Sponsored Gigs</h2>
+                    <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" @click="currentTab = 'post-deal'">+ Post Gig</button>
+                </div>
+
+                <template x-for="deal in deals" :key="deal.id">
+                    <div class="deal-card">
+                        <div class="flex-between">
+                            <div style="font-weight: 700;" x-text="deal.title"></div>
+                            <span class="badge" x-text="deal.platform"></span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 6px 0;" x-text="deal.description"></p>
+                        <div class="flex-between" style="margin-top: 10px;">
+                            <span style="font-weight: 700; font-size: 0.95rem; color: var(--primary-dark);" x-text="'Budget: ₦' + deal.budget.toLocaleString()"></span>
+                            <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" @click="applyForDeal(deal)">Apply for Gig</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- TAB 4: SAAS TOOLS & MEDIA KIT -->
+        <template x-if="currentTab === 'tools'">
+            <div>
+                <div class="card">
+                    <h2 style="font-size: 1.1rem; margin-bottom: 6px;">🛠️ Creator SaaS Suite</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">Professional tools to grow your influencing business. Unlock all tools for ₦1,000 / month.</p>
+
+                    <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <div class="flex-between">
+                            <span style="font-weight: 600; font-size: 0.9rem;">SaaS Subscription Status</span>
+                            <span class="badge" x-text="saasActive ? 'ACTIVE 🚀' : 'FREE TIER'"></span>
+                        </div>
+                        <template x-if="!saasActive">
+                            <button class="btn" style="margin-top: 12px;" @click="upgradeSaaS()">Upgrade for ₦1,000 / mo</button>
+                        </template>
+                    </div>
+
+                    <h3 style="font-size: 0.95rem; margin-bottom: 8px;">Media Kit Generator</h3>
+                    <label>Your Brand / Handle Name</label>
+                    <input type="text" x-model="mediaKit.handle" placeholder="e.g. @LagosTechGuy">
+                    
+                    <label>Primary Niche</label>
+                    <input type="text" x-model="mediaKit.niche" placeholder="e.g. Tech & Gadgets">
+
+                    <button class="btn btn-secondary" @click="generateMediaKit()">Preview & Copy Media Kit</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- POST DEAL SUB-VIEW -->
+        <template x-if="currentTab === 'post-deal'">
+            <div class="card">
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h2 style="font-size: 1.1rem;">Post Sponsored Gig (SME)</h2>
+                    <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 0.75rem;" @click="currentTab = 'discover'">Cancel</button>
+                </div>
+
+                <label>Campaign Title</label>
+                <input type="text" x-model="newDeal.title" placeholder="e.g. Promote our new skincare launch">
+
+                <label>Platform Needed</label>
+                <select x-model="newDeal.platform">
+                    <option value="Instagram">Instagram</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="X (Twitter)">X (Twitter)</option>
+                    <option value="WhatsApp">WhatsApp Status</option>
+                </select>
+
+                <label>Description & Requirements</label>
+                <textarea x-model="newDeal.description" rows="3" placeholder="Explain what creators need to post..."></textarea>
+
+                <div class="grid-2">
+                    <div>
+                        <label>Budget (₦)</label>
+                        <input type="number" x-model="newDeal.budget" placeholder="15000">
+                    </div>
+                    <div>
+                        <label>SME Contact (WhatsApp/Phone)</label>
+                        <input type="text" x-model="newDeal.contact" placeholder="08012345678">
+                    </div>
+                </div>
+
+                <button class="btn" @click="submitDeal()">Publish Deal (Escrow Protected)</button>
+            </div>
+        </template>
+
+    </main>
+
+    <!-- MODAL: HIRE CREATOR -->
+    <template x-if="selectedCreator">
+        <div class="modal-overlay" @click.self="selectedCreator = null">
+            <div class="modal-content">
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h3 style="font-size: 1.1rem;" x-text="'Hire ' + selectedCreator.name"></h3>
+                    <button class="btn btn-secondary" style="width: auto; padding: 4px 8px;" @click="selectedCreator = null">✕</button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;" x-text="'Platform: ' + selectedCreator.platform + ' (' + selectedCreator.followers + ' followers)'"></p>
+                <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 16px;" x-text="'Direct Rate: ₦' + selectedCreator.rate.toLocaleString() + ' (+ 10% platform fee)'"></p>
+
+                <label>Your Business / Brand Name</label>
+                <input type="text" x-model="hireForm.brand" placeholder="e.g. Lagos Sneakers">
+
+                <label>Campaign Brief / Instructions</label>
+                <textarea x-model="hireForm.brief" rows="3" placeholder="Detail what you want them to post..."></textarea>
+
+                <button class="btn" @click="confirmHire()">Pay & Book via Escrow ₦</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- MODAL: ADD CREATOR -->
+    <template x-if="showAddCreatorModal">
+        <div class="modal-overlay" @click.self="showAddCreatorModal = false">
+            <div class="modal-content">
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h3 style="font-size: 1.1rem;">Register as Creator</h3>
+                    <button class="btn btn-secondary" style="width: auto; padding: 4px 8px;" @click="showAddCreatorModal = false">✕</button>
+                </div>
+
+                <label>Full Name</label>
+                <input type="text" x-model="newCreator.name" placeholder="Chidi Okafor">
+
+                <div class="grid-2">
+                    <div>
+                        <label>Platform</label>
+                        <select x-model="newCreator.platform">
+                            <option value="Instagram">Instagram</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="X">X (Twitter)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Followers</label>
+                        <input type="text" x-model="newCreator.followers" placeholder="15k">
+                    </div>
+                </div>
+
+                <label>Niche / Category</label>
+                <input type="text" x-model="newCreator.niche" placeholder="Fashion, Comedy, Tech">
+
+                <div class="grid-2">
+                    <div>
+                        <label>Location</label>
+                        <input type="text" x-model="newCreator.location" placeholder="Lagos">
+                    </div>
+                    <div>
+                        <label>Rate per Post (₦)</label>
+                        <input type="number" x-model="newCreator.rate" placeholder="5000">
+                    </div>
+                </div>
+
+                <button class="btn" @click="saveCreator()">Submit Profile</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item" :class="{ 'active': currentTab === 'discover' }" @click="currentTab = 'discover'">
+            <span>🏠</span> Discover
+        </button>
+        <button class="nav-item" :class="{ 'active': currentTab === 'creators' }" @click="currentTab = 'creators'">
+            <span>⭐</span> Creators
+        </button>
+        <button class="nav-item" :class="{ 'active': currentTab === 'deals' }" @click="currentTab = 'deals'">
+            <span>💼</span> SME Gigs
+        </button>
+        <button class="nav-item" :class="{ 'active': currentTab === 'tools' }" @click="currentTab = 'tools'">
+            <span>🛠️</span> SaaS Tools
+        </button>
+    </nav>
+
+    <script>
+        function marketplace() {
+            return {
+                currentTab: 'discover',
+                balance: 45000,
+                totalVolume: 820000,
+                searchQuery: '',
+                saasActive: false,
+                selectedCreator: null,
+                showAddCreatorModal: false,
+                hireForm: { brand: '', brief: '' },
+                newDeal: { title: '', platform: 'Instagram', description: '', budget: '', contact: '' },
+                newCreator: { name: '', platform: 'Instagram', followers: '', niche: '', location: '', rate: '' },
+                
+                creators: [
+                    { id: 1, name: 'Chioma Adebayo', platform: 'Instagram', followers: '24k', niche: 'Fashion & Lifestyle', location: 'Lagos', rate: 12000, engagement: '4.8% Engagement', featured: true },
+                    { id: 2, name: 'Tunde Bakare', platform: 'TikTok', followers: '45k', niche: 'Comedy & Skits', location: 'Ibadan', rate: 25000, engagement: '6.2% Engagement', featured: true },
+                    { id: 3, name: 'Amina Yusuf', platform: 'X', followers: '18k', niche: 'Tech & Crypto', location: 'Abuja', rate: 10000, engagement: '3.9% Engagement', featured: false },
+                    { id: 4, name: 'Emeka Obi', platform: 'Instagram', followers: '32k', niche: 'Fitness & Health', location: 'Port Harcourt', rate: 18000, engagement: '5.1% Engagement', featured: false }
+                ],
+
+                deals: [
+                    { id: 1, title: 'Launch promo for organic skincare brand', platform: 'Instagram', description: 'Need 5 nano-influencers to post unboxing reels.', budget: 20000, contact: '08031112233' },
+                    { id: 2, title: 'Student laptop giveaway announcement', platform: 'TikTok', description: 'Quick 30s video talking about affordable student laptops.', budget: 35000, contact: '09054443322' }
+                ],
+
+                init() {
+                    try {
+                        const saved = localStorage.getItem('naijagig_state');
+                        if (saved) {
+                            const data = JSON.parse(saved);
+                            this.balance = data.balance ?? this.balance;
+                            this.totalVolume = data.totalVolume ?? this.totalVolume;
+                            this.saasActive = data.saasActive ?? this.saasActive;
+                            if (data.creators) this.creators = data.creators;
+                            if (data.deals) this.deals = data.deals;
+                        }
+                    } catch (e) {
+                        console.error('Storage load error', e);
+                    }
+                },
+
+                saveState() {
+                    try {
+                        localStorage.setItem('naijagig_state', JSON.stringify({
+                            balance: this.balance,
+                            totalVolume: this.totalVolume,
+                            saasActive: this.saasActive,
+                            creators: this.creators,
+                            deals: this.deals
+                        }));
+                    } catch (e) {
+                        console.error('Storage save error', e);
+                    }
+                },
+
+                get filteredCreators() {
+                    if (!this.searchQuery) return this.creators;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.creators.filter(c => c.name.toLowerCase().includes(q) || c.niche.toLowerCase().includes(q) || c.location.toLowerCase().includes(q));
+                },
+
+                openHireModal(creator) {
+                    this.selectedCreator = creator;
+                    this.hireForm = { brand: '', brief: '' };
+                },
+
+                confirmHire() {
+                    if (!this.hireForm.brand || !this.hireForm.brief) {
+                        alert('Please fill out all fields.');
+                        return;
+                    }
+                    const cost = this.selectedCreator.rate;
+                    const commission = Math.round(cost * 0.10); // 10% platform take
+                    this.balance += commission;
+                    this.totalVolume += cost;
+                    this.saveState();
+                    alert(`Successfully booked ${this.selectedCreator.name}! Escrow secured. Platform commission (₦${commission}) added.`);
+                    this.selectedCreator = null;
+                },
+
+                submitDeal() {
+                    if (!this.newDeal.title || !this.newDeal.budget || !this.newDeal.description) {
+                        alert('Please fill in all required gig details.');
+                        return;
+                    }
+                    const budgetNum = Number(this.newDeal.budget);
+                    const commission = Math.round(budgetNum * 0.10);
+                    this.deals.unshift({
+                        id: Date.now(),
+                        title: this.newDeal.title,
+                        platform: this.newDeal.platform,
+                        description: this.newDeal.description,
+                        budget: budgetNum,
+                        contact: this.newDeal.contact
+                    });
+                    this.balance += commission;
+                    this.totalVolume += budgetNum;
+                    this.saveState();
+                    alert('Gig successfully posted to the marketplace with escrow protection!');
+                    this.newDeal = { title: '', platform: 'Instagram', description: '', budget: '', contact: '' };
+                    this.currentTab = 'deals';
+                },
+
+                applyForDeal(deal) {
+                    alert(`Application sent to SME for "${deal.title}". They will reach out via WhatsApp/Phone.`);
+                },
+
+                featureCreator(id) {
+                    if (this.balance < 1000) {
+                        alert('Insufficient balance. Fund your account or earn commissions first.');
+                        return;
+                    }
+                    this.balance -= 1000;
+                    const c = this.creators.find(x => x.id === id);
+                    if (c) c.featured = true;
+                    this.saveState();
+                    alert('Creator listing promoted to featured for 7 days!');
+                },
+
+                upgradeSaaS() {
+                    if (this.balance < 1000) {
+                        alert('Insufficient balance. ₦1,000 required for SaaS upgrade.');
+                        return;
+                    }
+                    this.balance -= 1000;
+                    this.saasActive = true;
+                    this.saveState();
+                    alert('Creator SaaS Suite unlocked successfully for 30 days!');
+                },
+
+                generateMediaKit() {
+                    if (!this.mediaKit?.handle) {
+                        alert('Please enter your handle name.');
+                        return;
+                    }
+                    alert(`Media Kit generated for ${this.mediaKit.handle} (${this.mediaKit.niche || 'General'})! Copied to clipboard.`);
+                },
+
+                mediaKit: { handle: '', niche: '' },
+
+                saveCreator() {
+                    if (!this.newCreator.name || !this.newCreator.followers || !this.newCreator.rate) {
+                        alert('Please complete the core fields.');
+                        return;
+                    }
+                    this.creators.unshift({
+                        id: Date.now(),
+                        name: this.newCreator.name,
+                        platform: this.newCreator.platform,
+                        followers: this.newCreator.followers,
+                        niche: this.newCreator.niche || 'General',
+                        location: this.newCreator.location || 'Nigeria',
+                        rate: Number(this.newCreator.rate),
+                        engagement: '4.5% Engagement',
+                        featured: false
+                    });
+                    this.saveState();
+                    this.showAddCreatorModal = false;
+                    alert('Creator profile created successfully!');
+                    this.newCreator = { name: '', platform: 'Instagram', followers: '', niche: '', location: '', rate: '' };
+                }
+            }
+        }
+    </script>
+</body>
+</html>
