@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FreeData Study Scheduler</title>
+<meta name="description" content="FreeData Study Scheduler – a low‑code web app that lets students input their exam subjects and creates a daily study plan that aligns with the government’s">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+<style>
+:root{
+  --safe-bottom: env(safe-area-inset-bottom);
+  --primary:#0066cc;
+  --bg:#f9f9f9;
+  --text:#111;
+}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+}
+header{
+  padding:calc(1rem + var(--safe-bottom)) 1rem 0.5rem;
+  text-align:center;
+  background:var(--primary);
+  color:#fff;
+}
+h1{
+  margin:0;
+  font-size:1.5rem;
+}
+main{
+  padding:1rem;
+  padding-bottom:calc(4rem + var(--safe-bottom));
+}
+section{
+  margin-bottom:1.5rem;
+}
+label{
+  display:block;
+  margin-bottom:0.3rem;
+  font-weight:600;
+}
+textarea, input[type=date], button{
+  width:100%;
+  font-size:1rem;
+  padding:0.8rem;
+  border:1px solid #ccc;
+  border-radius:0.4rem;
+  box-sizing:border-box;
+}
+button{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  margin-top:0.5rem;
+  cursor:pointer;
+}
+button:active{
+  background:#004999;
+}
+#schedule{
+  list-style:none;
+  padding:0;
+}
+#schedule li{
+  background:#fff;
+  margin-bottom:0.5rem;
+  padding:0.8rem;
+  border-radius:0.4rem;
+  border-left:4px solid var(--primary);
+}
+footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  border-top:1px solid #ddd;
+  padding:0.5rem calc(1rem + var(--safe-bottom));
+  text-align:center;
+  font-size:0.9rem;
+}
+.ad{
+  background:#e2e2e2;
+  color:#555;
+  text-align:center;
+  padding:0.8rem;
+  border-radius:0.4rem;
+  margin-top:0.5rem;
+}
+.premium-badge{
+  display:inline-block;
+  background:#ff9800;
+  color:#fff;
+  padding:0.2rem 0.5rem;
+  border-radius:0.3rem;
+  font-size:0.8rem;
+  margin-left:0.5rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>FreeData Study Scheduler<span id="premiumTag"></span></h1>
+</header>
+<main>
+  <section aria-labelledby="subjectsLabel">
+    <label id="subjectsLabel" for="subjects">Enter your exam subjects (one per line)</label>
+    <textarea id="subjects" rows="5" placeholder="e.g. Mathematics&#10;English&#10;Physics"></textarea>
+  </section>
+  <section aria-labelledby="dateLabel">
+    <label id="dateLabel" for="examDate">Exam date</label>
+    <input type="date" id="examDate">
+  </section>
+  <section>
+    <button id="generateBtn">Generate Study Plan</button>
+    <button id="notifyBtn">Enable Notifications</button>
+    <button id="premiumBtn">Go Premium</button>
+    <div id="adContainer" class="ad" role="region" aria-label="Advertisement">Ad: Boost your scores with our premium guides!</div>
+  </section>
+  <section aria-labelledby="planLabel">
+    <h2 id="planLabel">Your Study Plan</h2>
+    <ul id="schedule" role="list"></ul>
+  </section>
+  <section aria-labelledby="affiliatesLabel">
+    <h2 id="affiliatesLabel">Recommended Resources</h2>
+    <ul>
+      <li><a href="https://example.com/book1" target="_blank" rel="noopener">📖 Top Nigerian Exam Book 1</a></li>
+      <li><a href="https://example.com/course2" target="_blank" rel="noopener">💻 Online Course for WAEC</a></li>
+    </ul>
+  </section>
+</main>
+<footer>
+  © 2026 FreeData Scheduler
+</footer>
+<script>
+(function(){
+  const $ = (sel)=>document.querySelector(sel);
+  const subjectsEl = $('#subjects');
+  const dateEl = $('#examDate');
+  const generateBtn = $('#generateBtn');
+  const scheduleEl = $('#schedule');
+  const notifyBtn = $('#notifyBtn');
+  const premiumBtn = $('#premiumBtn');
+  const adContainer = $('#adContainer');
+  const premiumTag = $('#premiumTag');
+
+  // Safe checks
+  if(!subjectsEl||!dateEl||!generateBtn||!scheduleEl||!notifyBtn||!premiumBtn||!adContainer||!premiumTag){
+    console.error('Missing essential elements');
+    return;
+  }
+
+  // Load saved data
+  try{
+    const saved = localStorage.getItem('fdScheduler');
+    if(saved){
+      const data = JSON.parse(saved);
+      subjectsEl.value = data.subjects||'';
+      dateEl.value = data.examDate||'';
+      if(data.premium){
+        setPremium(true);
+      }
+    }
+  }catch(e){/* ignore */ }
+
+  function saveState(){
+    try{
+      const data = {
+        subjects: subjectsEl.value,
+        examDate: dateEl.value,
+        premium: premiumBtn.dataset.premium==='true'
+      };
+      localStorage.setItem('fdScheduler',JSON.stringify(data));
+    }catch(e){/* ignore */}
+  }
+
+  function setPremium(isPremium){
+    premiumBtn.dataset.premium = isPremium;
+    if(isPremium){
+      premiumTag.textContent = ' Premium';
+      premiumTag.className = 'premium-badge';
+      adContainer.style.display='none';
+    }else{
+      premiumTag.textContent = '';
+      adContainer.style.display='block';
+    }
+    saveState();
+  }
+
+  premiumBtn.addEventListener('click',()=>{ 
+    const isNow = premiumBtn.dataset.premium!=='true';
+    setPremium(isNow);
+    alert(isNow?'Premium activated! Ads removed.':'Premium deactivated. Ads shown.');
+  });
+
+  generateBtn.addEventListener('click',()=>{
+    const raw = subjectsEl.value.trim();
+    const dateVal = dateEl.value;
+    if(!raw){
+      alert('Please enter at least one subject.');
+      return;
+    }
+    if(!dateVal){
+      alert('Please select your exam date.');
+      return;
+    }
+    const subjects = raw.split('\n').map(s=>s.trim()).filter(s=>s);
+    const examDate = new Date(dateVal);
+    const today = new Date();
+    const daysLeft = Math.max(0, Math.ceil((examDate - today)/(1000*60*60*24)));
+    if(daysLeft===0){
+      alert('Exam date must be in the future.');
+      return;
+    }
+    // Free-data windows (example): 00:00-06:00 and 18:00-22:00
+    const windows = [
+      {start:0, end:6},
+      {start:18, end:22}
+    ];
+    const slotsPerDay = windows.length * 2; // two slots per window (hourly)
+    const totalSlots = daysLeft * slotsPerDay;
+    const plan = [];
+    let idx=0;
+    for(let d=0; d<daysLeft; d++){
+      const dayDate = new Date();
+      dayDate.setDate(today.getDate()+d);
+      windows.forEach(w=>{
+        // two hour slots per window
+        for(let h=w.start; h<w.end; h+=Math.ceil((w.end-w.start)/2)){
+          const subject = subjects[idx%subjects.length];
+          plan.push({
+            date: dayDate.toLocaleDateString(),
+            time: `${h}:00 - ${h+1}:00`,
+            subject
+          });
+          idx++;
+        }
+      });
+    }
+    // Render
+    scheduleEl.innerHTML='';
+    plan.forEach(item=>{
+      const li=document.createElement('li');
+      li.textContent=`${item.date} ${item.time} – ${item.subject}`;
+      scheduleEl.appendChild(li);
+    });
+    // Notification
+    if(Notification.permission==='granted'){
+      new Notification('Study Plan Ready', {body:`Your ${daysLeft}-day plan is ready.`});
+    }
+    saveState();
+  });
+
+  notifyBtn.addEventListener('click',()=>{
+    if(!('Notification' in window)){
+      alert('This browser does not support notifications.');
+      return;
+    }
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){
+        alert('Notifications enabled.');
+      }else{
+        alert('Notifications denied.');
+      }
+    });
+  });
+
+  // Initial premium state
+  setPremium(premiumBtn.dataset.premium==='true');
+
+})();
+</script>
+</body>
+</html>
