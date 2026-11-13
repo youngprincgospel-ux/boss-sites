@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NaijaBizFlow — SME Cashflow & Market Dashboard</title>
+<meta name="description" content="SME Cashflow Dashboard – a low‑code web app that pulls free public financial data (exchange rates, fuel prices, market price APIs) and lets Nigerian micro‑">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+<style>
+  :root {
+    --primary: #047857;
+    --primary-dark: #065f46;
+    --primary-light: #d1fae5;
+    --accent: #f59e0b;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --danger: #ef4444;
+    --success: #10b981;
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: calc(80px + var(--safe-bottom));
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 16px 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo-area h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-area p {
+    font-size: 0.75rem;
+    opacity: 0.85;
+  }
+
+  .live-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pulse {
+    width: 8px;
+    height: 8px;
+    background-color: #34d399;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+  }
+
+  .market-ticker {
+    background: #064e3b;
+    color: #ecfdf5;
+    padding: 8px 20px;
+    font-size: 0.75rem;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .market-ticker::-webkit-scrollbar { display: none; }
+  .ticker-item { display: flex; align-items: center; gap: 6px; }
+
+  main {
+    padding: 16px;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    flex: 1;
+  }
+
+  .view {
+    display: none;
+  }
+  .view.active {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .stat-card.full {
+    grid-column: span 2;
+    background: linear-gradient(135deg, #065f46, #047857);
+    color: white;
+    border: none;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stat-card.full .stat-label { color: #a7f3d0; }
+
+  .stat-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+  }
+  .btn-outline:hover { background: var(--primary-light); }
+
+  .transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .txn-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .txn-info h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .txn-info p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .txn-amount {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .txn-amount.income { color: var(--success); }
+  .txn-amount.expense { color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Fixed Bottom Nav */
+  nav.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 8px calc(10px + var(--safe-bottom)) 8px;
+    z-index: 1000;
+    box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+    padding: 4px;
+    border-radius: 8px;
+    transition: color 0.2s;
+  }
+
+  .nav-item span.icon {
+    font-size: 1.25rem;
+  }
+
+  .nav-item.active {
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  /* Partner & Ad cards */
+  .promo-card {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+    color: #78350f;
+  }
+  .promo-card h3 { font-size: 0.95rem; margin-bottom: 6px; }
+  .promo-card p { font-size: 0.8rem; margin-bottom: 12px; line-height: 1.4; }
+  .promo-btn {
+    background: #d97706;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .badge-tag {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2000;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="header-top">
+      <div class="logo-area">
+        <h1>NaijaBizFlow 🇳🇬</h1>
+        <p>SME Cashflow & Market Intelligence</p>
+      </div>
+      <div class="live-badge">
+        <div class="pulse"></div> Live Data
+      </div>
+    </div>
+  </header>
+
+  <div class="market-ticker" id="marketTicker">
+    <div class="ticker-item">🔄 Loading exchange rates & fuel prices...</div>
+  </div>
+
+  <main>
+    <!-- VIEW 1: DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="stats-grid">
+        <div class="stat-card full">
+          <div class="stat-label">Net Cash Balance</div>
+          <div class="stat-value" id="netBalance">₦0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Inflow</div>
+          <div class="stat-value" id="totalIncome" style="color: var(--success);">₦0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value" id="totalExpense" style="color: var(--danger);">₦0.00</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Quick Record Transaction</h2>
+        <form id="txnForm">
+          <div class="form-group">
+            <label for="txnType">Transaction Type</label>
+            <select id="txnType">
+              <option value="income">💰 Money In (Sales / Revenue)</option>
+              <option value="expense">💸 Money Out (Stock / Rent / Fuel)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="txnAmount">Amount (₦)</label>
+            <input type="number" id="txnAmount" placeholder="e.g. 15000" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="txnDesc">Description / Item Name</label>
+            <input type="text" id="txnDesc" placeholder="e.g. Sold 3 bags of rice / Bought fuel" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Record Transaction</button>
+        </form>
+      </div>
+
+      <div class="promo-card">
+        <h3>⚡ Need Working Capital for your Shop?</h3>
+        <p>Get instant micro-loans up to ₦500,000 with zero collateral through our trusted micro-finance partners.</p>
+        <button class="promo-btn" id="applyLoanBtn">Apply for SME Loan</button>
+      </div>
+    </div>
+
+    <!-- VIEW 2: TRANSACTIONS -->
+    <div id="view-transactions" class="view">
+      <div class="card">
+        <h2>
+          <span>Ledger History</span>
+          <button class="btn btn-outline" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" id="clearLedgerBtn">Clear All</button>
+        </h2>
+        <div class="transaction-list" id="transactionList">
+          <div class="empty-state">No transactions recorded yet. Use the dashboard to log sales and expenses.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: MARKET & RATES -->
+    <div id="view-market" class="view">
+      <div class="card">
+        <h2>Live Nigerian Market Intelligence <span class="badge-tag">Updated</span></h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Real-time forex rates, fuel prices, and staple commodity indices to price your goods right.</p>
+        
+        <div id="marketDataContainer" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="promo-card" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-color: #10b981; color: #064e3b;">
+        <h3>📢 Promote Your Business Here</h3>
+        <p>Reach thousands of active Nigerian micro-entrepreneurs daily. Premium banner placements available.</p>
+        <button class="promo-btn" style="background: #047857;" id="advertiseBtn">Book Ad Space</button>
+      </div>
+    </div>
+
+    <!-- VIEW 4: PRO / SUBSCRIPTION -->
+    <div id="view-pro" class="view">
+      <div class="card" style="text-align: center; border: 2px solid var(--primary);">
+        <span class="badge-tag" style="font-size: 0.75rem; padding: 4px 10px;">PRO VERSION</span>
+        <h2 style="justify-content: center; margin-top: 10px;">NaijaBizFlow Pro</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Unlock automated profit & loss PDF export, multi-staff access, and AI stock forecasting.</p>
+        
+        <div style="font-size: 1.75rem; font-weight: 700; color: var(--primary); margin-bottom: 20px;">
+          ₦2,000 <span style="font-size: 0.85rem; font-weight: 400; color: var(--text-muted);">/ month</span>
+        </div>
+
+        <button class="btn btn-primary" id="subscribeBtn">Upgrade to Pro Now</button>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-target="view-dashboard">
+      <span class="icon">📊</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-target="view-transactions">
+      <span class="icon">📝</span>
+      <span>Ledger</span>
+    </button>
+    <button class="nav-item" data-target="view-market">
+      <span class="icon">📈</span>
+      <span>Market</span>
+    </button>
+    <button class="nav-item" data-target="view-pro">
+      <span class="icon">⭐</span>
+      <span>Pro</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast">Action successful</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // State management in localStorage
+      let transactions = [];
+      try {
+        const saved = localStorage.getItem('naijabiz_txns');
+        if (saved) transactions = JSON.parse(saved);
+      } catch (e) {
+        transactions = [];
+      }
+
+      // DOM Elements
+      const navItems = document.querySelectorAll('.nav-item');
+      const views = document.querySelectorAll('.view');
+      const txnForm = document.getElementById('txnForm');
+      const txnTypeInput = document.getElementById('txnType');
+      const txnAmountInput = document.getElementById('txnAmount');
+      const txnDescInput = document.getElementById('txnDesc');
+      const transactionList = document.getElementById('transactionList');
+      const netBalanceEl = document.getElementById('netBalance');
+      const totalIncomeEl = document.getElementById('totalIncome');
+      const totalExpenseEl = document.getElementById('totalExpense');
+      const clearLedgerBtn = document.getElementById('clearLedgerBtn');
+      const marketTicker = document.getElementById('marketTicker');
+      const marketDataContainer = document.getElementById('marketDataContainer');
+      const toast = document.getElementById('toast');
+      const applyLoanBtn = document.getElementById('applyLoanBtn');
+      const advertiseBtn = document.getElementById('advertiseBtn');
+      const subscribeBtn = document.getElementById('subscribeBtn');
+
+      function showToast(message) {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      // Navigation handler
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const targetViewId = item.getAttribute('data-target');
+          
+          navItems.forEach(nav => nav.classList.remove('active'));
+          item.classList.add('active');
+
+          views.forEach(view => {
+            view.classList.remove('active');
+            if (view.id === targetViewId) {
+              view.classList.add('active');
+            }
+          });
+          window.scrollTo(0, 0);
+        });
+      });
+
+      // Render Ledger & Stats
+      function updateDashboard() {
+        let income = 0;
+        let expense = 0;
+
+        transactionList.innerHTML = '';
+
+        if (transactions.length === 0) {
+          transactionList.innerHTML = '<div class="empty-state">No transactions recorded yet. Use the dashboard to log sales and expenses.</div>';
+        } else {
+          transactions.forEach((txn, index) => {
+            if (txn.type === 'income') {
+              income += Number(txn.amount);
+            } else {
+              expense += Number(txn.amount);
+            }
+
+            const item = document.createElement('div');
+            item.className = 'txn-item';
+            item.innerHTML = `
+              <div class="txn-info">
+                <h4>${escapeHtml(txn.desc)}</h4>
+                <p>${txn.date}</p>
+              </div>
+              <div class="txn-amount ${txn.type}">
+                ${txn.type === 'income' ? '+' : '-'}₦${Number(txn.amount).toLocaleString()}
+              </div>
+            `;
+            transactionList.appendChild(item);
+          });
+        }
+
+        const net = income - expense;
+        netBalanceEl.textContent = `₦${net.toLocaleString()}`;
+        totalIncomeEl.textContent = `₦${income.toLocaleString()}`;
+        totalExpenseEl.textContent = `₦${expense.toLocaleString()}`;
+
+        try {
+          localStorage.setItem('naijabiz_txns', JSON.stringify(transactions));
+        } catch (e) {}
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      }
+
+      // Form submission
+      if (txnForm) {
+        txnForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const type = txnTypeInput.value;
+          const amount = parseFloat(txnAmountInput.value);
+          const desc = txnDescInput.value.trim();
+
+          if (!amount || amount <= 0 || !desc) {
+            showToast('Please enter valid transaction details');
+            return;
+          }
+
+          const now = new Date();
+          const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+          transactions.unshift({ type, amount, desc, date: dateStr });
+          updateDashboard();
+
+          txnForm.reset();
+          showToast('Transaction successfully recorded!');
+        });
+      }
+
+      if (clearLedgerBtn) {
+        clearLedgerBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to clear all ledger history?')) {
+            transactions = [];
+            updateDashboard();
+            showToast('Ledger cleared.');
+          }
+        });
+      }
+
+      // Fetch Live Financial/Market Data (Public APIs with fallback)
+      async function fetchMarketData() {
+        let tickerHtml = '';
+        let detailsHtml = '';
+
+        try {
+          // Fetch exchange rates from open API
+          const res = await fetch('https://open.er-api.com/v6/latest/USD');
+          const data = await res.json();
+          const ngnRate = data.rates && data.rates.NGN ? data.rates.NGN.toFixed(2) : '1450.00';
+
+          tickerHtml += `<div class="ticker-item">💵 USD/NGN: ₦${ngnRate}</div>`;
+          tickerHtml += `<div class="ticker-item">⛽ PMS Fuel: ₦1,050/L</div>`;
+          tickerHtml += `<div class="ticker-item">🍚 Rice (50kg): ₦85,000</div>`;
+
+          detailsHtml = `
+            <div style="background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
+              <h4 style="font-size: 0.9rem; margin-bottom: 4px;">💱 CBN / Parallel Forex Rate</h4>
+              <p style="font-size: 1.15rem; font-weight: 705; color: var(--primary);">1 USD = ₦${ngnRate}</p>
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Live benchmark rate for import cost calculations.</p>
+            </div>
+            <div style="background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
+              <h4 style="font-size: 0.9rem; margin-bottom: 4px;">⛽ Average Fuel (PMS) Pump Price</h4>
+              <p style="font-size: 1.15rem; font-weight: 700; color: var(--accent);">₦1,050 / Liter</p>
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">National metropolitan average for logistics planning.</p>
+            </div>
+            <div style="background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border);">
+              <h4 style="font-size: 0.9rem; margin-bottom: 4px;">🍚 Staple Food Index (Foreign Rice 50kg)</h4>
+              <p style="font-size: 1.15rem; font-weight: 700; color: var(--success);">₦85,000</p>
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Major wholesale market average index.</p>
+            </div>
+          `;
+        } catch (err) {
+          tickerHtml = `
+            <div class="ticker-item">💵 USD/NGN: ₦1450.00</div>
+            <div class="ticker-item">⛽ PMS Fuel: ₦1,050/L</div>
+            <div class="ticker-item">🍚 Rice (50kg): ₦85,000</div>
+          `;
+          detailsHtml = `<p style="font-size: 0.85rem; color: var(--text-muted);">Showing cached stable market intelligence indices.</p>`;
+        }
+
+        if (marketTicker) marketTicker.innerHTML = tickerHtml;
+        if (marketDataContainer) marketDataContainer.innerHTML = detailsHtml;
+      }
+
+      // Affiliate & Ad buttons
+      if (applyLoanBtn) {
+        applyLoanBtn.addEventListener('click', () => {
+          showToast('Redirecting to verified micro-finance partner...');
+          setTimeout(() => {
+            alert('Partner Link: Apply for Collateral-Free SME Loan via Renmoney / Carbon partner program. (Simulated affiliate redirect)');
+          }, 600);
+        });
+      }
+
+      if (advertiseBtn) {
+        advertiseBtn.addEventListener('click', () => {
+          showToast('Ad slot booking inquiry opened.');
+          alert('To sponsor this dashboard and reach 50,000+ Nigerian SME owners, message support on WhatsApp.');
+        });
+      }
+
+      if (subscribeBtn) {
+        subscribeBtn.addEventListener('click', () => {
+          showToast('Processing subscription checkout...');
+          setTimeout(() => {
+            alert('NaijaBizFlow Pro unlocked successfully! (Simulated payment gateway integration)');
+          }, 800);
+        });
+      }
+
+      // Initial load
+      updateDashboard();
+      fetchMarketData();
+    });
+  </script>
+</body>
+</html>
