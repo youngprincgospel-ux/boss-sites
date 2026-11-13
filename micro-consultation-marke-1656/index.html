@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ExamMentor NG | Micro-Consultation Marketplace</title>
+<meta name="description" content="Micro‑Consultation Marketplace for Exam Strategies. This should help: Connects students with experienced educators for 15‑minute paid video or voice consul">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <style>
+        :root {
+            --primary: #0F172A;
+            --accent: #2563EB;
+            --accent-hover: #1D4ED8;
+            --success: #16A34A;
+            --warning: #CA8A04;
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --text: #334155;
+            --text-light: #64748B;
+            --border: #E2E8F0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .wallet-badge {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), #1E293B);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .hero h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+        }
+
+        .stat-box h4 {
+            font-size: 1rem;
+            color: #60A5FA;
+        }
+
+        .stat-box span {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        /* Filter Chips */
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            scrollbar-width: none;
+        }
+
+        .filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Consultant Cards */
+        .mentor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .mentor-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .mentor-card.featured {
+            border: 2px solid var(--warning);
+            background: linear-gradient(to bottom, #FFFBEB, var(--surface));
+        }
+
+        .featured-tag {
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: var(--warning);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .mentor-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mentor-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .mentor-info h3 {
+            font-size: 1.05rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .mentor-info p {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .rating {
+            color: #D97706;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            margin-top: 0.2rem;
+        }
+
+        .mentor-bio {
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .mentor-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .price-tag {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .price-sub {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            display: block;
+        }
+
+        /* Buttons & Interactive Elements */
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: #F1F5F9;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #E2E8F0;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #B45309;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--primary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Modals / Bottom Sheets */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: flex-end;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Fixed Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 0.5rem 0.55rem calc(0.5rem + var(--safe-bottom)) 0.55rem;
+            z-index: 99;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+            color: var(--text-light);
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.35rem 0.15rem;
+            border-radius: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item span.nav-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Ledger & Bookings */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .ledger-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-box {
+            background: #F8FAFC;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .summary-box h4 {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-box .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge-success {
+            background: #DCFCE7;
+            color: var(--success);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-light);
+        }
+
+        .empty-state span {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span class="logo-icon">🎓</span>
+            <div class="logo-text">
+                <h1>ExamMentor NG</h1>
+                <p>Micro-Consultation Hub</p>
+            </div>
+        </div>
+        <div class="wallet-badge" id="headerWallet">
+            <span>💰</span> <span id="walletAmount">₦0</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- VIEW 1: MARKETPLACE -->
+        <section id="viewMarketplace" class="view-section active">
+            <div class="hero">
+                <h2>Ace Your Exams with Pro Guidance</h2>
+                <p>Connect with expert educators for live 15-minute 1-on-1 strategy, time management & free-data study hacks.</p>
+                <div class="hero-stats">
+                    <div class="stat-box">
+                        <h4 id="statMentors">4</h4>
+                        <span>Active Mentors</span>
+                    </div>
+                    <div class="stat-box">
+                        <h4>₦1,500</h4>
+                        <span>Per 15 Mins</span>
+                    </div>
+                    <div class="stat-box">
+                        <h4 id="statSessions">0</h4>
+                        <span>Bookings</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1rem; color: var(--primary);">Choose an Expert</h3>
+                <button class="btn btn-secondary" id="openRegisterModalBtn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">+ Become a Mentor</button>
+            </div>
+
+            <div class="filters" id="categoryFilters">
+                <button class="chip active" data-category="all">All Exams</button>
+                <button class="chip" data-category="UTME / JAMB">JAMB / UTME</button>
+                <button class="chip" data-category="WAEC / NECO">WAEC / NECO</button>
+                <button class="chip" data-category="Post-UTME">Post-UTME</button>
+                <button class="chip" data-category="Data Hacks">Free-Data Hacks</button>
+            </div>
+
+            <div class="mentor-list" id="mentorContainer">
+                <!-- Injected dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: BOOKINGS -->
+        <section id="viewBookings" class="view-section">
+            <div class="card">
+                <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--primary);">Your Consultations</h3>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem;">Active and past 15-minute strategy session bookings.</p>
+                <div id="bookingsListContainer">
+                    <!-- Injected dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: LEDGER & ADMIN -->
+        <section id="viewLedger" class="view-section">
+            <div class="card">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">Platform Revenue Ledger</h3>
+                <div class="ledger-summary">
+                    <div class="summary-box">
+                        <h4>Total Volume</h4>
+                        <div class="value" id="ledgerVolume">₦0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h4>Commission (20%)</h4>
+                        <div class="value" id="ledgerCommission">₦0</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--primary);">Recent Transactions</h4>
+                    <div id="transactionList">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size: 1.05rem; margin-bottom: 0.5rem; color: var(--primary);">Consultant Management</h3>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem;">Simulate premium mentor boosting (₦2,000/month).</p>
+                <div id="adminMentorList">
+                    <!-- Injected dynamically -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- BOOKING MODAL -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalMentorName" style="font-size: 1.1rem; color: var(--primary);">Book 15-Min Session</h3>
+                <button class="close-btn" id="closeBookingModal">&times;</button>
+            </div>
+            <form id="bookingForm">
+                <input type="hidden" id="bookMentorId">
+                <div class="form-group">
+                    <label class="form-label" for="studentName">Your Full Name</label>
+                    <input type="text" id="studentName" class="form-input" placeholder="e.g. David Adebayo" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="studentPhone">WhatsApp Phone Number</label>
+                    <input type="tel" id="studentPhone" class="form-input" placeholder="e.g. 08031234567" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="examFocus">Specific Exam / Challenge</label>
+                    <input type="text" id="examFocus" class="form-input" placeholder="e.g. Physics equations & Free data access" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="sessionTime">Preferred Time Slot</label>
+                    <select id="sessionTime" class="form-select">
+                        <option value="Today @ 4:00 PM">Today @ 4:00 PM</option>
+                        <option value="Today @ 6:30 PM">Today @ 6:30 PM</option>
+                        <option value="Tomorrow @ 10:00 AM">Tomorrow @ 10:00 AM</option>
+                        <option value="Tomorrow @ 2:00 PM">Tomorrow @ 2:00 PM</option>
+                    </select>
+                </div>
+                <div style="background: #F1F5F9; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                        <span>Session Fee:</span>
+                        <strong>₦1,500</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-light);">
+                        <span>Platform Commission (20%):</span>
+                        <span id="previewCommission">₦300</span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-block">Confirm & Pay ₦1,500 (Simulated)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- REGISTER MENTOR MODAL -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem; color: var(--primary);">Register as an Expert Consultant</h3>
+                <button class="close-btn" id="closeRegisterModal">&times;</button>
+            </div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label" for="regName">Full Name & Title</label>
+                    <input type="text" id="regName" class="form-input" placeholder="e.g. Dr. Emeka Obi (Physics Guru)" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="regCategory">Expertise Category</label>
+                    <select id="regCategory" class="form-select">
+                        <option value="UTME / JAMB">UTME / JAMB</option>
+                        <option value="WAEC / NECO">WAEC / NECO</option>
+                        <option value="Post-UTME">Post-UTME</option>
+                        <option value="Data Hacks">Free-Data Hacks & Study Tech</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="regBio">Short Bio & Strategy Focus</label>
+                    <textarea id="regBio" class="form-textarea" placeholder="e.g. Scored 350 in UTME. Helping students master past questions without buying heavy textbooks." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-block">Submit Mentor Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="viewMarketplace">
+            <span class="nav-icon">🔍</span>
+            <span>Marketplace</span>
+        </button>
+        <button class="nav-item" data-target="viewBookings">
+            <span class="nav-icon">📅</span>
+            <span>My Sessions</span>
+        </button>
+        <button class="nav-item" data-target="viewLedger">
+            <span class="nav-icon">📊</span>
+            <span>Ledger & Admin</span>
+        </button>
+    </nav>
+
+    <script>
+        // State Management & LocalStorage
+        const STORAGE_KEY = 'exam_mentor_ng_state_v1';
+        
+        const defaultState = {
+            wallet: 1500,
+            volume: 1500,
+            commission: 300,
+            mentors: [
+                {
+                    id: 'm1',
+                    name: 'Dr. Chinedu Okafor',
+                    title: 'Ex-JAMB Examiner & Physics Lead',
+                    category: 'UTME / JAMB',
+                    rating: 4.9,
+                    reviews: 38,
+                    bio: 'Specialist in breaking down tough physics equations and scoring 300+ in UTME with zero stress.',
+                    price: 1500,
+                    featured: true,
+                    avatar: '👨‍🏫'
+                },
+                {
+                    id: 'm2',
+                    name: 'Aisha Bello',
+                    title: 'WAEC A-Grade Strategist',
+                    category: 'WAEC / NECO',
+                    rating: 4.8,
+                    reviews: 24,
+                    bio: 'Mastering English Language and Literature essays. Direct marking scheme secrets revealed.',
+                    price: 1500,
+                    featured: false,
+                    avatar: '👩‍🏫'
+                },
+                {
+                    id: 'm3',
+                    name: 'Tunde Bakare',
+                    title: 'Free-Data & Study Tech Expert',
+                    category: 'Data Hacks',
+                    rating: 5.0,
+                    reviews: 52,
+                    bio: 'How to access offline CBT practice apps and zero-rated educational portals on MTN/Airtel.',
+                    price: 1500,
+                    featured: true,
+                    avatar: '💻'
+                },
+                {
+                    id: 'm4',
+                    name: 'Grace Okon',
+                    title: 'Post-UTME Screening Coach',
+                    category: 'Post-UTME',
+                    rating: 4.7,
+                    reviews: 19,
+                    bio: 'University-specific screening tactics, current affairs shortcut notes, and interview prep.',
+                    price: 1500,
+                    featured: false,
+                    avatar: '🎯'
+                }
+            ],
+            bookings: [
+                {
+                    id: 'b-init',
+                    mentorName: 'Dr. Chinedu Okafor',
+                    studentName: 'Samuel Ade',
+                    phone: '08030001122',
+                    examFocus: 'Physics 2027 CBT Prep',
+                    timeSlot: 'Today @ 4:00 PM',
+                    amount: 1500,
+                    commission: 300,
+                    date: new Date().toLocaleDateString()
+                }
+            ],
+            transactions: [
+                {
+                    id: 't-init',
+                    desc: 'Consultation: Samuel Ade -> Dr. Chinedu',
+                    amount: 1500,
+                    commission: 300,
+                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
+            ]
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                return saved ? JSON.parse(saved) : defaultState;
+            } catch (e) {
+                return defaultState;
+            }
+        }
+
+        function saveState(state) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        let appState = loadState();
+
+        // DOM Elements
+        const headerWallet = document.getElementById('headerWallet');
+        const walletAmount = document.getElementById('walletAmount');
+        const viewMarketplace = document.getElementById('viewMarketplace');
+        const viewBookings = document.getElementById('viewBookings');
+        const viewLedger = document.getElementById('viewLedger');
+        const mentorContainer = document.getElementById('mentorContainer');
+        const bookingsListContainer = document.getElementById('bookingsListContainer');
+        const transactionList = document.getElementById('transactionList');
+        const adminMentorList = document.getElementById('adminMentorList');
+        const categoryFilters = document.getElementById('categoryFilters');
+        
+        const statMentors = document.getElementById('statMentors');
+        const statSessions = document.getElementById('statSessions');
+        const ledgerVolume = document.getElementById('ledgerVolume');
+        const ledgerCommission = document.getElementById('ledgerCommission');
+
+        const bookingModal = document.getElementById('bookingModal');
+        const closeBookingModal = document.getElementById('closeBookingModal');
+        const bookingForm = document.getElementById('bookingForm');
+        const bookMentorId = document.getElementById('bookMentorId');
+        const modalMentorName = document.getElementById('modalMentorName');
+
+        const registerModal = document.getElementById('registerModal');
+        const openRegisterModalBtn = document.getElementById('openRegisterModalBtn');
+        const closeRegisterModal = document.getElementById('closeRegisterModal');
+        const registerForm = document.getElementById('registerForm');
+
+        let currentCategoryFilter = 'all';
+
+        // Render UI
+        function renderAll() {
+            if (walletAmount) walletAmount.innerText = `₦${appState.wallet.toLocaleString()}`;
+            if (statMentors) statMentors.innerText = appState.mentors.length;
+            if (statSessions) statSessions.innerText = appState.bookings.length;
+            if (ledgerVolume) ledgerVolume.innerText = `₦${appState.volume.toLocaleString()}`;
+            if (ledgerCommission) ledgerCommission.innerText = `₦${appState.commission.toLocaleString()}`;
+
+            renderMentors();
+            renderBookings();
+            renderLedger();
+            renderAdminMentors();
+        }
+
+        function renderMentors() {
+            if (!mentorContainer) return;
+            const filtered = currentCategoryFilter === 'all' 
+                ? appState.mentors 
+                : appState.mentors.filter(m => m.category === currentCategoryFilter);
+
+            if (filtered.length === 0) {
+                mentorContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔍</span>
+                        <p>No mentors found in this category.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            mentorContainer.innerHTML = filtered.map(m => `
+                <div class="mentor-card ${m.featured ? 'featured' : ''}">
+                    ${m.featured ? '<span class="featured-tag">⭐ Featured Pro</span>' : ''}
+                    <div class="mentor-header">
+                        <div class="mentor-avatar">${m.avatar}</div>
+                        <div class="mentor-info">
+                            <h3>${m.name}</h3>
+                            <p>${m.title}</p>
+                            <div class="rating">
+                                <span>⭐ ${m.rating}</span>
+                                <span style="color: var(--text-light); font-weight: 400;">(${m.reviews} reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mentor-bio">${m.bio}</p>
+                    <div class="mentor-footer">
+                        <div>
+                            <span class="price-tag">₦${m.price.toLocaleString()}</span>
+                            <span class="price-sub">15 mins live session</span>
+                        </div>
+                        <button class="btn book-trigger" data-id="${m.id}">
+                            Book Session
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Bind book buttons
+            document.querySelectorAll('.book-trigger').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    openBooking(id);
+                });
+            });
+        }
+
+        function renderBookings() {
+            if (!bookingsListContainer) return;
+            if (appState.bookings.length === 0) {
+                bookingsListContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span>📅</span>
+                        <p>No strategy sessions booked yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            bookingsListContainer.innerHTML = appState.bookings.slice().reverse().map(b => `
+                <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <div>
+                            <h4 style="font-size: 0.95rem; color: var(--primary);">${b.mentorName}</h4>
+                            <p style="font-size: 0.75rem; color: var(--text-light);">Focus: ${b.examFocus}</p>
+                        </div>
+                        <span class="badge-success">Confirmed</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text); display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.5rem;">
+                        <span>⏰ ${b.timeSlot}</span>
+                        <a href="https://wa.me/234${b.phone.slice(-10)}?text=Hello%20Mentor,%20I%20booked%20our%2015-min%20ExamMentor%20session%20for%20${encodeURIComponent(b.examFocus)}" target="_blank" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">💬 Open WhatsApp</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderLedger() {
+            if (!transactionList) return;
+            if (appState.transactions.length === 0) {
+                transactionList.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-light);">No transactions recorded.</p>`;
+                return;
+            }
+
+            transactionList.innerHTML = appState.transactions.slice().reverse().map(t => `
+                <div class="transaction-item">
+                    <div>
+                        <strong>${t.desc}</strong>
+                        <div style="font-size: 0.75rem; color: var(--text-light);">${t.date}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: var(--success); font-weight: 600;">+₦${t.amount.toLocaleString()}</span>
+                        <div style="font-size: 0.7rem; color: var(--text-light);">Commission: ₦${t.commission}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAdminMentors() {
+            if (!adminMentorList) return;
+            adminMentorList.innerHTML = appState.mentors.map(m => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
+                    <div>
+                        <strong>${m.name}</strong>
+                        <div style="font-size: 0.75rem; color: var(--text-light);">${m.category}</div>
+                    </div>
+                    <div>
+                        ${m.featured 
+                            ? '<span class="badge-success">Featured Active</span>' 
+                            : `<button class="btn btn-warning boost-btn" data-id="${m.id}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Boost (₦2k/mo)</button>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.boost-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    boostMentor(id);
+                });
+            });
+        }
+
+        // Navigation Handling
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const targetId = e.currentTarget.getAttribute('data-target');
+                
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+
+                document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+                const targetView = document.getElementById(targetId);
+                if (targetView) targetView.classList.add('active');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Category Filter Chips
+        document.querySelectorAll('#categoryFilters .chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                document.querySelectorAll('#categoryFilters .chip').forEach(c => c.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                currentCategoryFilter = e.currentTarget.getAttribute('data-category');
+                renderMentors();
+            });
+        });
+
+        // Booking Modal Flow
+        function openBooking(mentorId) {
+            const mentor = appState.mentors.find(m => m.id === mentorId);
+            if (!mentor) return;
+
+            if (bookMentorId) bookMentorId.value = mentor.id;
+            if (modalMentorName) modalMentorName.innerText = `Book Session with ${mentor.name}`;
+            if (bookingModal) bookingModal.classList.add('open');
+        }
+
+        if (closeBookingModal && bookingModal) {
+            closeBookingModal.addEventListener('click', () => {
+                bookingModal.classList.remove('open');
+            });
+            bookingModal.addEventListener('click', (e) => {
+                if (e.target === bookingModal) bookingModal.classList.remove('open');
+            });
+        }
+
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const mId = bookMentorId.value;
+                const mentor = appState.mentors.find(m => m.id === mId);
+                const sName = document.getElementById('studentName').value;
+                const sPhone = document.getElementById('studentPhone').value;
+                const examFocus = document.getElementById('examFocus').value;
+                const sessionTime = document.getElementById('sessionTime').value;
+
+                if (!mentor) return;
+
+                const sessionFee = 1500;
+                const commission = 300;
+
+                appState.wallet += sessionFee;
+                appState.volume += sessionFee;
+                appState.commission += commission;
+
+                appState.bookings.push({
+                    id: 'b-' + Date.now(),
+                    mentorName: mentor.name,
+                    studentName: sName,
+                    phone: sPhone,
+                    examFocus: examFocus,
+                    timeSlot: sessionTime,
+                    amount: sessionFee,
+                    commission: commission,
+                    date: new Date().toLocaleDateString()
+                });
+
+                appState.transactions.push({
+                    id: 't-' + Date.now(),
+                    desc: `Consultation: ${sName} -> ${mentor.name}`,
+                    amount: sessionFee,
+                    commission: commission,
+                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+
+                saveState(appState);
+                renderAll();
+
+                bookingModal.classList.remove('open');
+                bookingForm.reset();
+
+                // Redirect to WhatsApp confirmation instantly or alert
+                alert(`✅ Session successfully booked with ${mentor.name}! ₦1,500 recorded in ledger.`);
+            });
+        }
+
+        // Mentor Registration Flow
+        if (openRegisterModalBtn && registerModal) {
+            openRegisterModalBtn.addEventListener('click', () => {
+                registerModal.classList.add('open');
+            });
+        }
+
+        if (closeRegisterModal && registerModal) {
+            closeRegisterModal.addEventListener('click', () => {
+                registerModal.classList.remove('open');
+            });
+            registerModal.addEventListener('click', (e) => {
+                if (e.target === registerModal) registerModal.classList.remove('open');
+            });
+        }
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('regName').value;
+                const category = document.getElementById('regCategory').value;
+                const bio = document.getElementById('regBio').value;
+
+                const newMentor = {
+                    id: 'm-' + Date.now(),
+                    name: name,
+                    title: 'Verified Exam Consultant',
+                    category: category,
+                    rating: 5.0,
+                    reviews: 1,
+                    bio: bio,
+                    price: 1500,
+                    featured: false,
+                    avatar: '🎓'
+                };
+
+                appState.mentors.push(newMentor);
+                saveState(appState);
+                renderAll();
+
+                registerModal.classList.remove('open');
+                registerForm.reset();
+                alert('🎉 Mentor profile successfully created and listed on the marketplace!');
+            });
+        }
+
+        // Boost Mentor (Premium Listing ₦2,000)
+        function boostMentor(mentorId) {
+            const mentor = appState.mentors.find(m => m.id === mentorId);
+            if (!mentor) return;
+
+            const boostFee = 2000;
+            appState.wallet += boostFee;
+            appState.volume += boostFee;
+            appState.commission += boostFee; // 100% platform fee for premium listing
+
+            mentor.featured = true;
+
+            appState.transactions.push({
+                id: 't-' + Date.now(),
+                desc: `Premium Listing: ${mentor.name}`,
+                amount: boostFee,
+                commission: boostFee,
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            saveState(appState);
+            renderAll();
+            alert(`🚀 ${mentor.name} successfully boosted to top search results for ₦2,000!`);
+        }
+
+        // Initial render on load
+        renderAll();
+    </script>
+</body>
+</html>
