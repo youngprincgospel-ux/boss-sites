@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StudyBuddy AI Scheduler</title>
+<meta name="description" content="StudyBuddy AI Scheduler – a Chrome extension that syncs with Google Calendar and auto‑schedules focused study blocks during the daily 100 MB free‑data wind">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --primary:#0066cc;
+  --bg:#f9f9f9;
+  --text:#111;
+  --contrast:#fff;
+}
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,sans-serif;
+  line-height:1.5;
+}
+body{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+header{
+  background:var(--primary);
+  color:var(--contrast);
+  text-align:center;
+  padding:1rem;
+  font-size:1.25rem;
+  font-weight:bold;
+}
+main{
+  flex:1;
+  padding:1rem;
+  padding-bottom:calc(4rem + env(safe-area-inset-bottom));
+}
+section{
+  margin-bottom:1.5rem;
+}
+h2{
+  margin:0 0 .5rem;
+  font-size:1.1rem;
+}
+label{
+  display:block;
+  margin-bottom:.25rem;
+}
+input[type="time"],input[type="text"]{
+  width:100%;
+  padding:.5rem;
+  font-size:1rem;
+  margin-bottom:.5rem;
+  border:1px solid #ccc;
+  border-radius:4px;
+}
+button{
+  display:inline-block;
+  min-height:44px;
+  min-width:44px;
+  padding:.5rem 1rem;
+  font-size:1rem;
+  background:var(--primary);
+  color:var(--contrast);
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+li{
+  padding:.5rem 0;
+  border-bottom:1px solid #e0e0e0;
+}
+footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:var(--primary);
+  color:var(--contrast);
+  text-align:center;
+  padding:0.75rem env(safe-area-inset-bottom);
+  font-size:.9rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --primary:#004099;
+    --bg:#111;
+    --text:#eee;
+    --contrast:#fff;
+  }
+}
+</style>
+</head>
+<body>
+<header>StudyBuddy AI Scheduler</header>
+<main id="main">
+<section id="time-section">
+  <strong>Current time:</strong> <span id="current-time"></span>
+</section>
+
+<section id="window-section">
+  <h1>Free‑Data Window</h2>
+  <label for="window-start">Start Time</label>
+  <input type="time" id="window-start" aria-label="Free data window start time">
+  <label for="window-end">End Time</label>
+  <input type="time" id="window-end" aria-label="Free data window end time">
+  <button id="save-window">Save Window</button>
+</section>
+
+<section id="subjects-section">
+  <h2>Subjects</h2>
+  <ul id="subject-list" aria-label="List of subjects"></ul>
+  <input type="text" id="new-subject" placeholder="Add subject" aria-label="New subject name">
+  <button id="add-subject">Add Subject</button>
+</section>
+
+<section id="schedule-section">
+  <h2>Generated Schedule</h2>
+  <ul id="schedule-list" aria-label="Generated study schedule"></ul>
+  <button id="generate-schedule">Generate Schedule</button>
+</section>
+</main>
+<footer id="footer-bar">© 2026 StudyBuddy</footer>
+
+<script>
+(() => {
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  const timeEl = $('#current-time');
+  const startInput = $('#window-start');
+  const endInput = $('#window-end');
+  const saveWindowBtn = $('#save-window');
+  const subjectListEl = $('#subject-list');
+  const newSubjectInput = $('#new-subject');
+  const addSubjectBtn = $('#add-subject');
+  const scheduleListEl = $('#schedule-list');
+  const generateBtn = $('#generate-schedule');
+
+  // Helper: safe get element
+  const safe = (el) => (el ? el : null);
+
+  // Load from localStorage
+  const loadState = () => {
+    try {
+      const win = JSON.parse(localStorage.getItem('freeWindow')) || {};
+      if (win.start) startInput.value = win.start;
+      if (win.end) endInput.value = win.end;
+    } catch(e){}
+    try {
+      const subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+      renderSubjects(subjects);
+    } catch(e){}
+    try {
+      const schedule = JSON.parse(localStorage.getItem('schedule')) || [];
+      renderSchedule(schedule);
+    } catch(e){}
+  };
+
+  const saveWindow = () => {
+    if (!startInput.value || !endInput.value) return;
+    const data = { start: startInput.value, end: endInput.value };
+    try { localStorage.setItem('freeWindow', JSON.stringify(data)); } catch(e){}
+  };
+
+  const getSubjects = () => {
+    try {
+      return JSON.parse(localStorage.getItem('subjects')) || [];
+    } catch(e){ return []; }
+  };
+
+  const setSubjects = (arr) => {
+    try { localStorage.setItem('subjects', JSON.stringify(arr)); } catch(e){}
+  };
+
+  const renderSubjects = (arr) => {
+    subjectListEl.innerHTML = '';
+    arr.forEach((sub, i) => {
+      const li = document.createElement('li');
+      li.textContent = sub;
+      const del = document.createElement('button');
+      del.textContent = '✕';
+      del.style.marginLeft='0.5rem';
+      del.setAttribute('aria-label', `Delete ${sub}`);
+      del.addEventListener('click', () => {
+        const updated = getSubjects().filter((_, idx) => idx !== i);
+        setSubjects(updated);
+        renderSubjects(updated);
+      });
+      li.appendChild(del);
+      subjectListEl.appendChild(li);
+    });
+  };
+
+  const addSubject = () => {
+    const val = newSubjectInput.value.trim();
+    if (!val) return;
+    const subjects = getSubjects();
+    subjects.push(val);
+    setSubjects(subjects);
+    renderSubjects(subjects);
+    newSubjectInput.value = '';
+  };
+
+  const renderSchedule = (arr) => {
+    scheduleListEl.innerHTML = '';
+    arr.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.start} – ${item.end}: ${item.subject}`;
+      scheduleListEl.appendChild(li);
+    });
+  };
+
+  const generateSchedule = () => {
+    if (!startInput.value || !endInput.value) return;
+    const subjects = getSubjects();
+    if (subjects.length === 0) return;
+    const startParts = startInput.value.split(':').map(Number);
+    const endParts = endInput.value.split(':').map(Number);
+    const startMins = startParts[0]*60 + startParts[1];
+    const endMins = endParts[0]*60 + endParts[1];
+    const totalMins = (endMins > startMins) ? (endMins - startMins) : (24*60 - startMins + endMins);
+    const blockLen = 30; // minutes per block
+    const blocks = Math.floor(totalMins / blockLen);
+    const schedule = [];
+    for (let i=0; i<blocks; i++) {
+      const subj = subjects[i % subjects.length];
+      const blockStart = (startMins + i*blockLen) % (24*60);
+      const blockEnd = (blockStart + blockLen) % (24*60);
+      const fmt = (m) => {
+        const h = Math.floor(m/60);
+        const mm = m%60;
+        return `${h.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}`;
+      };
+      schedule.push({ start: fmt(blockStart), end: fmt(blockEnd), subject: subj });
+    }
+    renderSchedule(schedule);
+    try { localStorage.setItem('schedule', JSON.stringify(schedule)); } catch(e){}
+  };
+
+  // Current time display
+  const updateTime = () => {
+    const now = new Date();
+    const hrs = now.getHours().toString().padStart(2,'0');
+    const mins = now.getMinutes().toString().padStart(2,'0');
+    const secs = now.getSeconds().toString().padStart(2,'0');
+    timeEl.textContent = `${hrs}:${mins}:${secs}`;
+  };
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Event listeners
+  safe(saveWindowBtn)?.addEventListener('click', saveWindow);
+  safe(addSubjectBtn)?.addEventListener('click', addSubject);
+  safe(newSubjectInput)?.addEventListener('keypress', (e)=>{ if(e.key==='Enter') addSubject(); });
+  safe(generateBtn)?.addEventListener('click', generateSchedule);
+
+  // Initial load
+  loadState();
+})();
+</script>
+</html>
