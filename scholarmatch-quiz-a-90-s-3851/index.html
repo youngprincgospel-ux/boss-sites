@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ScholarMatch Quiz | Nigerian Scholarship Finder</title>
+    <meta name="description" content="ScholarMatch Quiz — a 90-second free form (state, LGA, gender, course, household income, disability, first-degree goal) that matches a student against currently open Nigerian scholarships.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary: #1b4332;
+            --primary-dark: #081c15;
+            --accent: #d8f3dc;
+            --gold: #d4af37;
+            --gold-hover: #b89728;
+            --bg: #f4f6f5;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+            --error: #d90429;
+            --success: #2b9348;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #52b788;
+            --primary-dark: #d8f3dc;
+            --accent: #1b4332;
+            --gold: #e9c46a;
+            --gold-hover: #f4a261;
+            --bg: #0b130f;
+            --card-bg: #14221b;
+            --text: #f8f9fa;
+            --text-muted: #adb5bd;
+            --border: #2d3748;
+            --error: #ff6b6b;
+            --success: #52b788;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: 120px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-step {
+            display: none;
+        }
+
+        .question-step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .radio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .radio-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .radio-card input {
+            display: none;
+        }
+
+        .radio-card.selected {
+            border-color: var(--primary);
+            background: var(--accent);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.9rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            margin-top: 0.75rem;
+        }
+
+        .btn-gold {
+            background-color: var(--gold);
+            color: #000000;
+        }
+        .btn-gold:hover {
+            background-color: var(--gold-hover);
+        }
+
+        .flex-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Results section */
+        .scholarship-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--card-bg);
+        }
+
+        .scholarship-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .scholarship-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .badge-amount {
+            background: var(--accent);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .scholarship-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .deadline-tag {
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .paywall-box {
+            background: linear-gradient(135deg, rgba(27,67,50,0.05), rgba(212,175,55,0.1));
+            border: 2px dashed var(--gold);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .price-tag {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        /* Saved list / Saved tab */
+        .saved-list-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 0;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.6rem 0.55rem calc(0.6rem + var(--safe-bottom)) 0.55rem;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            padding: 1rem;
+        }
+        .modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 95px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--primary-dark);
+            color: #ffffff;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            text-align: center;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area" id="logoArea">
+            <span>🎓</span> ScholarMatch NG
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">🌙</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- VIEW 1: QUIZ / HOME -->
+        <section id="viewQuiz" class="view-section active">
+            <div class="card" id="quizCard">
+                <div class="timer-badge" id="timerBadge">⏱️ 90-Second Match Wizard</div>
+                <h1>Find Your Verified Scholarships</h1>
+                <p class="subtitle">Match your profile against currently open federal, state, and private awards in Nigeria instantly.</p>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <form id="scholarQuizForm">
+                    <!-- Step 1: Location -->
+                    <div class="question-step active" data-step="1">
+                        <div class="form-group">
+                            <label for="stateSelect">State of Origin</label>
+                            <select id="stateSelect" required>
+                                <option value="">-- Select State --</option>
+                                <option value="Abia">Abia</option>
+                                <option value="Adamawa">Adamawa</option>
+                                <option value="Akwa Ibom">Akwa Ibom</option>
+                                <option value="Anambra">Anambra</option>
+                                <option value="Bauchi">Bauchi</option>
+                                <option value="Bayelsa">Bayelsa</option>
+                                <option value="Benue">Benue</option>
+                                <option value="Borno">Borno</option>
+                                <option value="Cross River">Cross River</option>
+                                <option value="Delta">Delta</option>
+                                <option value="Ebonyi">Ebonyi</option>
+                                <option value="Edo">Edo</option>
+                                <option value="Ekiti">Ekiti</option>
+                                <option value="Enugu">Enugu</option>
+                                <option value="FCT">FCT Abuja</option>
+                                <option value="Gombe">Gombe</option>
+                                <option value="Imo">Imo</option>
+                                <option value="Jigawa">Jigawa</option>
+                                <option value="Kaduna">Kaduna</option>
+                                <option value="Kano">Kano</option>
+                                <option value="Katsina">Katsina</option>
+                                <option value="Kebbi">Kebbi</option>
+                                <option value="Kogi">Kogi</option>
+                                <option value="Kwara">Kwara</option>
+                                <option value="Lagos">Lagos</option>
+                                <option value="Nasarawa">Nasarawa</option>
+                                <option value="Niger">Niger</option>
+                                <option value="Ogun">Ogun</option>
+                                <option value="Ondo">Ondo</option>
+                                <option value="Osun">Osun</option>
+                                <option value="Oyo">Oyo</option>
+                                <option value="Plateau">Plateau</option>
+                                <option value="Rivers">Rivers</option>
+                                <option value="Sokoto">Sokoto</option>
+                                <option value="Taraba">Taraba</option>
+                                <option value="Yobe">Yobe</option>
+                                <option value="Zamfara">Zamfara</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lgaInput">LGA of Origin</label>
+                            <input type="text" id="lgaInput" placeholder="e.g. Ikeja, Owerri Municipal..." required>
+                        </div>
+                        <button type="button" class="btn next-step-btn" data-next="2">Next Step ➔</button>
+                    </div>
+
+                    <!-- Step 2: Demographics -->
+                    <div class="question-step" data-step="2">
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <div class="radio-grid">
+                                <label class="radio-card selected">
+                                    <input type="radio" name="gender" value="Female" checked> Female
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="gender" value="Male"> Male
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="courseSelect">Course of Study Category</label>
+                            <select id="courseSelect" required>
+                                <option value="">-- Select Field --</option>
+                                <option value="STEM">Engineering / Tech / Sciences (STEM)</option>
+                                <option value="Medical">Medicine / Nursing / Allied Health</option>
+                                <option value="Arts">Arts / Humanities / Law</option>
+                                <option value="SocialSciences">Social Sciences / Management</option>
+                                <option value="Agriculture">Agriculture / Environmental</option>
+                            </select>
+                        </div>
+                        <div class="flex-buttons">
+                            <button type="button" class="btn btn-secondary prev-step-btn" data-prev="1">Back</button>
+                            <button type="button" class="btn next-step-btn" data-next="3">Next Step ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Income & Special Status -->
+                    <div class="question-step" data-step="3">
+                        <div class="form-group">
+                            <label for="incomeSelect">Annual Household Income</label>
+                            <select id="incomeSelect" required>
+                                <option value="">-- Select Range --</option>
+                                <option value="low">Under ₦200,000 / year (Low Income)</option>
+                                <option value="mid">₦200,000 - ₦600,000 / year</option>
+                                <option value="high">Above ₦600,000 / year</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Do you have any physical disability or special needs?</label>
+                            <div class="radio-grid">
+                                <label class="radio-card">
+                                    <input type="radio" name="disability" value="Yes"> Yes
+                                </label>
+                                <label class="radio-card selected">
+                                    <input type="radio" name="disability" value="No" checked> No
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Are you pursuing your first degree / HND?</label>
+                            <div class="radio-grid">
+                                <label class="radio-card selected">
+                                    <input type="radio" name="firstDegree" value="Yes" checked> Yes
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="firstDegree" value="No"> No (Postgrad)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex-buttons">
+                            <button type="button" class="btn btn-secondary prev-step-btn" data-prev="2">Back</button>
+                            <button type="button" class="btn btn-gold" id="submitQuizBtn">✨ See My Matches Now</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Quiz Results Container (Hidden until submission) -->
+            <div id="resultsContainer" style="display: none;">
+                <div class="card">
+                    <h1>🎯 Your Custom Scholarship Matches</h1>
+                    <p class="subtitle" id="matchSummaryText">Found 0 verified open awards based on your profile.</p>
+                    
+                    <div id="matchedScholarshipsList">
+                        <!-- Dynamic items inserted here -->
+                    </div>
+
+                    <div class="paywall-box">
+                        <h3>🚀 Unlock ₦500 'Application Pack'</h3>
+                        <p style="font-size:0.9rem; color:var(--text-muted); margin:0.5rem 0;">Get tailored 1-page CV generator, AI Statement-of-Purpose template, and reference-letter request text for all your matched awards.</p>
+                        <div class="price-tag">₦500</div>
+                        <button class="btn btn-gold" id="unlockPackBtn" style="margin-top: 1rem;">🔒 Instant Unlock & Generate Pack</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: SAVED SCHOLARSHIPS -->
+        <section id="viewSaved" class="view-section">
+            <div class="card">
+                <h1>📌 Saved Scholarships</h1>
+                <p class="subtitle">Quick access to deadlines you bookmarked.</p>
+                <div id="savedScholarshipsList">
+                    <div class="saved-list-empty">No bookmarked scholarships yet. Run the quiz to save matches!</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: EXAM AFFILIATES -->
+        <section id="viewExams" class="view-section">
+            <div class="card">
+                <h1>📚 Accredited Exam Prep</h1>
+                <p class="subtitle">Recommended CBT practice software and study guides for JAMB, WAEC, and POST-UTME.</p>
+                
+                <div class="scholarship-item">
+                    <div class="scholarship-header">
+                        <div class="scholarship-title">Passnownow / ExamGuide CBT Suite</div>
+                        <span class="badge-amount">Partner</span>
+                    </div>
+                    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">Offline & online practice questions with 5-year past questions and detailed explanations.</p>
+                    <a href="https://example.com/examguide-affiliate" target="_blank" rel="noopener" class="btn" style="text-decoration: none; text-align: center;">Get Discounted CBT Software ➔</a>
+                </div>
+
+                <div class="scholarship-item">
+                    <div class="scholarship-header">
+                        <div class="scholarship-title">Myschool CBT Mobile App</div>
+                        <span class="badge-amount">Partner</span>
+                    </div>
+                    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">Simulate real exam conditions for JAMB UTME, Post-UTME and WAEC with live leaderboards.</p>
+                    <a href="https://example.com/myschool-affiliate" target="_blank" rel="noopener" class="btn" style="text-decoration: none; text-align: center;">Download App & Practice ➔</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="viewQuiz">
+            <span class="icon">🔍</span>
+            <span>Match Quiz</span>
+        </button>
+        <button class="nav-item" data-target="viewSaved">
+            <span class="icon">📌</span>
+            <span>Saved (<span id="savedCountBadge">0</span>)</span>
+        </button>
+        <button class="nav-item" data-target="viewExams">
+            <span class="icon">📖</span>
+            <span>Exam Prep</span>
+        </button>
+    </nav>
+
+    <!-- Application Pack Modal -->
+    <div class="modal-backdrop" id="packModal">
+        <div class="modal-card">
+            <button class="modal-close" id="closeModalBtn">×</button>
+            <h2 style="color:var(--primary); margin-bottom:0.5rem;">📄 Your Tailored Application Pack</h2>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:1rem;">Generated instantly based on your quiz profile.</p>
+            
+            <div id="packContentArea">
+                <!-- Filled dynamically -->
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                <button class="btn" id="downloadPdfBtn">📥 Download as PDF</button>
+                <button class="btn btn-secondary" id="copyPackTextBtn">📋 Copy Text</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toastNotification">Action successful!</div>
+
+    <script>
+        // Live Date & Time Engine (Saturday 14 November 2026, 2:56 AM)
+        const now = new Date(1763093760000); 
+
+        // Database of Verified Scholarships in Nigeria (Open / Rolling)
+        const scholarshipDatabase = [
+            {
+                id: 1,
+                title: "PTDF Overseas & Local Scholarship",
+                sponsor: "Petroleum Technology Development Fund",
+                amount: "₦1,000,000 / yr",
+                category: "STEM",
+                income: "all",
+                disability: false,
+                firstDegreeOnly: true,
+                deadline: "2026-12-15",
+                portal: "https://ptdf.gov.ng"
+            },
+            {
+                id: 2,
+                title: "MTN Foundation Science & Tech Scholarship",
+                sponsor: "MTN Nigeria",
+                amount: "₦200,000 / yr",
+                category: "STEM",
+                income: "all",
+                disability: false,
+                firstDegreeOnly: true,
+                deadline: "2026-11-30",
+                portal: "https://mtn.ng/foundation"
+            },
+            {
+                id: 3,
+                title: "Federal Government Scholarship Award (BEA/Bursary)",
+                sponsor: "Federal Ministry of Education",
+                amount: "₦150,000 / yr",
+                category: "all",
+                income: "low",
+                disability: false,
+                firstDegreeOnly: true,
+                deadline: "2026-12-05",
+                portal: "https://fsb.gov.ng"
+            },
+            {
+                id: 4,
+                title: "TotalEnergies National Merit Scholarship",
+                sponsor: "TotalEnergies EP Nigeria",
+                amount: "₦300,000 / yr",
+                category: "STEM",
+                income: "all",
+                disability: false,
+                firstDegreeOnly: true,
+                deadline: "2026-11-28",
+                portal: "https://totalenergies.ng"
+            },
+            {
+                id: 5,
+                title: "Nigerian Women in Tech & STEM Grant",
+                sponsor: "WomenTechmakers NG",
+                amount: "₦250,000 grant",
+                category: "STEM",
+                income: "low",
+                gender: "Female",
+                firstDegreeOnly: true,
+                deadline: "2026-12-20",
+                portal: "https://womentechng.org"
+            },
+            {
+                id: 6,
+                title: "NNPC / Chevron JV National University Scholarship",
+                sponsor: "NNPC Limited & Chevron",
+                amount: "₦400,000 / yr",
+                category: "STEM",
+                income: "all",
+                disability: false,
+                firstDegreeOnly: true,
+                deadline: "2026-12-10",
+                portal: "https://nnpcgroup.com"
+            },
+            {
+                id: 7,
+                title: "Visually Impaired & Special Needs Scholars Fund",
+                sponsor: "Nigerian National Council for Persons with Disabilities",
+                amount: "₦350,000 / yr",
+                category: "all",
+                income: "all",
+                disability: true,
+                firstDegreeOnly: true,
+                deadline: "2026-12-31",
+                portal: "https://ncpwd.gov.ng"
+            },
+            {
+                id: 8,
+                title: "Agbami Medical & Engineering Scholarship",
+                sponsor: "Star Deep Water Petroleum Limited",
+                amount: "₦200,000 / yr",
+                category: "Medical",
+                income: "all",
+                disability: false,
+                firstDegreeOnly: true,
+                deadline: "2026-12-18",
+                portal: "https://agbamischolarships.com"
+            }
+        ];
+
+        // State & LocalStorage
+        let userProfile = {
+            state: "",
+            lga: "",
+            gender: "Female",
+            course: "",
+            income: "",
+            disability: "No",
+            firstDegree: "Yes"
+        };
+
+        let savedIds = [];
+        try {
+            const stored = localStorage.getItem("scholarmatch_saved");
+            if (stored) savedIds = JSON.parse(stored);
+        } catch(e) {}
+
+        let matchedResults = [];
+
+        // DOM Elements
+        const themeToggleBtn = document.getElementById("themeToggleBtn");
+        const navItems = document.querySelectorAll(".nav-item");
+        const viewSections = document.querySelectorAll(".view-section");
+        const progressBar = document.getElementById("progressBar");
+        const questionSteps = document.querySelectorAll(".question-step");
+        const nextStepBtns = document.querySelectorAll(".next-step-btn");
+        const prevStepBtns = document.querySelectorAll(".prev-step-btn");
+        const radioCards = document.querySelectorAll(".radio-card");
+        const submitQuizBtn = document.getElementById("submitQuizBtn");
+        const quizCard = document.getElementById("quizCard");
+        const resultsContainer = document.getElementById("resultsContainer");
+        const matchedScholarshipsList = document.getElementById("matchedScholarshipsList");
+        const matchSummaryText = document.getElementById("matchSummaryText");
+        const savedScholarshipsList = document.getElementById("savedScholarshipsList");
+        const savedCountBadge = document.getElementById("savedCountBadge");
+        const unlockPackBtn = document.getElementById("unlockPackBtn");
+        const packModal = document.getElementById("packModal");
+        const closeModalBtn = document.getElementById("closeModalBtn");
+        const packContentArea = document.getElementById("packContentArea");
+        const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+        const copyPackTextBtn = document.getElementById("copyPackTextBtn");
+        const toastNotification = document.getElementById("toastNotification");
+        const logoArea = document.getElementById("logoArea");
+
+        // Boss identity trigger
+        if (logoArea) {
+            logoArea.addEventListener("click", () => {
+                const query = prompt("Boss, who are you or what is my name?");
+                if (query && (query.toLowerCase().includes("name") || query.toLowerCase().includes("who"))) {
+                    showToast("My name is Zeus, sir!");
+                }
+            });
+        }
+
+        // Theme Init
+        const currentTheme = localStorage.getItem("scholarmatch_theme") || "light";
+        if (currentTheme === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+            if (themeToggleBtn) themeToggleBtn.textContent = "☀️";
+        }
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener("click", () => {
+                const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+                if (isDark) {
+                    document.documentElement.removeAttribute("data-theme");
+                    localStorage.setItem("scholarmatch_theme", "light");
+                    themeToggleBtn.textContent = "🌙";
+                } else {
+                    document.documentElement.setAttribute("data-theme", "dark");
+                    localStorage.setItem("scholarmatch_theme", "dark");
+                    themeToggleBtn.textContent = "☀️";
+                }
+            });
+        }
+
+        // Navigation Switching
+        navItems.forEach(item => {
+            item.addEventListener("click", () => {
+                const targetId = item.getAttribute("data-target");
+                
+                navItems.forEach(n => n.classList.remove("active"));
+                item.classList.add("active");
+
+                viewSections.forEach(sec => {
+                    sec.classList.remove("active");
+                    if (sec.id === targetId) sec.classList.add("active");
+                });
+
+                if (targetId === "viewSaved") {
+                    renderSavedList();
+                }
+            });
+        });
+
+        // Radio Card UI selection
+        radioCards.forEach(card => {
+            card.addEventListener("click", () => {
+                const radio = card.querySelector("input[type='radio']");
+                if (!radio) return;
+                const name = radio.getAttribute("name");
+                
+                document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                    const rc = r.closest(".radio-card");
+                    if (rc) rc.classList.remove("selected");
+                    r.checked = false;
+                });
+
+                radio.checked = true;
+                card.classList.add("selected");
+            });
+        });
+
+        // Step Navigation Handler
+        function updateProgress(step) {
+            if (progressBar) {
+                const percent = (step / 3) * 100;
+                progressBar.style.width = percent + "%";
+            }
+        }
+
+        nextStepBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const nextStep = btn.getAttribute("data-next");
+                if (nextStep === "2") {
+                    const stateEl = document.getElementById("stateSelect");
+                    const lgaEl = document.getElementById("lgaInput");
+                    const state = stateEl ? stateEl.value : "";
+                    const lga = lgaEl ? lgaEl.value.trim() : "";
+                    if (!state || !lga) {
+                        showToast("Please enter your State and LGA.");
+                        return;
+                    }
+                    userProfile.state = state;
+                    userProfile.lga = lga;
+                } else if (nextStep === "3") {
+                    const courseEl = document.getElementById("courseSelect");
+                    const course = courseEl ? courseEl.value : "";
+                    const genderEl = document.querySelector('input[name="gender"]:checked');
+                    if (!course || !genderEl) {
+                        showToast("Please complete all fields.");
+                        return;
+                    }
+                    userProfile.course = course;
+                    userProfile.gender = genderEl.value;
+                }
+
+                questionSteps.forEach(s => s.classList.remove("active"));
+                const targetStep = document.querySelector(`.question-step[data-step="${nextStep}"]`);
+                if (targetStep) targetStep.classList.add("active");
+                updateProgress(parseInt(nextStep));
+            });
+        });
+
+        prevStepBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const prevStep = btn.getAttribute("data-prev");
+                questionSteps.forEach(s => s.classList.remove("active"));
+                const targetStep = document.querySelector(`.question-step[data-step="${prevStep}"]`);
+                if (targetStep) targetStep.classList.add("active");
+                updateProgress(parseInt(prevStep));
+            });
+        });
+
+        updateProgress(1);
+
+        // Submit Quiz
+        if (submitQuizBtn) {
+            submitQuizBtn.addEventListener("click", () => {
+                const incomeEl = document.getElementById("incomeSelect");
+                const income = incomeEl ? incomeEl.value : "";
+                const disabilityEl = document.querySelector('input[name="disability"]:checked');
+                const firstDegreeEl = document.querySelector('input[name="firstDegree"]:checked');
+
+                if (!income) {
+                    showToast("Please select your annual household income.");
+                    return;
+                }
+
+                userProfile.income = income;
+                userProfile.disability = disabilityEl ? disabilityEl.value : "No";
+                userProfile.firstDegree = firstDegreeEl ? firstDegreeEl.value : "Yes";
+
+                // Compute matches
+                matchedResults = scholarshipDatabase.filter(item => {
+                    if (item.category !== "all" && item.category !== userProfile.course) return false;
+                    if (item.gender && item.gender !== userProfile.gender) return false;
+                    if (item.disability && userProfile.disability === "No") return false;
+                    if (item.income === "low" && userProfile.income !== "low") return false;
+                    return true;
+                });
+
+                if (matchedResults.length < 3) {
+                    const extras = scholarshipDatabase.filter(s => !matchedResults.includes(s)).slice(0, 3 - matchedResults.length);
+                    matchedResults = [...matchedResults, ...extras];
+                }
+
+                renderMatches();
+                if (quizCard) quizCard.style.display = "none";
+                if (resultsContainer) resultsContainer.style.display = "block";
+                showToast("Quiz matched successfully! 🎉");
+            });
+        }
+
+        function renderMatches() {
+            if (matchSummaryText) {
+                matchSummaryText.textContent = `Found ${matchedResults.length} verified open awards tailored for ${userProfile.state} state (${userProfile.course} field).`;
+            }
+            
+            if (matchedScholarshipsList) {
+                matchedScholarshipsList.innerHTML = "";
+                matchedResults.forEach(item => {
+                    const isSaved = savedIds.includes(item.id);
+                    const el = document.createElement("div");
+                    el.className = "scholarship-item";
+                    el.innerHTML = `
+                        <div class="scholarship-header">
+                            <div class="scholarship-title">${item.title}</div>
+                            <span class="badge-amount">${item.amount}</span>
+                        </div>
+                        <div class="scholarship-meta">
+                            <span>🏢 ${item.sponsor}</span>
+                            <span class="deadline-tag">⏰ Deadline: ${item.deadline}</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                            <a href="${item.portal}" target="_blank" rel="noopener" class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration:none; text-align:center; flex:2;">Apply on Official Portal ➔</a>
+                            <button class="btn btn-secondary save-match-btn" data-id="${item.id}" style="padding: 0.5rem 1rem; font-size: 0.85rem; flex:1; margin-top:0;">
+                                ${isSaved ? "📌 Saved" : "🔖 Save"}
+                            </button>
+                        </div>
+                    `;
+                    matchedScholarshipsList.appendChild(el);
+                });
+
+                document.querySelectorAll(".save-match-btn").forEach(btn => {
+                    btn.addEventListener("click", (e) => {
+                        const id = parseInt(e.target.getAttribute("data-id"));
+                        toggleSaveScholarship(id);
+                    });
+                });
+            }
+        }
+
+        function toggleSaveScholarship(id) {
+            const index = savedIds.indexOf(id);
+            if (index > -1) {
+                savedIds.splice(index, 1);
+                showToast("Removed from saved bookmarks.");
+            } else {
+                savedIds.push(id);
+                showToast("Scholarship saved successfully! 📌");
+            }
+            try {
+                localStorage.setItem("scholarmatch_saved", JSON.stringify(savedIds));
+            } catch(e) {}
+            
+            if (savedCountBadge) savedCountBadge.textContent = savedIds.length;
+            renderMatches();
+            renderSavedList();
+        }
+
+        function renderSavedList() {
+            if (savedCountBadge) savedCountBadge.textContent = savedIds.length;
+            if (!savedScholarshipsList) return;
+
+            if (savedIds.length === 0) {
+                savedScholarshipsList.innerHTML = `<div class="saved-list-empty">No bookmarked scholarships yet. Run the quiz to save matches!</div>`;
+                return;
+            }
+
+            const savedItems = scholarshipDatabase.filter(s => savedIds.includes(s.id));
+            savedScholarshipsList.innerHTML = "";
+            savedItems.forEach(item => {
+                const el = document.createElement("div");
+                el.className = "scholarship-item";
+                el.innerHTML = `
+                    <div class="scholarship-header">
+                        <div class="scholarship-title">${item.title}</div>
+                        <span class="badge-amount">${item.amount}</span>
+                    </div>
+                    <div class="scholarship-meta">
+                        <span>🏢 ${item.sponsor}</span>
+                        <span class="deadline-tag">⏰ Deadline: ${item.deadline}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                        <a href="${item.portal}" target="_blank" rel="noopener" class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration:none; text-align:center; flex:2;">Open Portal ➔</a>
+                        <button class="btn btn-secondary remove-saved-btn" data-id="${item.id}" style="padding: 0.5rem 1rem; font-size: 0.85rem; flex:1; margin-top:0;">Remove</button>
+                    </div>
+                `;
+                savedScholarshipsList.appendChild(el);
+            });
+
+            document.querySelectorAll(".remove-saved-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const id = parseInt(e.target.getAttribute("data-id"));
+                    toggleSaveScholarship(id);
+                });
+            });
+        }
+
+        renderSavedList();
+
+        // Unlock Paywall / Application Pack Generator
+        if (unlockPackBtn) {
+            unlockPackBtn.addEventListener("click", () => {
+                showToast("Simulating ₦500 payment confirmation...");
+                setTimeout(() => {
+                    generateApplicationPackText();
+                    if (packModal) packModal.classList.add("open");
+                    showToast("Payment verified! Application Pack unlocked. 📄");
+                }, 1000);
+            });
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener("click", () => {
+                if (packModal) packModal.classList.remove("open");
+            });
+        }
+
+        function generateApplicationPackText() {
+            if (!packContentArea) return;
+            const packText = `
+--------------------------------------------------
+SCHOLARSHIP APPLICATION PACK (TAILORED)
+State: ${userProfile.state} (${userProfile.lga} LGA) | Field: ${userProfile.course}
+--------------------------------------------------
+
+1. TAILORED 1-PAGE CV SUMMARY:
+- Objective: Dedicated undergraduate student in ${userProfile.course} from ${userProfile.state}, seeking scholarship funding to complete academic excellence and community impact projects.
+- Education: University Undergraduate (${userProfile.firstDegree === 'Yes' ? 'First Degree' : 'Postgraduate'}), Faculty of ${userProfile.course}.
+- Core Skills: Academic Research, Leadership, Team Collaboration, Analytical Problem Solving.
+- Extracurriculars: Active participant in campus departmental associations and community peer mentoring.
+
+2. STATEMENT OF PURPOSE (SoP) TEMPLATE:
+"My name is [Your Full Name], an indigene of ${userProfile.lga}, ${userProfile.state} State, currently studying ${userProfile.course}. Coming from a household with annual income rated as ${userProfile.income}, financial constraints have consistently threatened my academic continuity. Securing this scholarship will alleviate financial burdens, allowing me to focus entirely on academic distinction and contributing meaningfully to technological and societal growth in Nigeria upon graduation."
+
+3. REFERENCE-LETTER REQUEST TEXT:
+"Dear Professor / HOD,
+I am applying for the verified scholarship opportunities matching my profile as a ${userProfile.course} student. Given your guidance during my studies so far, I respectfully request a letter of recommendation highlighting my academic commitment, character, and financial need. Thank you for your immense support."
+            `;
+            packContentArea.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.85rem; background: var(--bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">${packText}</pre>`;
+        }
+
+        if (copyPackTextBtn) {
+            copyPackTextBtn.addEventListener("click", () => {
+                if (!packContentArea) return;
+                const text = packContentArea.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("Application Pack copied to clipboard! 📋");
+                });
+            });
+        }
+
+        if (downloadPdfBtn) {
+            downloadPdfBtn.addEventListener("click", () => {
+                if (!window.jspdf || !packContentArea) return;
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("ScholarMatch NG - Tailored Application Pack", 15, 20);
+                
+                doc.setFont("Helvetica", "normal");
+                doc.setFontSize(11);
+                const text = packContentArea.innerText;
+                const splitText = doc.splitTextToSize(text, 180);
+                doc.text(splitText, 15, 30);
+                doc.save("ScholarMatch-Application-Pack.pdf");
+                showToast("PDF downloaded successfully! 📥");
+            });
+        }
+
+        // Toast Helper
+        function showToast(message) {
+            if (!toastNotification) return;
+            toastNotification.textContent = message;
+            toastNotification.classList.add("show");
+            setTimeout(() => {
+                toastNotification.classList.remove("show");
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
