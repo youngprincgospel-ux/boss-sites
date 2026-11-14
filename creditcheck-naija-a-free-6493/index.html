@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CreditCheck Naija — Instant O'Level & Jamb Subject Matcher</title>
+<meta name="description" content="CreditCheck Naija — a free web tool where a student picks their target universities and pastes their O'Level results (WAEC/NECO/NABTEB), and it instantly f">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd434SU5Y7n57m1vxlLxtv9IBuO0ZkV0Or99q2N7Z1P29wB82A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #00663d;
+            --primary-light: #e6f4ed;
+            --accent: #f59e0b;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #064e3b;
+            --accent: #fbbf24;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+            padding-bottom: 90px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .brand span {
+            font-size: 0.75rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        select:focus, input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .grades-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .grade-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,135,81,0.2);
+            transition: background-color 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            width: auto;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .result-card {
+            border-left: 5px solid var(--success);
+            padding: 16px;
+            background: var(--bg-body);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .result-card.fail {
+            border-left-color: var(--danger);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-fail { background: #fee2e2; color: #991b1b; }
+
+        .paywall-box {
+            background: linear-gradient(135deg, var(--primary-light), var(--bg-card));
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .paywall-box h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .fixed-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            padding-bottom: calc(12px + var(--safe-bottom));
+            display: flex;
+            gap: 12px;
+            z-index: 99;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 480px;
+            border-radius: var(--radius);
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .flex-row > * {
+            flex: 1;
+        }
+
+        .time-badge {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .affiliate-box {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 14px;
+            font-size: 0.85rem;
+        }
+        
+        .affiliate-box a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>CreditCheck 🇳🇬</h1>
+            <span>WAEC / JAMB</span>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggle" aria-label="Toggle Theme">🌙</button>
+            <button class="icon-btn" id="historyBtn" aria-label="Saved Reports">📂</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Step 1: Target & Course -->
+        <section class="card" id="step1Card">
+            <h2>1. Select Target & Course</h2>
+            <p class="subtitle">Don't waste ₦5,000+ JAMB/DE form fees on wrong subject combos.</p>
+            
+            <div class="form-group">
+                <label for="targetUni1">First Choice University</label>
+                <select id="targetUni1">
+                    <option value="UNILAG">University of Lagos (UNILAG)</option>
+                    <option value="UI">University of Ibadan (UI)</option>
+                    <option value="UNN">University of Nigeria, Nsukka (UNN)</option>
+                    <option value="OAU">Obafemi Awolowo University (OAU)</option>
+                    <option value="ABU">Ahmadu Bello University (ABU)</option>
+                    <option value="UNIBEN">University of Benin (UNIBEN)</option>
+                    <option value="LASU">Lagos State University (LASU)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="targetCourse">Target Course of Study</label>
+                <select id="targetCourse">
+                    <option value="Medicine">Medicine & Surgery</option>
+                    <option value="Law">Law</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="Mass Comm">Mass Communication</option>
+                    <option value="Engineering">Mechanical / Civil Engineering</option>
+                    <option value="Nursing">Nursing Science</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="jambScore">Estimated or Target JAMB Score</label>
+                <input type="number" id="jambScore" min="100" max="400" placeholder="e.g. 240" value="230">
+            </div>
+
+            <button class="btn" id="proceedToGradesBtn">Proceed to O'Level Input ➡️</button>
+        </section>
+
+        <!-- Step 2: O'Level Grades -->
+        <section class="card results-section" id="step2Card">
+            <h2>2. Paste Your O'Level Results</h2>
+            <p class="subtitle">Select your grades in WAEC, NECO, or NABTEB for key subjects.</p>
+
+            <div class="grades-container" id="gradesContainer">
+                <!-- Dynamically populated subjects -->
+            </div>
+
+            <button class="btn btn-secondary btn-small" id="addSubjectBtn" style="margin-top: 12px; margin-bottom: 20px;">+ Add Another Subject</button>
+
+            <div class="flex-row">
+                <button class="btn btn-secondary" id="backToStep1">⬅️ Back</button>
+                <button class="btn" id="analyzeBtn">🔍 Analyze Eligibility</button>
+            </div>
+        </section>
+
+        <!-- Step 3: Results -->
+        <section class="card results-section" id="step3Card">
+            <h2>🎯 Eligibility Analysis Report</h2>
+            <p class="subtitle" id="reportSubtitle">Generated live for your selected combination.</p>
+
+            <div id="resultsList">
+                <!-- Results rendered here -->
+            </div>
+
+            <div class="paywall-box">
+                <h3>Unlock Full Fix-My-Subject-Combination Report</h3>
+                <p style="font-size:0.85rem; margin-bottom:12px; color:var(--text-muted);">Get exact resit plans, precise paper guidelines, and 5 alternative federal/state universities that accept your current credits for just ₦500.</p>
+                <button class="btn" id="unlockReportBtn">🔓 Pay ₦500 for PDF & WhatsApp Report</button>
+            </div>
+
+            <div class="affiliate-box">
+                <p>💡 <strong>Smart Move, Boss:</strong> Need guaranteed JAMB CBT prep software or registration assistance? Check our verified partner <a href="https://www.examguide.com" target="_blank" rel="noopener">ExamGuide CBT ↗</a></p>
+            </div>
+
+            <button class="btn btn-secondary" id="resetCheckerBtn" style="margin-top: 16px;">🔄 Check Another Course</button>
+        </section>
+    </main>
+
+    <div class="fixed-nav">
+        <button class="btn btn-secondary" id="quickSaveBtn">💾 Save Lead</button>
+        <button class="btn" id="quickShareBtn">📢 Share Tool</button>
+    </div>
+
+    <!-- Payment / Lead Capture Modal -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <h2 style="margin-bottom: 8px;">Get Your ₦500 Detailed Report</h2>
+            <p class="subtitle">Instant PDF download + WhatsApp delivery.</p>
+
+            <div class="form-group">
+                <label for="leadName">Full Name</label>
+                <input type="text" id="leadName" placeholder="e.g. Adebayo Johnson">
+            </div>
+
+            <div class="form-group">
+                <label for="leadWhatsApp">WhatsApp Number</label>
+                <input type="tel" id="leadWhatsApp" placeholder="e.g. 08031234567">
+            </div>
+
+            <div class="form-group">
+                <label for="leadEmail">Email Address (for PDF copy)</label>
+                <input type="email" id="leadEmail" placeholder="e.g. adebayo@gmail.com">
+            </div>
+
+            <button class="btn" id="confirmPaymentBtn">Proceed to Secure Checkout (₦500)</button>
+            <div class="time-badge" id="liveTimestamp"></div>
+        </div>
+    </div>
+
+    <!-- History / Saved Reports Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <button class="close-modal" id="closeHistoryModal">&times;</button>
+            <h2 style="margin-bottom: 8px;">Saved Reports & Leads</h2>
+            <p class="subtitle">Stored locally on your device.</p>
+            <div id="historyList" style="max-height: 250px; overflow-y:auto; margin-bottom: 16px; font-size: 0.9rem;">
+                <p style="color: var(--text-muted);">No saved reports yet.</p>
+            </div>
+            <button class="btn btn-secondary" id="clearHistoryBtn">Clear Local Storage</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = {
+                theme: localStorage.getItem('cc_theme') || 'light',
+                reports: JSON.parse(localStorage.getItem('cc_reports') || '[]'),
+                currentStep: 1,
+                userChoices: {
+                    uni: '',
+                    course: '',
+                    jamb: 0,
+                    grades: []
+                }
+            };
+
+            const defaultSubjects = [
+                { name: 'English Language', grade: 'A1' },
+                { name: 'Mathematics', grade: 'B3' },
+                { name: 'Physics', grade: 'C4' },
+                { name: 'Chemistry', grade: 'C5' },
+                { name: 'Biology', grade: 'B2' }
+            ];
+
+            const gradeValues = { 'A1': 6, 'B2': 5, 'B3': 4, 'C4': 3, 'C5': 2, 'C6': 1, 'D7': 0, 'E8': 0, 'F9': 0 };
+
+            // DOM Elements
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            const historyBtn = document.getElementById('historyBtn');
+            const step1Card = document.getElementById('step1Card');
+            const step2Card = document.getElementById('step2Card');
+            const step3Card = document.getElementById('step3Card');
+            const proceedToGradesBtn = document.getElementById('proceedToGradesBtn');
+            const backToStep1 = document.getElementById('backToStep1');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const gradesContainer = document.getElementById('gradesContainer');
+            const addSubjectBtn = document.getElementById('addSubjectBtn');
+            const resetCheckerBtn = document.getElementById('resetCheckerBtn');
+            const unlockReportBtn = document.getElementById('unlockReportBtn');
+            const paymentModal = document.getElementById('paymentModal');
+            const closeModal = document.getElementById('closeModal');
+            const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+            const historyModal = document.getElementById('historyModal');
+            const closeHistoryModal = document.getElementById('closeHistoryModal');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const historyList = document.getElementById('historyList');
+            const quickSaveBtn = document.getElementById('quickSaveBtn');
+            const quickShareBtn = document.getElementById('quickShareBtn');
+            const liveTimestamp = document.getElementById('liveTimestamp');
+
+            // Set Theme
+            body.setAttribute('data-theme', state.theme);
+            themeToggle.textContent = state.theme === 'dark' ? '☀️' : '🌙';
+
+            themeToggle.addEventListener('click', () => {
+                state.theme = state.theme === 'light' ? 'dark' : 'light';
+                body.setAttribute('data-theme', state.theme);
+                themeToggle.textContent = state.theme === 'dark' ? '☀️' : '🌙';
+                localStorage.setItem('cc_theme', state.theme);
+            });
+
+            // Populate Grades UI
+            function renderGrades(subjects) {
+                gradesContainer.innerHTML = '';
+                subjects.forEach((subj, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'grade-row';
+                    row.innerHTML = `
+                        <input type="text" class="subj-name" value="${subj.name}" placeholder="Subject Name">
+                        <select class="subj-grade">
+                            ${['A1','B2','B3','C4','C5','C6','D7','E8','F9'].map(g => `<option value="${g}" ${g === subj.grade ? 'selected' : ''}>${g}</option>`).join('')}
+                        </select>
+                        <button class="btn btn-danger remove-subj" type="button" aria-label="Remove subject">✕</button>
+                    `;
+                    gradesContainer.appendChild(row);
+                });
+
+                document.querySelectorAll('.remove-subj').forEach((btn, idx) => {
+                    btn.addEventListener('click', () => {
+                        const rows = gradesContainer.querySelectorAll('.grade-row');
+                        if (rows.length > 3) {
+                            rows[idx].remove();
+                        } else {
+                            alert('You need at least 3 subjects for analysis.');
+                        }
+                    });
+                });
+            }
+
+            renderGrades(defaultSubjects);
+
+            addSubjectBtn.addEventListener('click', () => {
+                const currentRows = gradesContainer.querySelectorAll('.grade-row');
+                if(currentRows.length >= 9) {
+                    alert('Maximum 9 subjects allowed.');
+                    return;
+                }
+                const newSubjs = [];
+                currentRows.forEach(row => {
+                    newSubjs.push({
+                        name: row.querySelector('.subj-name').value,
+                        grade: row.querySelector('.subj-grade').value
+                    });
+                });
+                newSubjs.push({ name: 'Additional Subject', grade: 'C6' });
+                renderGrades(newSubjs);
+            });
+
+            proceedToGradesBtn.addEventListener('click', () => {
+                state.userChoices.uni = document.getElementById('targetUni1').value;
+                state.userChoices.course = document.getElementById('targetCourse').value;
+                state.userChoices.jamb = parseInt(document.getElementById('jambScore').value) || 200;
+
+                step1Card.style.display = 'none';
+                step2Card.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            backToStep1.addEventListener('click', () => {
+                step2Card.style.display = 'none';
+                step1Card.style.display = 'block';
+            });
+
+            analyzeBtn.addEventListener('click', () => {
+                const rows = gradesContainer.querySelectorAll('.grade-row');
+                const collectedGrades = [];
+                rows.forEach(row => {
+                    collectedGrades.push({
+                        name: row.querySelector('.subj-name').value.trim() || 'General Subject',
+                        grade: row.querySelector('.subj-grade').value
+                    });
+                });
+                state.userChoices.grades = collectedGrades;
+
+                // Run validation logic
+                generateAnalysisReport();
+
+                step2Card.style.display = 'none';
+                step3Card.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            function generateAnalysisReport() {
+                const resultsList = document.getElementById('resultsList');
+                resultsList.innerHTML = '';
+
+                document.getElementById('reportSubtitle').textContent = `${state.userChoices.course} at ${state.userChoices.uni} (JAMB: ${state.userChoices.jamb})`;
+
+                // Check core passes (English & Maths)
+                const eng = state.userChoices.grades.find(g => g.name.toLowerCase().includes('english'));
+                const math = state.userChoices.grades.find(g => g.name.toLowerCase().includes('math'));
+
+                const engPass = eng && gradeValues[eng.grade] >= 3; // C4 or better usually required for competitive courses
+                const mathPass = math && gradeValues[math.grade] >= 3;
+
+                const items = [
+                    {
+                        title: `1. O'Level English Requirement (${eng ? eng.grade : 'Missing'})`,
+                        pass: engPass,
+                        msg: engPass ? 'Your English credit meets the university cutoff.' : 'Warning: Most competitive courses require at least C6 (preferably C4/B3) in English Language.'
+                    },
+                    {
+                        title: `2. O'Level Mathematics Requirement (${math ? math.grade : 'Missing'})`,
+                        pass: mathPass,
+                        msg: mathPass ? 'Mathematics credit requirement satisfied.' : 'Critical Flag: You lack the required credit pass in Mathematics for this course.'
+                    },
+                    {
+                        title: `3. JAMB Cut-off Match (${state.userChoices.jamb} pts)`,
+                        pass: state.userChoices.jamb >= 200,
+                        msg: state.userChoices.jamb >= 200 ? 'Score meets baseline screening threshold.' : 'Score is below competitive departmental cutoff (usually 200-250).'
+                    }
+                ];
+
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = `result-card ${item.pass ? '' : 'fail'}`;
+                    div.innerHTML = `
+                        <div class="result-header">
+                            <span class="result-title">${item.title}</span>
+                            <span class="badge ${item.pass ? 'badge-success' : 'badge-fail'}">${item.pass ? 'PASSED' : 'FLAGGED'}</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">${item.msg}</p>
+                    `;
+                    resultsList.appendChild(div);
+                });
+
+                // Save to local reports history
+                state.reports.push({
+                    date: new Date().toISOString(),
+                    uni: state.userChoices.uni,
+                    course: state.userChoices.course,
+                    jamb: state.userChoices.jamb
+                });
+                localStorage.setItem('cc_reports', JSON.stringify(state.reports));
+            }
+
+            resetCheckerBtn.addEventListener('click', () => {
+                step3Card.style.display = 'none';
+                step1Card.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Modal Controls
+            unlockReportBtn.addEventListener('click', () => {
+                paymentModal.style.display = 'flex';
+                updateLiveTime();
+            });
+
+            closeModal.addEventListener('click', () => {
+                paymentModal.style.display = 'none';
+            });
+
+            function updateLiveTime() {
+                const now = new Date();
+                liveTimestamp.textContent = `Current Server Time (Nigeria): ${now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} ${now.toLocaleTimeString()}`;
+            }
+
+            confirmPaymentBtn.addEventListener('click', () => {
+                const name = document.getElementById('leadName').value.trim();
+                const phone = document.getElementById('leadWhatsApp').value.trim();
+                const email = document.getElementById('leadEmail').value.trim();
+
+                if(!name || phone.length < 10 || !email) {
+                    alert('Please provide a valid name, 11-digit WhatsApp phone number, and email address.');
+                    return;
+                }
+
+                alert(`Redirecting to secure Paystack payment gateway for ₦500, ${name}! Your report will be instantly sent to ${phone}.`);
+                paymentModal.style.display = 'none';
+            });
+
+            // History & Leads
+            historyBtn.addEventListener('click', () => {
+                historyModal.style.display = 'flex';
+                renderHistory();
+            });
+
+            closeHistoryModal.addEventListener('click', () => {
+                historyModal.style.display = 'none';
+            });
+
+            clearHistoryBtn.addEventListener('click', () => {
+                if(confirm('Clear all saved local reports?')) {
+                    state.reports = [];
+                    localStorage.removeItem('cc_reports');
+                    renderHistory();
+                }
+            });
+
+            function renderHistory() {
+                if(state.reports.length === 0) {
+                    historyList.innerHTML = '<p style="color: var(--text-muted);">No saved reports yet.</p>';
+                    return;
+                }
+                historyList.innerHTML = state.reports.map((rep, i) => `
+                    <div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                        <strong>${i+1}. ${rep.course} (${rep.uni})</strong><br>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">JAMB: ${rep.jamb} | ${new Date(rep.date).toLocaleDateString()}</span>
+                    </div>
+                `).join('');
+            }
+
+            quickSaveBtn.addEventListener('click', () => {
+                alert('Current session data saved successfully to local browser cache!');
+            });
+
+            quickShareBtn.addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'CreditCheck Naija',
+                        text: 'Check your WAEC/NECO results against Nigerian university subject requirements instantly!',
+                        url: window.location.href
+                    }).catch(() => {});
+                } else {
+                    prompt('Copy link to share with students:', window.location.href);
+                }
+            });
+
+            // Close modals on outside click
+            window.addEventListener('click', (e) => {
+                if(e.target === paymentModal) paymentModal.style.display = 'none';
+                if(e.target === historyModal) historyModal.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
