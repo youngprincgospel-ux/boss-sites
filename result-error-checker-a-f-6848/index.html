@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Result Error Checker & Correction Desk</title>
+<meta name="description" content="Result Error Checker — a free single-page tool: student types what's on their WAEC/NECO/NABTEB certificate (name spelling, DOB, subject grades, photo, scho">
+    <style>
+        :root {
+            --primary: #15803d;
+            --primary-dark: #166534;
+            --primary-light: #dcfce7;
+            --accent: #ca8a04;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --border: #cbd5e1;
+            --radius: 12px;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --bg: #090d16;
+            --card-bg: #111827;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --primary-light: #052e16;
+            --danger: #ef4444;
+            --danger-light: #450a0a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: 100px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area span {
+            font-size: 24px;
+        }
+
+        .logo-area h1 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .logo-area p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grades-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .grade-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .grade-row input {
+            flex: 2;
+        }
+
+        .grade-row select {
+            flex: 1;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            margin-top: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-success {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .error-item {
+            background: var(--danger-light);
+            border-left: 4px solid var(--danger);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 10px;
+        }
+
+        .error-item h4 {
+            font-size: 13px;
+            color: var(--danger);
+            margin-bottom: 2px;
+        }
+
+        .error-item p {
+            font-size: 12px;
+            color: var(--text);
+            margin-bottom: 0;
+        }
+
+        .fixed-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            padding-bottom: calc(12px + var(--safe-bottom));
+            display: flex;
+            gap: 10px;
+            z-index: 40;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius);
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .tab-bar {
+            display: flex;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--text);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .live-clock {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span>🛡️</span>
+            <div>
+                <h1>Result Error Checker</h1>
+                <p>WAEC • NECO • NABTEB Desk</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggle" title="Toggle Theme">🌙</button>
+            <button class="icon-btn" id="historyBtn" title="Saved Checks">📂</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="live-clock" id="liveClock">Loading live date & time...</div>
+
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="checker">1. Audit Certificate</button>
+            <button class="tab-btn" data-tab="filing">2. Correction Desk</button>
+        </div>
+
+        <!-- TAB 1: CHECKER -->
+        <div id="tabChecker" class="tab-content">
+            <div class="card">
+                <h2>📝 Certificate Details</h2>
+                <p>Input your certificate details exactly as printed to scan for the 8 documented UNILAG/JAMB disqualifying errors.</p>
+
+                <form id="auditForm">
+                    <div class="form-group">
+                        <label for="examType">Exam Body</label>
+                        <select id="examType" required>
+                            <option value="WAEC">WAEC (West African Examinations Council)</option>
+                            <option value="NECO">NECO (National Examinations Council)</option>
+                            <option value="NABTEB">NABTEB (National Business and Technical)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullName">Full Name (As on Certificate)</label>
+                        <input type="text" id="fullName" placeholder="e.g. ADEBAYO OLUWASEUN MARTINS" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" id="dob" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="examYear">Exam Year</label>
+                            <input type="number" id="examYear" min="2000" max="2026" placeholder="e.g. 2025" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="examNumber">Exam / Seat Number</label>
+                            <input type="text" id="examNumber" placeholder="e.g. 4251023050" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schoolCode">Center / School Code</label>
+                            <input type="text" id="schoolCode" placeholder="e.g. GN2341" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subject Grades (Min 5 required for check)</label>
+                        <div class="grades-container" id="gradesContainer">
+                            <!-- Injected by JS -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="addSubjectBtn" style="font-size:13px; padding:8px;">+ Add Subject</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photoStatus">Passport Photograph Check</label>
+                        <select id="photoStatus" required>
+                            <option value="clear">Clear and matches my physical appearance</option>
+                            <option value="blurred">Blurred, faded or heavily distorted</option>
+                            <option value="wrong">Wrong photo / completely different person</option>
+                            <option value="missing">No passport printed on result slip</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn" id="runAuditBtn">🔍 Run Full Error Audit</button>
+                </form>
+            </div>
+
+            <!-- RESULTS SECTION -->
+            <div id="resultsCard" class="card hidden">
+                <h2>📊 Audit Findings</h2>
+                <div id="resultsSummary"></div>
+                <div id="errorsList" style="margin-top: 14px;"></div>
+                
+                <div style="margin-top: 20px; padding: 16px; background: var(--primary-light); border-radius: 8px;">
+                    <h3 style="font-size: 15px; color: var(--primary-dark); margin-bottom: 6px;">⚡ Need Expert Correction?</h3>
+                    <p style="font-size: 13px; margin-bottom: 12px; color: var(--text);">Avoid agent runaround scams. Our desk handles physical LGA/Zonal Office correction filing with tracking.</p>
+                    <button class="btn" id="gotoFilingBtn">Proceed to Professional Filing (₦2,500)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: FILING -->
+        <div id="tabFiling" class="tab-content hidden">
+            <div class="card">
+                <h2>🏛️ Managed Correction Desk</h2>
+                <p>Let certified compliance clerks handle your WAEC/NECO rectification at regional headquarters. Safe, verified, with WhatsApp milestone alerts.</p>
+
+                <form id="filingForm">
+                    <div class="form-group">
+                        <label for="filingService">Select Correction Type</label>
+                        <select id="filingService" required>
+                            <option value="2500">Name Spelling Correction — ₦2,500</option>
+                            <option value="3500">Date of Birth Rectification — ₦3,500</option>
+                            <option value="3000">Photo / Biometric Glitch Fix — ₦3,000</option>
+                            <option value="3500">Subject Grade / Missing Result Recovery — ₦3,500</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicantName">Your Full Name</label>
+                        <input type="text" id="applicantName" placeholder="Full legal name" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="whatsappPhone">WhatsApp Phone Number</label>
+                            <input type="tel" id="whatsappPhone" placeholder="08030000000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="applicantEmail">Email Address</label>
+                            <input type="email" id="applicantEmail" placeholder="name@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="centerLocation">Your State / Exam Center Location</label>
+                        <input type="text" id="centerLocation" placeholder="e.g. Ikeja, Lagos State" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="issueDetails">Describe Exact Error to Fix</label>
+                        <textarea id="issueDetails" rows="3" placeholder="e.g. 'Oluwaseun' was spelled 'Oluwaseum' on my certificate." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn" id="payFilingBtn">🔒 Pay & Submit Filing Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIXED BOTTOM BAR -->
+    <div class="fixed-bottom">
+        <button class="btn btn-secondary" id="quickAuditSwitch" style="margin-top:0;">Audit Result</button>
+        <button class="btn" id="quickFilingSwitch" style="margin-top:0;">Book Filing (₦2,500+)</button>
+    </div>
+
+    <!-- SAVED HISTORY MODAL -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <h3>📂 Saved Audits & Files</h3>
+            <p>Your previous audits stored locally on this device.</p>
+            <div id="historyList" style="margin-top: 14px;">
+                <p style="color: var(--text-muted); font-size: 13px;">No saved audits found.</p>
+            </div>
+            <button class="btn btn-secondary" id="clearHistoryBtn" style="margin-top: 16px;">Clear History</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const historyBtn = document.getElementById('historyBtn');
+        const historyModal = document.getElementById('historyModal');
+        const closeModal = document.getElementById('closeModal');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const historyList = document.getElementById('historyList');
+        
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        const auditForm = document.getElementById('auditForm');
+        const resultsCard = document.getElementById('resultsCard');
+        const resultsSummary = document.getElementById('resultsSummary');
+        const errorsList = document.getElementById('errorsList');
+        const gotoFilingBtn = document.getElementById('gotoFilingBtn');
+        
+        const filingForm = document.getElementById('filingForm');
+        const quickAuditSwitch = document.getElementById('quickAuditSwitch');
+        const quickFilingSwitch = document.getElementById('quickFilingSwitch');
+        
+        const gradesContainer = document.getElementById('gradesContainer');
+        const addSubjectBtn = document.getElementById('addSubjectBtn');
+        const liveClock = document.getElementById('liveClock');
+
+        // State & LocalStorage
+        let savedAudits = [];
+        try {
+            const stored = localStorage.getItem('result_checker_audits');
+            if (stored) savedAudits = JSON.parse(stored);
+        } catch (e) {
+            console.error(e);
+        }
+
+        // Live Clock & Time
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            if (liveClock) {
+                liveClock.textContent = `📅 Nigeria Time: ${now.toLocaleDateString('en-GB', options)}`;
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Theme Handling
+        const savedTheme = localStorage.getItem('result_checker_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('result_checker_theme', next);
+                themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
+            });
+        }
+
+        // Tabs Switching
+        function switchTab(tabName) {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.add('hidden'));
+
+            if (tabName === 'checker') {
+                document.querySelector('[data-tab="checker"]').classList.add('active');
+                document.getElementById('tabChecker').classList.remove('hidden');
+            } else {
+                document.querySelector('[data-tab="filing"]').classList.add('active');
+                document.getElementById('tabFiling').classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+        });
+
+        if (quickAuditSwitch) quickAuditSwitch.addEventListener('click', () => switchTab('checker'));
+        if (quickFilingSwitch) quickFilingSwitch.addEventListener('click', () => switchTab('filing'));
+        if (gotoFilingBtn) gotoFilingBtn.addEventListener('click', () => switchTab('filing'));
+
+        // Subject Grade Builder
+        const defaultSubjects = ['English Language', 'Mathematics', 'Civic Education', 'Biology', 'Economics'];
+        const gradeOptions = ['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9', 'AR'];
+
+        function renderGrades() {
+            if (!gradesContainer) return;
+            gradesContainer.innerHTML = '';
+            defaultSubjects.forEach((subj, idx) => {
+                const row = document.createElement('div');
+                row.className = 'grade-row';
+                row.innerHTML = `
+                    <input type="text" class="subj-name" value="${subj}" placeholder="Subject name">
+                    <select class="subj-grade">
+                        ${gradeOptions.map(g => `<option value="${g}">${g}</option>`).join('')}
+                    </select>
+                `;
+                gradesContainer.appendChild(row);
+            });
+        }
+        renderGrades();
+
+        if (addSubjectBtn) {
+            addSubjectBtn.addEventListener('click', () => {
+                const row = document.createElement('div');
+                row.className = 'grade-row';
+                row.innerHTML = `
+                    <input type="text" class="subj-name" placeholder="Subject name">
+                    <select class="subj-grade">
+                        ${gradeOptions.map(g => `<option value="${g}">${g}</option>`).join('')}
+                    </select>
+                `;
+                gradesContainer.appendChild(row);
+            });
+        }
+
+        // Modal Controls
+        if (historyBtn) {
+            historyBtn.addEventListener('click', () => {
+                renderHistory();
+                if (historyModal) historyModal.classList.add('active');
+            });
+        }
+
+        if (closeModal) {
+            closeModal.addEventListener('click', () => {
+                if (historyModal) historyModal.classList.remove('active');
+            });
+        }
+
+        function renderHistory() {
+            if (!historyList) return;
+            if (savedAudits.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--text-muted); font-size: 13px;">No saved audits found.</p>';
+                return;
+            }
+            historyList.innerHTML = savedAudits.map((item, index) => `
+                <div style="background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 12px;">
+                    <strong>${item.examType} - ${item.fullName}</strong><br>
+                    <span style="color: var(--text-muted);">${item.date} | Errors flagged: ${item.errorsCount}</span>
+                </div>
+            `).join('');
+        }
+
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => {
+                savedAudits = [];
+                try {
+                    localStorage.removeItem('result_checker_audits');
+                } catch(e){}
+                renderHistory();
+            });
+        }
+
+        // Audit Form Submission Logic (Checking the 8 documented errors)
+        if (auditForm) {
+            auditForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const examType = document.getElementById('examType').value;
+                const fullName = document.getElementById('fullName').value.trim();
+                const dob = document.getElementById('dob').value;
+                const examNumber = document.getElementById('examNumber').value.trim();
+                const schoolCode = document.getElementById('schoolCode').value.trim();
+                const photoStatus = document.getElementById('photoStatus').value;
+
+                // Collect subjects
+                const subjectRows = gradesContainer.querySelectorAll('.grade-row');
+                let validSubjectsCount = 0;
+                let hasMathOrEnglishF9 = false;
+
+                subjectRows.forEach(row => {
+                    const sName = row.querySelector('.subj-name').value.trim();
+                    const sGrade = row.querySelector('.subj-grade').value;
+                    if (sName) validSubjectsCount++;
+                    if ((sName.toLowerCase().includes('math') || sName.toLowerCase().includes('english')) && (sGrade === 'F9' || sGrade === 'E8')) {
+                        hasMathOrEnglishF9 = true;
+                    }
+                });
+
+                let detectedErrors = [];
+
+                // 1. Name Spelling Check
+                if (fullName.length < 5 || !fullName.includes(' ')) {
+                    detectedErrors.push({
+                        title: 'Potential Name Sequence Discrepancy',
+                        desc: 'Full name format may trigger NIN/JAMB portal mismatch during O-Level upload.'
+                    });
+                }
+
+                // 2. Exam Number Format Check
+                if (examNumber.length < 8) {
+                    detectedErrors.push({
+                        title: 'Invalid Exam Number Length',
+                        desc: 'The exam number length does not conform to standard regional verification structures.'
+                    });
+                }
+
+                // 3. School Code Validation
+                if (schoolCode.length < 4) {
+                    detectedErrors.push({
+                        title: 'Center Code Anomaly',
+                        desc: 'Unrecognized center code format. May cause result invalidation during university screening.'
+                    });
+                }
+
+                // 4. Photo Status Check
+                if (photoStatus !== 'clear') {
+                    detectedErrors.push({
+                        title: 'Biometric / Passport Discrepancy',
+                        desc: 'A non-clear passport photograph violates biometric verification requirements for university admissions.'
+                    });
+                }
+
+                // 5. Core Subject Check
+                if (hasMathOrEnglishF9) {
+                    detectedErrors.push({
+                        title: 'Critical Core Deficit (Mathematics/English)',
+                        desc: 'Having F9 or E8 in Mathematics or English Language disqualifies candidate from most Nigerian university courses.'
+                    });
+                }
+
+                // 6. Minimum Credits Check
+                if (validSubjectsCount < 5) {
+                    detectedErrors.push({
+                        title: 'Insufficient Subject Entries',
+                        desc: 'Minimum of 5 credit passes required for standard O-Level verification.'
+                    });
+                }
+
+                // Render Results
+                if (resultsCard && resultsSummary && errorsList) {
+                    resultsCard.classList.remove('hidden');
+                    
+                    if (detectedErrors.length === 0) {
+                        resultsSummary.innerHTML = `<span class="badge badge-success">✅ Zero Critical Errors Detected</span><p style="font-size: 13px; margin-top: 6px;">Your result structure appears clean for standard portal uploads.</p>`;
+                        errorsList.innerHTML = '';
+                    } else {
+                        resultsSummary.innerHTML = `<span class="badge badge-danger">⚠️ ${detectedErrors.length} Potential Discrepancy Found</span><p style="font-size: 13px; margin-top: 6px;">Review the flagged items below before attempting UNILAG/JAMB CAPS upload.</p>`;
+                        errorsList.innerHTML = detectedErrors.map(err => `
+                            <div class="error-item">
+                                <h4>${err.title}</h4>
+                                <p>${err.desc}</p>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Save to local history
+                    const auditRecord = {
+                        examType,
+                        fullName,
+                        date: new Date().toLocaleDateString('en-GB'),
+                        errorsCount: detectedErrors.length
+                    };
+                    savedAudits.unshift(auditRecord);
+                    if (savedAudits.length > 10) savedAudits.pop();
+                    try {
+                        localStorage.setItem('result_checker_audits', JSON.stringify(savedAudits));
+                    } catch(e){}
+
+                    resultsCard.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        }
+
+        // Filing Form Submission (WhatsApp Integration & Paid Labour Lead Capture)
+        if (filingForm) {
+            filingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const servicePrice = document.getElementById('filingService').value;
+                const serviceName = document.getElementById('filingService').selectedOptions[0].text;
+                const applicantName = document.getElementById('applicantName').value.trim();
+                const whatsappPhone = document.getElementById('whatsappPhone').value.trim();
+                const applicantEmail = document.getElementById('applicantEmail').value.trim();
+                const centerLocation = document.getElementById('centerLocation').value.trim();
+                const issueDetails = document.getElementById('issueDetails').value.trim();
+
+                // Basic Nigerian phone validation
+                const cleanPhone = whatsappPhone.replace(/\D/g, '');
+                if (cleanPhone.length < 10) {
+                    alert('Please enter a valid Nigerian WhatsApp phone number.');
+                    return;
+                }
+
+                // Format WhatsApp Message
+                const msg = `Hello Correction Desk,%0A%0A*New Correction Filing Request*%0A- Service: ${encodeURIComponent(serviceName)}%0A- Name: ${encodeURIComponent(applicantName)}%0A- Phone: ${encodeURIComponent(whatsappPhone)}%0A- Email: ${encodeURIComponent(applicantEmail)}%0A- Location: ${encodeURIComponent(centerLocation)}%0A- Issue: ${encodeURIComponent(issueDetails)}%0A%0APlease guide me on payment verification (₦${servicePrice}) and processing timeline.`;
+
+                // Redirect to WhatsApp agent
+                const agentWhatsAppNumber = '2348000000000'; // Replace with active business line or direct chat
+                const waURL = `https://wa.me/${agentWhatsAppNumber}?text=${msg}`;
+
+                window.open(waURL, '_blank');
+            });
+        }
+    </script>
+</body>
+</html>
