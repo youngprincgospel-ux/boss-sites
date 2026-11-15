@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LiteLecture - Free-Data Lecture Downloader</title>
+<meta name="description" content="Free‑Data Lecture Downloader Chrome Extension. This should help: Students can paste YouTube or university lecture URLs; the extension uses FFmpeg on a free">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📥</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7YCVkqk1NQ/ZH/2lvNIu7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #059669;
+            --bg-color: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(80px + var(--safe-bottom));
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        main {
+            flex: 1;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .banner {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .banner-text h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .banner-text p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge.free-window {
+            background: #dcfce7;
+            color: #166534;
+        }
+        [data-theme="dark"] .badge.free-window {
+            background: rgba(22, 101, 52, 0.4);
+            color: #86efac;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.85rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+            width: 100%;
+            min-height: 48px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border);
+        }
+
+        .btn-success {
+            background-color: var(--secondary);
+        }
+
+        .btn-success:hover {
+            background-color: #047857;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+
+        .queue-info h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+        .queue-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .status-pill {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .status-scheduled { background: #fef3c7; color: #92400e; }
+        .status-compressing { background: #e0f2fe; color: #0369a1; }
+        .status-completed { background: #dcfce7; color: #166534; }
+        
+        [data-theme="dark"] .status-scheduled { background: rgba(146, 64, 14, 0.4); color: #fde68a; }
+        [data-theme="dark"] .status-compressing { background: rgba(3, 105, 161, 0.4); color: #7dd3fc; }
+        [data-theme="dark"] .status-completed { background: rgba(22, 101, 52, 0.4); color: #86efac; }
+
+        .affiliate-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            text-decoration: none;
+            color: var(--text-main);
+            background: var(--bg-color);
+            transition: transform 0.1s;
+        }
+
+        .affiliate-card:active {
+            transform: scale(0.98);
+        }
+
+        .affiliate-icon {
+            font-size: 1.5rem;
+            background: var(--border);
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .affiliate-info h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .affiliate-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Fixed Bottom Nav */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0.55rem calc(0.5rem + var(--safe-bottom)) 0.55rem;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            flex: 1;
+            max-width: 80px;
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .feature-list li i {
+            color: var(--secondary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--text-main);
+            color: var(--bg-color);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 3000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .clock-display {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-graduation-cap"></i> LiteLecture
+        </div>
+        <div class="header-actions">
+            <button id="themeToggleBtn" class="icon-btn" aria-label="Toggle Theme">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: DOWNLOADER -->
+        <section id="tab-downloader" class="tab-content active">
+            <div class="banner">
+                <div class="banner-text">
+                    <h1>Free-Data Window</h2>
+                    <p>Next window: <span id="windowCountdown" class="clock-display">00:00:00</span></p>
+                </div>
+                <div id="windowBadge" class="badge free-window">
+                    <i class="fa-solid fa-circle-dot"></i> Check Status
+                </div>
+            </div>
+
+            <div class="card">
+                <form id="downloadForm">
+                    <div class="form-group">
+                        <label for="lectureUrl">Lecture or YouTube URL</label>
+                        <input type="text" id="lectureUrl" placeholder="https://youtube.com/watch?v=..." required>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="compressionQuality">Target Size</label>
+                            <select id="compressionQuality">
+                                <option value="100">Under 100MB (Standard)</option>
+                                <option value="50">Under 50MB (Data Saver)</option>
+                                <option value="custom" id="customOptionLabel">Custom (Pro Only)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleMode">Download Time</label>
+                            <select id="scheduleMode">
+                                <option value="auto">Auto (00:00 - 02:00 Free Window)</option>
+                                <option value="now">Download Right Now</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Queue Lecture
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Active Queue</span>
+                    <span id="queueCount" style="font-size: 0.75rem; color: var(--text-muted);">0 items</span>
+                </h3>
+                <div id="queueList">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">No lectures in queue yet. Paste a link above.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: PRO TIER -->
+        <section id="tab-pro" class="tab-content">
+            <div class="card" style="text-align: center; padding: 2rem 1.25rem;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--warning);">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Upgrade to LiteLecture Pro</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Unlock batch downloads, custom compression bitrate settings, and priority server nodes during peak university hours.</p>
+                <div style="font-size: 1.75rem; font-weight: 700; color: var(--primary); margin-bottom: 1.5rem;">
+                    ₦1,200 <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">/ month</span>
+                </div>
+
+                <ul class="feature-list" style="text-align: left; max-width: 280px; margin: 0 auto 1.5rem auto;">
+                    <li><i class="fa-solid fa-check"></i> Unlimited batch URL pasting</li>
+                    <li><i class="fa-solid fa-check"></i> Custom FFmpeg compression targets</li>
+                    <li><i class="fa-solid fa-check"></i> Priority server queue processing</li>
+                    <li><i class="fa-solid fa-check"></i> Zero ads &amp; high-speed mirror links</li>
+                </ul>
+
+                <button id="upgradeBtn" class="btn btn-success">
+                    <i class="fa-solid fa-bolt"></i> Upgrade Now (₦1,200)
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB 3: AFFILIATES -->
+        <section id="tab-affiliates" class="tab-content">
+            <div class="card">
+                <h2 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Recommended Academic Resources</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Boost your GPA and career readiness with these trusted student platforms.</p>
+                
+                <a href="https://example.com/edx" target="_blank" rel="noopener noreferrer" class="affiliate-card">
+                    <div class="affiliate-icon"><i class="fa-solid fa-laptop-code" style="color: #2563eb;"></i></div>
+                    <div class="affiliate-info">
+                        <h4>Free Professional Certificates</h4>
+                        <p>Learn in-demand tech skills with certified online courses.</p>
+                    </div>
+                </a>
+
+                <a href="https://example.com/pastquestions" target="_blank" rel="noopener noreferrer" class="affiliate-card">
+                    <div class="affiliate-icon"><i class="fa-solid fa-book-open" style="color: #059669;"></i></div>
+                    <div class="affiliate-info">
+                        <h4>University Past Questions Bank</h4>
+                        <p>Access 5+ years of verified semester exams &amp; answers.</p>
+                    </div>
+                </a>
+
+                <a href="https://example.com/scholarships" target="_blank" rel="noopener noreferrer" class="affiliate-card">
+                    <div class="affiliate-icon"><i class="fa-solid fa-award" style="color: #d97706;"></i></div>
+                    <div class="affiliate-info">
+                        <h4>Global Student Grants &amp; Scholarships</h4>
+                        <p>Find fully funded opportunities for African undergraduates.</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="downloader">
+            <i class="fa-solid fa-download"></i>
+            <span>Downloader</span>
+        </button>
+        <button class="nav-item" data-tab="pro">
+            <i class="fa-solid fa-crown"></i>
+            <span>Pro Tier</span>
+        </button>
+        <button class="nav-item" data-tab="affiliates">
+            <i class="fa-solid fa-compass"></i>
+            <span>Explore</span>
+        </button>
+    </nav>
+
+    <!-- PAYMENT MODAL -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>LiteLecture Pro Checkout</h3>
+                <button id="closeModalBtn" class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Secure 30-day subscription activation via instant bank transfer or card.</p>
+            
+            <div style="background: var(--bg-color); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                    <span>Plan:</span>
+                    <strong>Monthly Pro Pass</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                    <span>Total Amount:</span>
+                    <strong style="color: var(--primary);">₦1,200</strong>
+                </div>
+            </div>
+
+            <button id="simulatePaymentBtn" class="btn btn-success">
+                <i class="fa-solid fa-lock"></i> Pay ₦1,200 Securely
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">Action completed successfully</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State Management
+            let state = {
+                theme: 'light',
+                isPro: false,
+                queue: []
+            };
+
+            try {
+                const savedState = localStorage.getItem('litelecture_state');
+                if (savedState) {
+                    state = JSON.parse(savedState);
+                }
+            } catch (e) {
+                console.error('Failed to load state from localStorage', e);
+            }
+
+            // Apply Theme
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                const themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) {
+                    themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                }
+            }
+            applyTheme(state.theme);
+
+            // Save State Helper
+            function saveState() {
+                try {
+                    localStorage.setItem('litelecture_state', JSON.stringify(state));
+                } catch (e) {
+                    console.error('Failed to save state', e);
+                }
+            }
+
+            // Toast Notification
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Tab Navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetTab = item.getAttribute('data-tab');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+
+                    item.classList.add('active');
+                    const targetEl = document.getElementById(`tab-${targetTab}`);
+                    if (targetEl) targetEl.classList.add('active');
+                });
+            });
+
+            // Theme Toggle Button
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+                    applyTheme(state.theme);
+                    saveState();
+                    showToast(`Switched to ${state.theme} mode`);
+                });
+            }
+
+            // Live Countdown to 00:00 GMT+1 Free Window
+            function updateClock() {
+                const now = new Date();
+                // GMT+1 calculation
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const nigeriaTime = new Date(utc + (3600000 * 1));
+                
+                const hours = nigeriaTime.getHours();
+                const minutes = nigeriaTime.getMinutes();
+                const seconds = nigeriaTime.getSeconds();
+
+                const windowBadge = document.getElementById('windowBadge');
+                const countdownEl = document.getElementById('windowCountdown');
+
+                // Free window is 00:00 to 02:00
+                if (hours >= 0 && hours < 2) {
+                    if (windowBadge) {
+                        windowBadge.innerHTML = '<i class="fa-solid fa-circle-dot" style="color: #166534;"></i> Window Active NOW';
+                        windowBadge.className = 'badge free-window';
+                    }
+                    if (countdownEl) countdownEl.textContent = "00:00:00 (Active)";
+                } else {
+                    if (windowBadge) {
+                        windowBadge.innerHTML = '<i class="fa-solid fa-clock"></i> Window Closed';
+                        windowBadge.className = 'badge';
+                        windowBadge.style.background = 'rgba(255,255,255,0.2)';
+                        windowBadge.style.color = 'white';
+                    }
+
+                    // Calculate time until next midnight
+                    let target = new Date(nigeriaTime);
+                    if (hours >= 2) {
+                        target.setDate(target.getDate() + 1);
+                    }
+                    target.setHours(0, 0, 0, 0);
+
+                    const diff = target - nigeriaTime;
+                    const diffHours = Math.floor((diff % 86400000) / 3600000);
+                    const diffMinutes = Math.floor((diff % 3600000) / 60000);
+                    const diffSeconds = Math.floor((diff % 60000) / 1000);
+
+                    if (countdownEl) {
+                        countdownEl.textContent = `${String(diffHours).padStart(2, '0')}:${String(diffMinutes).padStart(2, '0')}:${String(diffSeconds).padStart(2, '0')}`;
+                    }
+                }
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Render Queue
+            function renderQueue() {
+                const queueList = document.getElementById('queueList');
+                const queueCount = document.getElementById('queueCount');
+                if (!queueList || !queueCount) return;
+
+                queueCount.textContent = `${state.queue.length} items`;
+
+                if (state.queue.length === 0) {
+                    queueList.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">No lectures in queue yet. Paste a link above.</p>`;
+                    return;
+                }
+
+                queueList.innerHTML = state.queue.map((item, index) => `
+                    <div class="queue-item">
+                        <div class="queue-info">
+                            <h4>${escapeHtml(item.url)}</h4>
+                            <p>${item.quality}MB target • ${item.mode === 'now' ? 'Immediate' : 'Scheduled 00:00'}</p>
+                        </div>
+                        <span class="status-pill status-${item.status}">${item.status.toUpperCase()}</span>
+                    </div>
+                `).join('');
+            }
+
+            function escapeHtml(str) {
+                return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            renderQueue();
+
+            // Handle Queue Form Submit
+            const downloadForm = document.getElementById('downloadForm');
+            if (downloadForm) {
+                downloadForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const urlInput = document.getElementById('lectureUrl');
+                    const qualityInput = document.getElementById('compressionQuality');
+                    const scheduleInput = document.getElementById('scheduleMode');
+
+                    if (!urlInput.value.trim()) return;
+
+                    // Check pro restriction for custom quality
+                    if (qualityInput.value === 'custom' && !state.isPro) {
+                        showToast('Custom compression requires LiteLecture Pro!');
+                        const paymentModal = document.getElementById('paymentModal');
+                        if (paymentModal) paymentModal.classList.add('open');
+                        return;
+                    }
+
+                    const newItem = {
+                        url: urlInput.value.trim(),
+                        quality: qualityInput.value === 'custom' ? 'Custom' : qualityInput.value,
+                        mode: scheduleInput.value,
+                        status: scheduleInput.value === 'now' ? 'compressing' : 'scheduled',
+                        date: new Date().toISOString()
+                    };
+
+                    state.queue.unshift(newItem);
+                    saveState();
+                    renderQueue();
+
+                    urlInput.value = '';
+                    showToast('Lecture added to serverless queue successfully!');
+                });
+            }
+
+            // Pro & Modal Handling
+            const upgradeBtn = document.getElementById('upgradeBtn');
+            const paymentModal = document.getElementById('paymentModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
+
+            if (upgradeBtn) {
+                upgradeBtn.addEventListener('click', () => {
+                    if (paymentModal) paymentModal.classList.add('open');
+                });
+            }
+
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', () => {
+                    if (paymentModal) paymentModal.classList.remove('open');
+                });
+            }
+
+            if (simulatePaymentBtn) {
+                simulatePaymentBtn.addEventListener('click', () => {
+                    state.isPro = true;
+                    saveState();
+                    if (paymentModal) paymentModal.classList.remove('open');
+                    showToast('Payment confirmed! LiteLecture Pro activated.');
+
+                    // Update UI for Pro
+                    const compressionQuality = document.getElementById('compressionQuality');
+                    if (compressionQuality) {
+                        const customOpt = document.getElementById('customOptionLabel');
+                        if (customOpt) customOpt.textContent = "Custom Bitrate (Pro Active)";
+                    }
+
+                    // Change Pro tab view
+                    const upgradeBtnEl = document.getElementById('upgradeBtn');
+                    if (upgradeBtnEl) {
+                        upgradeBtnEl.outerHTML = `<div style="background: var(--secondary); color: white; padding: 0.85rem; border-radius: 8px; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Pro Subscription Active</div>`;
+                    }
+                });
+            }
+
+            // Check existing pro state on load
+            if (state.isPro) {
+                const upgradeBtnEl = document.getElementById('upgradeBtn');
+                if (upgradeBtnEl) {
+                    upgradeBtnEl.outerHTML = `<div style="background: var(--secondary); color: white; padding: 0.85rem; border-radius: 8px; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Pro Subscription Active</div>`;
+                }
+                const customOpt = document.getElementById('customOptionLabel');
+                if (customOpt) customOpt.textContent = "Custom Bitrate (Pro Active)";
+            }
+        });
+    </script>
+</body>
+</html>
