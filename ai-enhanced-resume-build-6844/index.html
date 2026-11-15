@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NaijaResumes — AI-Enhanced Resume Builder for Nigerian Job-Seekers</title>
+<meta name="description" content="AI‑Enhanced Resume Builder for Nigerian Job‑Seekers. Provides free, locally‑tailored resume templates and an AI assistant.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+<style>
+:root {
+  --primary: #008751;
+  --primary-dark: #00663d;
+  --accent: #f4f5f7;
+  --text: #172b4d;
+  --text-muted: #5e6c84;
+  --bg: #f9fafb;
+  --card-bg: #ffffff;
+  --border: #dfe1e6;
+  --error: #de350b;
+  --success: #008751;
+  --pro-gold: #ffab00;
+  --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: calc(90px + var(--safe-area-bottom));
+}
+
+header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.brand span {
+  background: var(--primary);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.pro-badge {
+  background: linear-gradient(135deg, #ffab00, #ff8b00);
+  color: #172b4d;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+p.hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--text);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--text);
+  min-height: 44px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.15);
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 48px;
+  transition: background 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--accent);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.ai-assistant-box {
+  background: #e3fcef;
+  border: 1px solid #abf5d1;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.ai-suggestion-chip {
+  background: #ffffff;
+  border: 1px solid #abf5d1;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  display: block;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.ai-suggestion-chip:hover {
+  background: #f0fff4;
+  border-color: var(--primary);
+}
+
+.template-preview {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  font-size: 0.9rem;
+  position: relative;
+  margin-top: 1rem;
+}
+
+.preview-header {
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.preview-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.preview-contact {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.preview-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.portal-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.portal-info h4 {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.portal-info p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.fixed-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0;
+  z-index: 100;
+  padding-bottom: max(0.5rem, var(--safe-area-bottom));
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  flex: 1;
+  min-height: 48px;
+  justify-content: center;
+}
+
+.nav-item.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-item span.icon {
+  font-size: 1.25rem;
+}
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+  display: none;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.flex-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag {
+  display: inline-block;
+  background: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    🇳🇬 NaijaResumes <span>ATS Pro</span>
+  </div>
+  <button class="pro-badge" id="proBadgeBtn" aria-label="Upgrade to Pro">
+    ⭐ Upgrade Pro (₦1,000)
+  </button>
+</header>
+
+<main class="container">
+  <!-- VIEW 1: BUILDER -->
+  <section id="viewBuilder" class="view-section active">
+    <div class="card">
+      <h2>👤 Personal Details</h2>
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" placeholder="e.g. Adebayo Oluwaseun Okafor">
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="e.g. adebayo.okafor@gmail.com">
+      </div>
+      <div class="form-group">
+        <label for="phone">Nigerian Phone Number</label>
+        <input type="tel" id="phone" placeholder="e.g. 08031234567">
+      </div>
+      <div class="form-group">
+        <label for="location">Location (State, Nigeria)</label>
+        <select id="location">
+          <option value="Lagos, Nigeria">Lagos, Nigeria</option>
+          <option value="Abuja (FCT), Nigeria">Abuja (FCT), Nigeria</option>
+          <option value="Port Harcourt, Rivers">Port Harcourt, Rivers</option>
+          <option value="Ibadan, Oyo">Ibadan, Oyo</option>
+          <option value="Enugu, Enugu">Enugu, Enugu</option>
+          <option value="Kaduna, Kaduna">Kaduna, Kaduna</option>
+          <option value="Other Nigerian State">Other Nigerian State</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Target Role & Template</h2>
+      <div class="form-group">
+        <label for="targetRole">Desired Job Role in Nigeria</label>
+        <input type="text" id="targetRole" placeholder="e.g. Customer Success Rep, Frontend Dev, Bank Teller">
+      </div>
+      <div class="form-group">
+        <label for="templateStyle">Resume Template</label>
+        <select id="templateStyle">
+          <option value="modern">Modern Lagos Tech (Clean & Bold)</option>
+          <option value="corporate">Nigerian Corporate (Banking & Oil/Gas)</option>
+          <option value="entry">Entry-Level / NYSC Graduate</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💼 Experience & Summary</h2>
+      <div class="form-group">
+        <label for="summary">Professional Summary</label>
+        <textarea id="summary" rows="3" placeholder="Briefly introduce your professional background..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="experience">Work Experience / NYSC Place of Primary Assignment</label>
+        <textarea id="experience" rows="4" placeholder="Company Name, Role - Key responsibilities and accomplishments..."></textarea>
+      </div>
+      <button class="btn btn-secondary" id="aiAssistBtn">
+        ✨ Ask AI to Polish & Add ATS Keywords
+      </button>
+
+      <div class="ai-assistant-box" id="aiBox" style="display:none;">
+        <label style="color: var(--primary);" id="aiBoxLabel">🤖 AI Bullet Point Suggestions (Click to insert):</label>
+        <div id="aiSuggestionsContainer"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎓 Education & Certifications</h2>
+      <div class="form-group">
+        <label for="education">University / Polytechnic & Degree</label>
+        <input type="text" id="education" placeholder="e.g. B.Sc. Economics, University of Lagos (UNILAG)">
+      </div>
+      <div class="form-group">
+        <label for="skills">Skills (Comma separated)</label>
+        <input type="text" id="skills" placeholder="e.g. Microsoft Excel, Customer Service, Team Leadership, SQL">
+      </div>
+    </div>
+
+    <button class="btn" id="saveResumeBtn">💾 Save & Preview Resume</button>
+  </section>
+
+  <!-- VIEW 2: PREVIEW & EXPORT -->
+  <section id="viewPreview" class="view-section">
+    <div class="card">
+      <h2>📄 Live ATS Preview</h2>
+      <p class="hint">Formatted for Nigerian employer applicant tracking systems (ATS).</p>
+      
+      <div class="template-preview" id="resumePreviewBox">
+        <div class="preview-header">
+          <div class="preview-name" id="prevName">Adebayo Oluwaseun</div>
+          <div class="preview-contact">
+            <span id="prevEmail">📧 adebayo@example.com</span>
+            <span id="prevPhone">📱 08031234567</span>
+            <span id="prevLocation">📍 Lagos, Nigeria</span>
+          </div>
+        </div>
+        
+        <div class="preview-section-title">Professional Summary</div>
+        <p id="prevSummary" style="font-size: 0.85rem; color: var(--text);">No summary provided yet.</p>
+
+        <div class="preview-section-title">Work Experience</div>
+        <p id="prevExperience" style="font-size: 0.85rem; color: var(--text); white-space: pre-line;">No experience listed yet.</p>
+
+        <div class="preview-section-title">Education</div>
+        <p id="prevEducation" style="font-size: 0.85rem; color: var(--text);">No education listed yet.</p>
+
+        <div class="preview-section-title">Key Skills</div>
+        <div id="prevSkills" style="margin-top: 0.25rem;"></div>
+      </div>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <button class="btn" id="exportPdfBtn">📥 Export PDF / Word (Pro Feature)</button>
+        <button class="btn btn-secondary" id="copyTextBtn">📋 Copy Plain Text for Job Portals</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 3: JOB PORTALS -->
+  <section id="viewPortals" class="view-section">
+    <div class="card">
+      <h2>🚀 Partnered Nigerian Job Portals</h2>
+      <p class="hint">Apply instantly with your tailored resume. We earn referral commissions when you get hired!</p>
+      
+      <div class="portal-grid">
+        <div class="portal-card">
+          <div class="portal-info">
+            <h4>Jobberman Nigeria</h4>
+            <p>Top portal for corporate & tech roles in Lagos & Abuja.</p>
+          </div>
+          <button class="btn portal-apply-btn" data-portal="Jobberman" style="width: auto; padding: 0.5rem 1rem;">Apply ↗</button>
+        </div>
+        <div class="portal-card">
+          <div class="portal-info">
+            <h4>MyJobMag Nigeria</h4>
+            <p>Extensive listings for banking, oil/gas, & NGO jobs.</p>
+          </div>
+          <button class="btn portal-apply-btn" data-portal="MyJobMag" style="width: auto; padding: 0.5rem 1rem;">Apply ↗</button>
+        </div>
+        <div class="portal-card">
+          <div class="portal-info">
+            <h4>Workbeta</h4>
+            <p>Fast-growing recruitment platform for young professionals.</p>
+          </div>
+          <button class="btn portal-apply-btn" data-portal="Workbeta" style="width: auto; padding: 0.5rem 1rem;">Apply ↗</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM NAVIGATION BAR -->
+<nav class="fixed-bottom-nav">
+  <button class="nav-item active" data-target="viewBuilder" aria-label="Builder">
+    <span class="icon">✏️</span>
+    <span>Builder</span>
+  </button>
+  <button class="nav-item" data-target="viewPreview" aria-label="Preview">
+    <span class="icon">👁️</span>
+    <span>Preview</span>
+  </button>
+  <button class="nav-item" data-target="viewPortals" aria-label="Job Portals">
+    <span class="icon">💼</span>
+    <span>Job Portals</span>
+  </button>
+</nav>
+
+<!-- PRO UPGRADE MODAL -->
+<div class="modal-overlay" id="proModal">
+  <div class="modal">
+    <h2 style="color: var(--primary);">⭐ Upgrade to NaijaResumes Pro</h2>
+    <p class="hint" style="margin-top: 0.5rem;">Unlock unlimited AI optimizations, native PDF & Word exports, direct portal auto-submission, and priority recruiter visibility for just <strong>₦1,000</strong>.</p>
+    
+    <div class="form-group" style="margin-top: 1rem;">
+      <label for="proEmail">Your Email for Activation</label>
+      <input type="email" id="proEmail" placeholder="e.g. adebayo@gmail.com">
+    </div>
+
+    <button class="btn" id="payProBtn" style="background: var(--pro-gold); color: #172b4d; font-weight: 700; margin-top: 0.5rem;">
+      Pay ₦1,000 via Paystack / Card
+    </button>
+    <button class="btn btn-secondary" id="closeModalBtn" style="margin-top: 0.5rem;">
+      Maybe Later
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const navItems = document.querySelectorAll('.nav-item');
+  const viewSections = document.querySelectorAll('.view-section');
+  const proBadgeBtn = document.getElementById('proBadgeBtn');
+  const proModal = document.getElementById('proModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const payProBtn = document.getElementById('payProBtn');
+  const proEmail = document.getElementById('proEmail');
+
+  const fullNameInput = document.getElementById('fullName');
+  const emailInput = document.getElementById('email');
+  const phoneInput = document.getElementById('phone');
+  const locationSelect = document.getElementById('location');
+  const targetRoleInput = document.getElementById('targetRole');
+  const templateStyleSelect = document.getElementById('templateStyle');
+  const summaryInput = document.getElementById('summary');
+  const experienceInput = document.getElementById('experience');
+  const educationInput = document.getElementById('education');
+  const skillsInput = document.getElementById('skills');
+
+  const aiAssistBtn = document.getElementById('aiAssistBtn');
+  const aiBox = document.getElementById('aiBox');
+  const aiSuggestionsContainer = document.getElementById('aiSuggestionsContainer');
+  const saveResumeBtn = document.getElementById('saveResumeBtn');
+
+  const prevName = document.getElementById('prevName');
+  const prevEmail = document.getElementById('prevEmail');
+  const prevPhone = document.getElementById('prevPhone');
+  const prevLocation = document.getElementById('prevLocation');
+  const prevSummary = document.getElementById('prevSummary');
+  const prevExperience = document.getElementById('prevExperience');
+  const prevEducation = document.getElementById('prevEducation');
+  const prevSkills = document.getElementById('prevSkills');
+
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const copyTextBtn = document.getElementById('copyTextBtn');
+  const portalApplyBtns = document.querySelectorAll('.portal-apply-btn');
+
+  try {
+    const saved = localStorage.getItem('naija_resume_data');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (fullNameInput) fullNameInput.value = data.fullName || '';
+      if (emailInput) emailInput.value = data.email || '';
+      if (phoneInput) phoneInput.value = data.phone || '';
+      if (locationSelect) locationSelect.value = data.location || 'Lagos, Nigeria';
+      if (targetRoleInput) targetRoleInput.value = data.targetRole || '';
+      if (templateStyleSelect) templateStyleSelect.value = data.templateStyle || 'modern';
+      if (summaryInput) summaryInput.value = data.summary || '';
+      if (experienceInput) experienceInput.value = data.experience || '';
+      if (educationInput) educationInput.value = data.education || '';
+      if (skillsInput) skillsInput.value = data.skills || '';
+    }
+  } catch (e) {
+    console.error('LocalStorage error:', e);
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      navItems.forEach(nav => nav.classList.remove('active'));
+      viewSections.forEach(sec => sec.classList.remove('active'));
+
+      item.classList.add('active');
+      const targetSec = document.getElementById(targetId);
+      if (targetSec) targetSec.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  if (proBadgeBtn && proModal) {
+    proBadgeBtn.addEventListener('click', () => {
+      proModal.style.display = 'flex';
+    });
+  }
+
+  if (closeModalBtn && proModal) {
+    closeModalBtn.addEventListener('click', () => {
+      proModal.style.display = 'none';
+    });
+  }
+
+  if (payProBtn && proModal) {
+    payProBtn.addEventListener('click', () => {
+      const emailVal = proEmail ? proEmail.value.trim() : '';
+      if (!emailVal || !emailVal.includes('@')) {
+        alert('Please enter a valid email address for Pro activation.');
+        return;
+      }
+      alert(`Redirecting to secure Paystack checkout for ₦1,000 Pro Upgrade for ${emailVal}... (Simulated Success! Pro features unlocked!)`);
+      proModal.style.display = 'none';
+      if (proBadgeBtn) {
+        proBadgeBtn.innerHTML = '⭐ Pro Member Active ✅';
+        proBadgeBtn.style.background = '#008751';
+        proBadgeBtn.style.color = '#ffffff';
+      }
+    });
+  }
+
+  if (aiAssistBtn && aiBox && aiSuggestionsContainer) {
+    aiAssistBtn.addEventListener('click', () => {
+      const role = targetRoleInput ? targetRoleInput.value.trim() : 'Professional';
+      aiBox.style.display = 'block';
+      aiSuggestionsContainer.innerHTML = '<p class="hint">Analyzing job market data for Nigerian employers...</p>';
+
+      setTimeout(() => {
+        const suggestions = [
+          `Spearheaded cross-functional team initiatives resulting in 25% efficiency boost across ${role} operations.`,
+          `Optimized daily workflows and customer service KPIs, aligning with standard Nigerian corporate regulations.`,
+          `Leveraged data analytics and stakeholder communication to drive revenue growth and reduce overhead costs.`
+        ];
+        
+        aiSuggestionsContainer.innerHTML = '';
+        suggestions.forEach(sug => {
+          const chip = document.createElement('div');
+          chip.className = 'ai-suggestion-chip';
+          chip.textContent = `+ ${sug}`;
+          chip.addEventListener('click', () => {
+            if (experienceInput) {
+              experienceInput.value += (experienceInput.value ? '\n• ' : '• ') + sug;
+            }
+          });
+          aiSuggestionsContainer.appendChild(chip);
+        });
+      }, 600);
+    });
+  }
+
+  const updatePreviewData = () => {
+    const data = {
+      fullName: fullNameInput ? fullNameInput.value : '',
+      email: emailInput ? emailInput.value : '',
+      phone: phoneInput ? phoneInput.value : '',
+      location: locationSelect ? locationSelect.value : '',
+      targetRole: targetRoleInput ? targetRoleInput.value : '',
+      templateStyle: templateStyleSelect ? templateStyleSelect.value : '',
+      summary: summaryInput ? summaryInput.value : '',
+      experience: experienceInput ? experienceInput.value : '',
+      education: educationInput ? educationInput.value : '',
+      skills: skillsInput ? skillsInput.value : ''
+    };
+
+    try {
+      localStorage.setItem('naija_resume_data', JSON.stringify(data));
+    } catch (e) {
+      console.error('LocalStorage save error:', e);
+    }
+
+    if (prevName) prevName.textContent = data.fullName || 'Adebayo Oluwaseun';
+    if (prevEmail) prevEmail.textContent = `📧 ${data.email || 'adebayo@example.com'}`;
+    if (prevPhone) prevPhone.textContent = `📱 ${data.phone || '08031234567'}`;
+    if (prevLocation) prevLocation.textContent = `📍 ${data.location || 'Lagos, Nigeria'}`;
+    if (prevSummary) prevSummary.textContent = data.summary || 'No summary provided yet.';
+    if (prevExperience) prevExperience.textContent = data.experience || 'No experience listed yet.';
+    if (prevEducation) prevEducation.textContent = data.education || 'No education listed yet.';
+
+    if (prevSkills) {
+      prevSkills.innerHTML = '';
+      const skillsArr = data.skills ? data.skills.split(',') : ['Microsoft Excel', 'Communication', 'Problem Solving'];
+      skillsArr.forEach(skill => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = skill.trim();
+        prevSkills.appendChild(tag);
+      });
+    }
+  };
+
+  if (saveResumeBtn) {
+    saveResumeBtn.addEventListener('click', () => {
+      updatePreviewData();
+      alert('Resume saved successfully! Switching to ATS Preview.');
+      const previewTab = document.querySelector('[data-target="viewPreview"]');
+      if (previewTab) previewTab.click();
+    });
+  }
+
+  if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', () => {
+      alert('🔒 PDF & Word export is a Pro feature (₦1,000). Please upgrade using the badge at the top right to download your formatted document.');
+      if (proModal) proModal.style.display = 'flex';
+    });
+  }
+
+  if (copyTextBtn) {
+    copyTextBtn.addEventListener('click', () => {
+      updatePreviewData();
+      const textToCopy = `
+${fullNameInput ? fullNameInput.value : ''}
+${emailInput ? emailInput.value : ''} | ${phoneInput ? phoneInput.value : ''} | ${locationSelect ? locationSelect.value : ''}
+
+SUMMARY:
+${summaryInput ? summaryInput.value : ''}
+
+EXPERIENCE:
+${experienceInput ? experienceInput.value : ''}
+
+EDUCATION:
+${educationInput ? educationInput.value : ''}
+
+SKILLS:
+${skillsInput ? skillsInput.value : ''}
+      `.trim();
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('Resume plain text copied to clipboard successfully! Ready to paste into any job portal.');
+      }).catch(() => {
+        alert('Unable to copy automatically. Please check your browser permissions.');
+      });
+    });
+  }
+
+  portalApplyBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const portalName = btn.getAttribute('data-portal');
+      updatePreviewData();
+      alert(`Redirecting to ${portalName} partner portal with your tailored resume attached! (Affiliate tracking active: earning commission on successful placement).`);
+      window.open('https://www.google.com/search?q=' + encodeURIComponent(portalName + ' nigeria jobs'), '_blank');
+    });
+  });
+
+  updatePreviewData();
+});
+</script>
+
+</body>
+</html>
