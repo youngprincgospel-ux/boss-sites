@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaStudy Hub & PDF Guide Upsell</title>
+<meta name="description" content="">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --accent: #d97706;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            background: #d1fae5;
+            color: var(--primary-dark);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            background: #fff;
+            color: var(--text);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+
+        .btn-accent:hover {
+            background: #b45309;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Fixed Bottom Nav */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0.55rem calc(0.5rem + var(--safe-bottom)) 0.55rem;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            cursor: pointer;
+            flex: 1;
+            padding: 0.3rem 0;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.3rem;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .result-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .result-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .upsell-banner {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fde68a;
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .upsell-banner h3 {
+            color: #92400e;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .upsell-banner p {
+            color: #b45309;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #b45309;
+            margin-bottom: 0.75rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            width: 100%;
+            max-width: 450px;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #0f172a;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>📚</span> NaijaStudy Hub
+        </div>
+        <div class="badge" id="live-time-badge">Sun, 8:06 AM</div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: Free Utility (CBT & Cut-Off Checker) -->
+        <section id="view-utility" class="view active">
+            <div class="card">
+                <h1>Free JAMB/WAEC Cut-Off & Eligibility Checker</h1>
+                <p>Instantly check your chances of admission into any Nigerian federal or state university based on your scores and state.</p>
+                
+                <form id="eligibility-form">
+                    <div class="form-group">
+                        <label for="exam-type">Select Exam</label>
+                        <select id="exam-type" required>
+                            <option value="jamb">JAMB UTME (Score out of 400)</option>
+                            <option value="waec">WAEC / NECO (Credits count)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="score-input" id="score-label">JAMB Score (e.g. 240)</label>
+                        <input type="number" id="score-input" placeholder="Enter score" min="100" max="400" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="target-uni">Target University</label>
+                        <select id="target-uni" required>
+                            <option value="unilag">University of Lagos (UNILAG)</option>
+                            <option value="ui">University of Ibadan (UI)</option>
+                            <option value="abu">Ahmadu Bello University (ABU Zaria)</option>
+                            <option value="unn">University of Nigeria, Nsukka (UNN)</option>
+                            <option value="lasu">Lagos State University (LASU)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state-origin">State of Origin</label>
+                        <select id="state-origin" required>
+                            <option value="">-- Select State --</option>
+                            <option value="abia">Abia</option><option value="adamawa">Adamawa</option><option value="akwa-ibom">Akwa Ibom</option><option value="anambra">Anambra</option><option value="bauchi">Bauchi</option><option value="bayelsa">Bayelsa</option><option value="benue">Benue</option><option value="borno">Borno</option><option value="cross-river">Cross River</option><option value="delta">Delta</option><option value="ebonyi">Ebonyi</option><option value="edo">Edo</option><option value="ekiti">Ekiti</option><option value="enugu">Enugu</option><option value="fct">FCT Abuja</option><option value="gombe">Gombe</option><option value="imo">Imo</option><option value="jigawa">Jigawa</option><option value="kaduna">Kaduna</option><option value="kano">Kano</option><option value="katsina">Katsina</option><option value="kebbi">Kebbi</option><option value="kogi">Kogi</option><option value="kwara">Kwara</option><option value="lagos">Lagos</option><option value="nassarawa">Nassarawa</option><option value="niger">Niger</option><option value="ogun">Ogun</option><option value="ondo">Ondo</option><option value="osun">Osun</option><option value="oyo">Oyo</option><option value="plateau">Plateau</option><option value="rivers">Rivers</option><option value="sokoto">Sokoto</option><option value="taraba">Taraba</option><option value="yobe">Yobe</option><option value="zamfara">Zamfara</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn" id="analyze-btn">
+                        <span id="btn-text">Check Eligibility</span>
+                        <div class="spinner" id="btn-spinner"></div>
+                    </button>
+                </form>
+
+                <div id="result-container" style="display: none;"></div>
+            </div>
+
+            <!-- Upsell trigger box -->
+            <div class="upsell-banner">
+                <h3>🔥 Pass Your Post-UTME & Exams in 1 Try!</h3>
+                <p>Get the ultimate verified 2026/2027 Success Guide with past questions, answers, and admission secrets.</p>
+                <div class="price">₦1,000 only</div>
+                <button class="btn btn-accent" id="open-upsell-modal-btn">Get PDF Guide via WhatsApp</button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: Premium Guides & Resources -->
+        <section id="view-guides" class="view">
+            <div class="card">
+                <h1>Premium PDF Study Guides</h1>
+                <p>Hand-crafted by top Nigerian educators. Instant delivery directly to your WhatsApp or Email after confirmation.</p>
+            </div>
+
+            <div class="card">
+                <h3>📘 Ultimate JAMB & Post-UTME Success Blueprint</h3>
+                <p>Includes 10 years of solved past questions, subject combination secrets, and CBT masterclass tips.</p>
+                <div class="price" style="font-size: 1.2rem; margin: 0.5rem 0;">₦1,000</div>
+                <button class="btn btn-accent buy-guide-btn" data-guide="JAMB Success Blueprint">Buy Now (₦1,000)</button>
+            </div>
+
+            <div class="card">
+                <h3>📙 WAEC & NECO A-Grade Formula</h3>
+                <p>Step-by-step framework to score straight A's in Mathematics, English, Physics, Chemistry, and Biology.</p>
+                <div class="price" style="font-size: 1.2rem; margin: 0.5rem 0;">₦1,000</div>
+                <button class="btn btn-accent buy-guide-btn" data-guide="WAEC A-Grade Formula">Buy Now (₦1,000)</button>
+            </div>
+        </section>
+
+        <!-- VIEW 3: Orders & Support -->
+        <section id="view-orders" class="view">
+            <div class="card">
+                <h1>My Saved Orders & Status</h1>
+                <p>Check your payment confirmation and access purchased download links.</p>
+                
+                <div id="orders-list">
+                    <p style="text-align: center; padding: 2rem 0; color: var(--text-secondary);">No orders found on this device yet.</p>
+                </div>
+
+                <button class="btn" id="clear-data-btn" style="background: #ef4444; margin-top: 1rem;">Clear Local Data</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-utility">
+            <span class="icon">📊</span>
+            <span>Check Tool</span>
+        </button>
+        <button class="nav-item" data-target="view-guides">
+            <span class="icon">📖</span>
+            <span>PDF Guides</span>
+        </button>
+        <button class="nav-item" data-target="view-orders">
+            <span class="icon">📦</span>
+            <span>My Orders</span>
+        </button>
+    </nav>
+
+    <!-- Modal for WhatsApp Checkout & PDF Upsell -->
+    <div class="modal" id="checkout-modal">
+        <div class="modal-content">
+            <h2 id="modal-title" style="font-size: 1.2rem; margin-bottom: 0.5rem;">Get PDF Study Guide</h2>
+            <p id="modal-desc">Secure your copy for just ₦1,000. Instant transfer verification via WhatsApp.</p>
+            
+            <form id="checkout-form">
+                <div class="form-group">
+                    <label for="buyer-name">Full Name</label>
+                    <input type="text" id="buyer-name" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="buyer-whatsapp">WhatsApp Phone Number</label>
+                    <input type="tel" id="buyer-whatsapp" placeholder="e.g. 08012345678" required>
+                    <small style="color: var(--text-secondary); font-size: 0.75rem;">Must start with 070, 080, 081, 090, or 091</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="buyer-email">Email Address (Optional)</label>
+                    <input type="email" id="buyer-email" placeholder="name@example.com">
+                </div>
+
+                <button type="submit" class="btn btn-accent" style="margin-bottom: 0.5rem;">Proceed to WhatsApp (₦1,000)</button>
+                <button type="button" class="btn" id="close-modal-btn" style="background: #e2e8f0; color: var(--text);">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Action successful</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Live Time simulation update matching prompt context
+            function updateLiveTime() {
+                const now = new Date();
+                const options = { weekday: 'short', hour: 'numeric', minute: '2-digit', hour12: true };
+                const timeBadge = document.getElementById('live-time-badge');
+                if(timeBadge) {
+                    timeBadge.textContent = now.toLocaleDateString('en-US', { weekday: 'short' }) + ", " + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                }
+            }
+            updateLiveTime();
+            setInterval(updateLiveTime, 30000);
+
+            // Element queries & null-checks
+            const navItems = document.querySelectorAll('.nav-item');
+            const views = document.querySelectorAll('.view');
+            const examTypeSelect = document.getElementById('exam-type');
+            const scoreLabel = document.getElementById('score-label');
+            const scoreInput = document.getElementById('score-input');
+            const eligibilityForm = document.getElementById('eligibility-form');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const resultContainer = document.getElementById('result-container');
+            
+            const checkoutModal = document.getElementById('checkout-modal');
+            const openUpsellModalBtn = document.getElementById('open-upsell-modal-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const checkoutForm = document.getElementById('checkout-form');
+            const buyerWhatsApp = document.getElementById('buyer-whatsapp');
+            const buyerEmail = document.getElementById('buyer-email');
+            const buyerName = document.getElementById('buyer-name');
+            const ordersList = document.getElementById('orders-list');
+            const clearDataBtn = document.getElementById('clear-data-btn');
+            const toast = document.getElementById('toast');
+
+            let selectedProduct = "Ultimate JAMB & Post-UTME Success Blueprint (₦1,000)";
+
+            function showToast(message) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Navigation handler
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetViewId = item.getAttribute('data-target');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    views.forEach(view => view.classList.remove('active'));
+
+                    item.classList.add('active');
+                    const targetView = document.getElementById(targetViewId);
+                    if (targetView) targetView.classList.add('active');
+
+                    if (targetViewId === 'view-orders') {
+                        renderOrders();
+                    }
+                });
+            });
+
+            // Exam Type Dynamic Label change
+            if (examTypeSelect && scoreLabel && scoreInput) {
+                examTypeSelect.addEventListener('change', () => {
+                    if (examTypeSelect.value === 'jamb') {
+                        scoreLabel.textContent = "JAMB Score (e.g. 240)";
+                        scoreInput.placeholder = "Enter JAMB score";
+                        scoreInput.max = 400;
+                    } else {
+                        scoreLabel.textContent = "Number of A1-C6 Credits (e.g. 7)";
+                        scoreInput.placeholder = "Enter O'Level credits count";
+                        scoreInput.max = 9;
+                    }
+                });
+            }
+
+            // Eligibility computation with loading spinner
+            if (eligibilityForm) {
+                eligibilityForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (!analyzeBtn || !btnText || !btnSpinner || !scoreInput) return;
+
+                    btnText.style.display = 'none';
+                    btnSpinner.style.display = 'block';
+                    analyzeBtn.disabled = true;
+
+                    setTimeout(() => {
+                        btnText.style.display = 'inline';
+                        btnSpinner.style.display = 'none';
+                        analyzeBtn.disabled = false;
+
+                        const score = parseInt(scoreInput.value) || 0;
+                        const isJamb = examTypeSelect.value === 'jamb';
+                        const passing = isJamb ? score >= 180 : score >= 5;
+
+                        if (resultContainer) {
+                            resultContainer.style.display = 'block';
+                            resultContainer.innerHTML = `
+                                <div class="result-title">${passing ? '🟢 High Admission Probability!' : '🟡 Moderate / Competitive Standing'}</div>
+                                <p>${passing ? 'Your score meets the general departmental screening baseline. To guarantee admission, secure our verified ₦1,000 post-UTME past questions guide.' : 'Your score is close to the cut-off mark. You need intensive preparation with our ₦1,000 PDF guide to beat departmental cut-offs.'}</p>
+                            `;
+                            resultContainer.scrollIntoView({ behavior: 'smooth' });
+                        }
+                        showToast("Eligibility computed successfully!");
+                    }, 1200);
+                });
+            }
+
+            // Modal Open / Close
+            if (openUpsellModalBtn && checkoutModal) {
+                openUpsellModalBtn.addEventListener('click', () => {
+                    selectedProduct = "Ultimate JAMB & Post-UTME Success Blueprint (₦1,000)";
+                    document.getElementById('modal-title').textContent = "Get: " + selectedProduct;
+                    prefillUserData();
+                    checkoutModal.classList.add('open');
+                });
+            }
+
+            document.querySelectorAll('.buy-guide-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    selectedProduct = e.target.getAttribute('data-guide') + " (₦1,000)";
+                    document.getElementById('modal-title').textContent = "Get: " + selectedProduct;
+                    prefillUserData();
+                    if (checkoutModal) checkoutModal.classList.add('open');
+                });
+            });
+
+            if (closeModalBtn && checkoutModal) {
+                closeModalBtn.addEventListener('click', () => {
+                    checkoutModal.classList.remove('open');
+                });
+            }
+
+            function prefillUserData() {
+                try {
+                    const savedEmail = localStorage.getItem('naija_study_email');
+                    const savedPhone = localStorage.getItem('naija_study_phone');
+                    const savedName = localStorage.getItem('naija_study_name');
+                    if (savedEmail && buyerEmail) buyerEmail.value = savedEmail;
+                    if (savedPhone && buyerWhatsApp) buyerWhatsApp.value = savedPhone;
+                    if (savedName && buyerName) buyerName.value = savedName;
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            // WhatsApp checkout submission & Nigerian phone validation (070, 080, 081, 090, 091)
+            if (checkoutForm) {
+                checkoutForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (!buyerWhatsApp || !buyerName) return;
+
+                    const phoneVal = buyerWhatsApp.value.trim();
+                    const phoneRegex = /^(070|080|081|090|091)\d{8}$/;
+
+                    if (!phoneRegex.test(phoneVal)) {
+                        alert("Please enter a valid Nigerian phone number starting with 070, 080, 081, 090, or 091 (11 digits).");
+                        return;
+                    }
+
+                    const nameVal = buyerName.value.trim();
+                    const emailVal = buyerEmail ? buyerEmail.value.trim() : '';
+
+                    // Save to localStorage
+                    try {
+                        localStorage.setItem('naija_study_name', nameVal);
+                        localStorage.setItem('naija_study_phone', phoneVal);
+                        if (emailVal) localStorage.setItem('naija_study_email', emailVal);
+
+                        // Save order record
+                        const orders = JSON.parse(localStorage.getItem('naija_study_orders') || '[]');
+                        orders.push({
+                            product: selectedProduct,
+                            date: new Date().toISOString(),
+                            status: 'Pending WhatsApp Confirmation'
+                        });
+                        localStorage.setItem('naija_study_orders', JSON.stringify(orders));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    // Build WhatsApp URL
+                    const adminPhone = "2348000000000"; // Placeholder merchant WhatsApp
+                    const msg = encodeURIComponent(`Hello NaijaStudy Hub, I just made payment/want to buy "${selectedProduct}". My Name is ${nameVal}, Phone: ${phoneVal}. Please send my PDF file.`);
+                    
+                    if (checkoutModal) checkoutModal.classList.remove('open');
+                    showToast("Redirecting to WhatsApp for instant confirmation...");
+                    
+                    setTimeout(() => {
+                        window.location.href = `https://wa.me/${adminPhone}?text=${msg}`;
+                    }, 1000);
+                });
+            }
+
+            function renderOrders() {
+                if (!ordersList) return;
+                try {
+                    const orders = JSON.parse(localStorage.getItem('naija_study_orders') || '[]');
+                    if (orders.length === 0) {
+                        ordersList.innerHTML = `<p style="text-align: center; padding: 2rem 0; color: var(--text-secondary);">No orders found on this device yet.</p>`;
+                        return;
+                    }
+
+                    let html = '';
+                    orders.forEach((ord, index) => {
+                        const orderDate = new Date(ord.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        html += `
+                            <div style="border-bottom: 1px solid var(--border); padding: 0.75rem 0;">
+                                <div style="font-weight: 600; font-size: 0.95rem;">${ord.product}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">${orderDate}</div>
+                                <div style="margin-top: 0.3rem;"><span class="badge">${ord.status}</span></div>
+                            </div>
+                        `;
+                    });
+                    ordersList.innerHTML = html;
+                } catch (err) {
+                    ordersList.innerHTML = `<p style="text-align: center; color: red;">Error loading orders.</p>`;
+                }
+            }
+
+            if (clearDataBtn) {
+                clearDataBtn.addEventListener('click', () => {
+                    if (confirm("Clear all saved local data and orders?")) {
+                        try {
+                            localStorage.removeItem('naija_study_orders');
+                            localStorage.removeItem('naija_study_email');
+                            localStorage.removeItem('naija_study_phone');
+                            localStorage.removeItem('naija_study_name');
+                            renderOrders();
+                            showToast("Local data cleared successfully.");
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
