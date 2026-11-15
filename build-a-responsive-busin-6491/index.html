@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velour & Co. | Modern Nigerian Streetwear & Luxury Apparel</title>
+    <meta name="description" content="Build a responsive business website for a fictional clothing brand. Include a homepage, product section, contact form, and WhatsApp contact link.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --surface-color: #171717;
+            --surface-glass: rgba(23, 23, 23, 0.75);
+            --border-color: #2a2a2a;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --accent-color: #d4af37; /* Luxury Gold */
+            --accent-hover: #e5c158;
+            --whatsapp-color: #25d366;
+            --whatsapp-hover: #20ba5a;
+            --danger-color: #ff453a;
+            --success-color: #32d74b;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --surface-glass: rgba(255, 255, 255, 0.85);
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-color: #b8860b;
+            --accent-hover: #996515;
+            --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Utility & Layout */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .brand-logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo span {
+            color: var(--accent-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent-color);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 140px 0 80px;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 20px;
+        }
+
+        .hero-content h1 span {
+            color: var(--accent-color);
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 500px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-primary);
+            background-color: var(--surface-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-whatsapp {
+            background-color: var(--whatsapp-color);
+            color: #fff;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: var(--whatsapp-hover);
+            transform: translateY(-2px);
+        }
+
+        .hero-image-wrapper {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            aspect-ratio: 4/5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-art {
+            font-size: 8rem;
+            animation: floatHero 4s ease-in-out infinite;
+        }
+
+        @keyframes floatHero {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Features Bar */
+        .features-bar {
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 30px 0;
+            background: var(--surface-color);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
+
+        .feature-text h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .feature-text p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Products Section */
+        .section {
+            padding: 100px 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section-title h2 {
+            font-size: clamp(2rem, 3vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .section-title p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .product-image {
+            position: relative;
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-emoji-art {
+            font-size: 5rem;
+            transition: transform 0.4s ease;
+        }
+
+        .product-card:hover .product-emoji-art {
+            transform: scale(1.1);
+        }
+
+        .product-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            color: var(--accent-color);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 2;
+        }
+
+        .product-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .product-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .product-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .add-to-cart-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .add-to-cart-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+            border-color: var(--accent-color);
+        }
+
+        /* Lookbook Banner */
+        .lookbook-banner {
+            background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 60px 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            margin: 60px 0;
+        }
+
+        .lookbook-content h3 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .lookbook-content p {
+            color: #a1a1a6;
+            margin-bottom: 24px;
+        }
+
+        .lookbook-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .lookbook-img {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            aspect-ratio: 3/4;
+            border: 1px solid var(--border-color);
+            background: #1c1c1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        /* Contact & About Section */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        .contact-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            padding: 60px 0 100px; /* Padding bottom for mobile fixed bar */
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .footer-col p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-color);
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-bottom p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Fixed Mobile Bottom Bar */
+        .mobile-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--surface-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 999;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+        }
+
+        .mobile-bottom-bar .price-tag {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .mobile-bottom-bar .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Cart Drawer / Modal */
+        .drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .drawer-backdrop.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            background: var(--surface-color);
+            border-left: 1px solid var(--border-color);
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .cart-drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .close-drawer-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .drawer-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .cart-items-list {
+            list-style: none;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .cart-item-emoji {
+            width: 70px;
+            height: 70px;
+            background: #222;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+        }
+
+        .cart-item-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .cart-item-price {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .qty-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-item-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+        }
+
+        .drawer-footer {
+            padding: 24px;
+            border-top: 1px solid var(--border-color);
+            background: var(--surface-color);
+        }
+
+        .cart-summary {
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .summary-row.total {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface-color);
+            border: 1px solid var(--accent-color);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-subtle);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .toast-container.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 992px) {
+            .hero-grid, .lookbook-banner, .contact-grid, .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-links {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .mobile-bottom-bar {
+                display: flex;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .hero {
+                padding: 120px 0 60px;
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-btns {
+                flex-direction: column;
+            }
+            .hero-btns .btn {
+                width: 100%;
+            }
+            .lookbook-banner {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <!-- Header -->
+    <header>
+        <div class="container nav-container">
+            <a href="#" class="brand-logo">VELOUR<span>&</span>CO.</a>
+            
+            <ul class="nav-links">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#collection">Collection</a></li>
+                <li><a href="#lookbook">Lookbook</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+                    ☀️
+                </button>
+                <button class="icon-btn" id="cartToggleBtn" aria-label="Open Cart">
+                    🛒
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </button>
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Menu">
+                    ☰
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <h1>Redefining <span>Nigerian</span> Streetwear & Luxury.</h1>
+                        <p>Handcrafted in Lagos. Designed for the bold, the fearless, and the unapologetic trendsetters shaping tomorrow's culture.</p>
+                        <div class="hero-btns">
+                            <a href="#collection" class="btn btn-primary">
+                                Explore Collection
+                                <span>→</span>
+                            </a>
+                            <a href="https://wa.me/2348000000000?text=Hello%20Velour%20%26%20Co.,%20I%20would%20like%20to%20inquire%20about%20your%20latest%20drop." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">
+                                💬 Chat on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hero-image-wrapper">
+                        <div class="hero-art" aria-hidden="true">🧥🇳🇬</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Bar -->
+        <div class="features-bar">
+            <div class="container">
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🇳🇬</div>
+                        <div class="feature-text">
+                            <h4>Made in Lagos</h4>
+                            <p>Proudly crafted by local artisans</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🚚</div>
+                        <div class="feature-text">
+                            <h4>Nationwide Delivery</h4>
+                            <p>Fast dispatch to Abuja, PH, Lagos & more</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">✨</div>
+                        <div class="feature-text">
+                            <h4>Premium Fabrics</h4>
+                            <p>Heavyweight cotton & durable weaves</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collection Section -->
+        <section id="collection" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>The Collection</h2>
+                        <p>Curated pieces built for durability and unmatched aesthetics.</p>
+                    </div>
+                    <div class="category-filters" id="categoryFilters">
+                        <button class="filter-btn active" data-category="all">All Items</button>
+                        <button class="filter-btn" data-category="hoodie">Hoodies</button>
+                        <button class="filter-btn" data-category="tee">Tees</button>
+                        <button class="filter-btn" data-category="pants">Pants & Shorts</button>
+                        <button class="filter-btn" data-category="accessories">Accessories</button>
+                    </div>
+                </div>
+
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Lookbook Banner -->
+        <section id="lookbook" class="container">
+            <div class="lookbook-banner">
+                <div class="lookbook-content">
+                    <h3>AW26 Urban Royalty Lookbook</h3>
+                    <p>Inspired by the vibrant pulse of Lagos nightlife and architectural contrasts. Experience our most avant-garde silhouette release yet.</p>
+                    <a href="https://wa.me/2348000000000?text=Hello,%20I%20want%20to%20request%20the%20AW26%20Lookbook%20catalogue." target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        Request Catalogue via WhatsApp
+                    </a>
+                </div>
+                <div class="lookbook-images">
+                    <div class="lookbook-img" aria-hidden="true">🧢</div>
+                    <div class="lookbook-img" aria-hidden="true">👖</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section">
+            <div class="container">
+                <div class="contact-grid">
+                    <div>
+                        <div class="section-title" style="margin-bottom: 24px;">
+                            <h2>About Velour & Co.</h2>
+                            <p>Founded in 2024, Velour & Co. bridges the gap between traditional Nigerian craftsmanship and contemporary global streetwear culture.</p>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                            We source 100% organic cotton locally, empowering skilled tailors in Ikeja and Surulere while maintaining uncompromising international quality standards. Every stitch tells a story of ambition, resilience, and style.
+                        </p>
+                        <div class="features-grid" style="grid-template-columns: 1fr 1fr; margin-top: 30px;">
+                            <div class="feature-item">
+                                <div class="feature-icon" style="font-size: 1.5rem;">🔥</div>
+                                <div class="feature-text">
+                                    <h4>Limited Drops</h4>
+                                    <p>Zero mass production</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon" style="font-size: 1.5rem;">🤝</div>
+                                <div class="feature-text">
+                                    <h4>Community First</h4>
+                                    <p>Exclusive pop-ups in Lagos & Abuja</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-card" id="contact">
+                        <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 20px;">Get in Touch</h3>
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <label for="contactName">Your Name</label>
+                                <input type="text" id="contactName" class="form-control" placeholder="e.g. Tunde Adebayo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactEmail">Email Address or Phone</label>
+                                <input type="text" id="contactEmail" class="form-control" placeholder="e.g. 08012345678" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactMessage">Message / Order Inquiry</label>
+                                <textarea id="contactMessage" class="form-control" placeholder="How can we assist you today?" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <a href="#" class="brand-logo" style="margin-bottom: 16px; display: inline-block;">VELOUR<span>&</span>CO.</a>
+                    <p>Nigeria's premier luxury streetwear destination. Crafted for those who dictate the culture.</p>
+                    <a href="https://wa.me/2348000000000" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="padding: 10px 20px; font-size: 0.85rem;">
+                        💬 Chat on WhatsApp
+                    </a>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#collection">Collection</a></li>
+                        <li><a href="#lookbook">Lookbook</a></li>
+                        <li><a href="#about">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul class="footer-links">
+                        <li><a class="footer-cat-link" data-cat="hoodie">Hoodies & Sweatshirts</a></li>
+                        <li><a class="footer-cat-link" data-cat="tee">Graphic Tees</a></li>
+                        <li><a class="footer-cat-link" data-cat="pants">Cargo Pants & Shorts</a></li>
+                        <li><a class="footer-cat-link" data-cat="accessories">Caps & Totes</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Showroom (Lagos)</h4>
+                    <p>12 Admiralty Way, Lekki Phase 1, Lagos, Nigeria.</p>
+                    <p style="margin-top: 10px;">Mon - Sat: 10:00 AM - 8:00 PM</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear">2026</span> Velour & Co. All rights reserved.</p>
+                <p>Designed with precision for Nigerian Fashion Enthusiasts.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Fixed Mobile Bottom Bar -->
+    <div class="mobile-bottom-bar" id="mobileBottomBar">
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Cart Total</div>
+            <div class="price-tag" id="mobileCartTotal">₦0</div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-outline" id="mobileViewCartBtn" style="padding: 10px 16px; font-size: 0.85rem;">View Cart</button>
+            <a href="https://wa.me/2348000000000" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" id="mobileWhatsAppCheckout" style="padding: 10px 16px; font-size: 0.85rem;">WhatsApp Order</a>
+        </div>
+    </div>
+
+    <!-- Cart Drawer & Backdrop -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="drawer-header">
+            <h3>Your Shopping Bag</h3>
+            <button class="close-drawer-btn" id="closeDrawerBtn">&times;</button>
+        </div>
+        <div class="drawer-body">
+            <ul class="cart-items-list" id="cartItemsList">
+                <!-- Cart items populated here -->
+            </ul>
+        </div>
+        <div class="drawer-footer">
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="cartSubtotal">₦0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Estimated Shipping (Lagos/Nationwide)</span>
+                    <span>₦2,500</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="cartTotal">₦2,500</span>
+                </div>
+            </div>
+            <button class="btn btn-whatsapp" id="whatsappCheckoutBtn" style="width: 100%; margin-bottom: 10px;">
+                💬 Complete Order via WhatsApp
+            </button>
+            <button class="btn btn-outline" id="clearCartBtn" style="width: 100%; font-size: 0.85rem; padding: 10px;">
+                Clear Cart
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer">
+        <span id="toastIcon">✨</span>
+        <span id="toastMessage">Item added to bag!</span>
+    </div>
+
+    <!-- Script -->
+    <script>
+        // Data Store for Fictional Clothing Brand Products with reliable Emojis instead of external images
+        const products = [
+            {
+                id: 1,
+                title: "Lagos Nights Heavyweight Hoodie",
+                category: "hoodie",
+                price: 35000,
+                tag: "Bestseller",
+                emoji: "🧥",
+                desc: "450gsm French Terry cotton with custom metallic embroidery."
+            },
+            {
+                id: 2,
+                title: "Afro-Futurism Graphic Tee",
+                category: "tee",
+                price: 18000,
+                tag: "New Drop",
+                emoji: "👕",
+                desc: "Acid-washed relaxed fit tee with high-density puff print."
+            },
+            {
+                id: 3,
+                title: "Victoria Island Utility Cargo Pants",
+                category: "pants",
+                price: 42000,
+                tag: "Limited",
+                emoji: "👖",
+                desc: "Multi-pocket tactical trousers with adjustable ankle cinches."
+            },
+            {
+                id: 4,
+                title: "Eko Minimalist Oversized Hoodie",
+                category: "hoodie",
+                price: 33000,
+                tag: "Popular",
+                emoji: "🧥",
+                desc: "Clean minimal branding with brushed fleece interior lining."
+            },
+            {
+                id: 5,
+                title: "Lekki Sunset Corduroy Cap",
+                category: "accessories",
+                price: 12000,
+                tag: "Accessory",
+                emoji: "🧢",
+                desc: "Structured dad cap with custom brass slider buckle."
+            },
+            {
+                id: 6,
+                title: "Sovereign Heavyweight Tee",
+                category: "tee",
+                price: 16500,
+                tag: "Essential",
+                emoji: "👕",
+                desc: "Boxy fit 280gsm combed cotton for everyday layering."
+            },
+            {
+                id: 7,
+                title: "Abuja All-Weather Windbreaker",
+                category: "hoodie",
+                price: 48000,
+                tag: "Luxury",
+                emoji: "🧥",
+                desc: "Water-resistant matte finish shell with YKK hardware."
+            },
+            {
+                id: 8,
+                title: "Lagos Street Canvas Tote Bag",
+                category: "accessories",
+                price: 9500,
+                tag: "Accessory",
+                emoji: "👜",
+                desc: "Heavy-duty reinforced canvas tote with inner zip pocket."
+            }
+        ];
+
+        // Application State in Memory & LocalStorage
+        let cart = [];
+        try {
+            const savedCart = localStorage.getItem('velour_cart');
+            if (savedCart) cart = JSON.parse(savedCart);
+        } catch (e) {
+            console.error('LocalStorage error:', e);
+        }
+
+        // DOM Element Queries with Null Checks
+        const productsGrid = document.getElementById('productsGrid');
+        const categoryFilters = document.getElementById('categoryFilters');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const cartToggleBtn = document.getElementById('cartToggleBtn');
+        const cartBadge = document.getElementById('cartBadge');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.querySelector('.nav-links');
+        const drawerBackdrop = document.getElementById('drawerBackdrop');
+        const cartDrawer = document.getElementById('cartDrawer');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+        const cartItemsList = document.getElementById('cartItemsList');
+        const cartSubtotal = document.getElementById('cartSubtotal');
+        const cartTotal = document.getElementById('cartTotal');
+        const mobileCartTotal = document.getElementById('mobileCartTotal');
+        const mobileViewCartBtn = document.getElementById('mobileViewCartBtn');
+        const whatsappCheckoutBtn = document.getElementById('whatsappCheckoutBtn');
+        const mobileWhatsAppCheckout = document.getElementById('mobileWhatsAppCheckout');
+        const clearCartBtn = document.getElementById('clearCartBtn');
+        const contactForm = document.getElementById('contactForm');
+        const toastContainer = document.getElementById('toastContainer');
+        const toastMessage = document.getElementById('toastMessage');
+        const currentYearSpan = document.getElementById('currentYear');
+
+        // Initialize Live Time/Year computed in JS
+        if (currentYearSpan) {
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+
+        // Render Products Function
+        function renderProducts(filter = 'all') {
+            if (!productsGrid) return;
+            productsGrid.innerHTML = '';
+
+            const filtered = filter === 'all' 
+                ? products 
+                : products.filter(p => p.category === filter);
+
+            if (filtered.length === 0) {
+                productsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">No items found in this category.</div>`;
+                return;
+            }
+
+            filtered.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-image">
+                        <span class="product-tag">${product.tag}</span>
+                        <div class="product-emoji-art" aria-hidden="true">${product.emoji}</div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${product.title}</h3>
+                        <p class="product-desc">${product.desc}</p>
+                        <div class="product-footer">
+                            <span class="product-price">₦${product.price.toLocaleString()}</span>
+                            <button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add to Cart">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productsGrid.appendChild(card);
+            });
+
+            // Bind Add to Cart buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                    addToCart(id);
+                });
+            });
+        }
+
+        // Filter helper function
+        function filterCategory(cat) {
+            const btn = document.querySelector(`.filter-btn[data-category="${cat}"]`);
+            if (btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderProducts(cat);
+            }
+            const collectionSection = document.getElementById('collection');
+            if (collectionSection) {
+                collectionSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Footer category links wiring
+        document.querySelectorAll('.footer-cat-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const cat = e.currentTarget.getAttribute('data-cat');
+                filterCategory(cat);
+            });
+        });
+
+        // Category Filter Event Listeners
+        if (categoryFilters) {
+            categoryFilters.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-btn')) {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const category = e.target.getAttribute('data-category');
+                    renderProducts(category);
+                }
+            });
+        }
+
+        // Cart Logic
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.qty += 1;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+
+            saveAndRefreshCart();
+            showToast(`Added "${product.title}" to bag`);
+        }
+
+        function updateQty(productId, delta) {
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(i => i.id !== productId);
+            }
+            saveAndRefreshCart();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(i => i.id !== productId);
+            saveAndRefreshCart();
+            showToast(`Item removed from bag`, '🗑️');
+        }
+
+        function saveAndRefreshCart() {
+            try {
+                localStorage.setItem('velour_cart', JSON.stringify(cart));
+            } catch (e) {
+                console.error('LocalStorage save error:', e);
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            if (cartBadge) cartBadge.textContent = totalItems;
+
+            const subtotalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const shippingFee = cart.length > 0 ? 2500 : 0;
+            const totalAmount = subtotalAmount + shippingFee;
+
+            if (cartSubtotal) cartSubtotal.textContent = `₦${subtotalAmount.toLocaleString()}`;
+            if (cartTotal) cartTotal.textContent = `₦${totalAmount.toLocaleString()}`;
+            if (mobileCartTotal) mobileCartTotal.textContent = `₦${totalAmount.toLocaleString()}`;
+
+            if (!cartItemsList) return;
+            if (cart.length === 0) {
+                cartItemsList.innerHTML = `<div class="empty-cart">Your shopping bag is currently empty.</div>`;
+                return;
+            }
+
+            cartItemsList.innerHTML = '';
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'cart-item';
+                li.innerHTML = `
+                    <div class="cart-item-emoji">${item.emoji}</div>
+                    <div class="cart-item-info">
+                        <h4 class="cart-item-title">${item.title}</h4>
+                        <div class="cart-item-price">₦${(item.price * item.qty).toLocaleString()}</div>
+                        <div class="qty-control">
+                            <button class="qty-btn decrease-btn" data-id="${item.id}" aria-label="Decrease quantity">-</button>
+                            <span>${item.qty}</span>
+                            <button class="qty-btn increase-btn" data-id="${item.id}" aria-label="Increase quantity">+</button>
+                            <button class="remove-item-btn" data-id="${item.id}">Remove</button>
+                        </div>
+                    </div>
+                `;
+                cartItemsList.appendChild(li);
+            });
+
+            // Bind cart item controls
+            document.querySelectorAll('.decrease-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => updateQty(parseInt(e.target.getAttribute('data-id')), -1));
+            });
+            document.querySelectorAll('.increase-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => updateQty(parseInt(e.target.getAttribute('data-id')), 1));
+            });
+            document.querySelectorAll('.remove-item-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => removeFromCart(parseInt(e.target.getAttribute('data-id'))));
+            });
+        }
+
+        // WhatsApp Checkout Generator
+        function generateWhatsAppOrderLink() {
+            if (cart.length === 0) {
+                showToast('Your bag is empty. Add items first!', '⚠️');
+                return;
+            }
+
+            let message = "Hello Velour & Co., I would like to place an order for the following items:\n\n";
+            let subtotal = 0;
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.qty;
+                subtotal += itemTotal;
+                message += `${index + 1}. *${item.title}* (x${item.qty}) - ₦${itemTotal.toLocaleString()}\n`;
+            });
+
+            const shipping = 2500;
+            const grandTotal = subtotal + shipping;
+
+            message += `\nSubtotal: ₦${subtotal.toLocaleString()}`;
+            message += `\nShipping: ₦${shipping.toLocaleString()}`;
+            message += `\n*Grand Total: ₦${grandTotal.toLocaleString()}*`;
+            message += `\n\nPlease let me know the payment details and delivery procedure. Thank you!`;
+
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/2348000000000?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
+        }
+
+        if (whatsappCheckoutBtn) {
+            whatsappCheckoutBtn.addEventListener('click', generateWhatsAppOrderLink);
+        }
+        if (mobileWhatsAppCheckout) {
+            mobileWhatsAppCheckout.addEventListener('click', (e) => {
+                if (cart.length > 0) {
+                    e.preventDefault();
+                    generateWhatsAppOrderLink();
+                }
+            });
+        }
+
+        // Toast Notification Function
+        function showToast(msg, icon = '✨') {
+            if (!toastContainer || !toastMessage) return;
+            const toastIcon = document.getElementById('toastIcon');
+            if (toastIcon) toastIcon.textContent = icon;
+            toastMessage.textContent = msg;
+            toastContainer.classList.add('show');
+            setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 3000);
+        }
+
+        // Drawer Toggles
+        function toggleCartDrawer(open) {
+            if (cartDrawer && drawerBackdrop) {
+                if (open) {
+                    cartDrawer.classList.add('open');
+                    drawerBackdrop.classList.add('open');
+                } else {
+                    cartDrawer.classList.remove('open');
+                    drawerBackdrop.classList.remove('open');
+                }
+            }
+        }
+
+        if (cartToggleBtn) cartToggleBtn.addEventListener('click', () => toggleCartDrawer(true));
+        if (mobileViewCartBtn) mobileViewCartBtn.addEventListener('click', () => toggleCartDrawer(true));
+        if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', () => toggleCartDrawer(false));
+        if (drawerBackdrop) drawerBackdrop.addEventListener('click', () => toggleCartDrawer(false));
+
+        if (clearCartBtn) {
+            clearCartBtn.addEventListener('click', () => {
+                cart = [];
+                saveAndRefreshCart();
+                showToast('Shopping bag cleared', '🧹');
+                toggleCartDrawer(false);
+            });
+        }
+
+        // Theme Toggle
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const body = document.body;
+                const currentTheme = body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                body.setAttribute('data-theme', newTheme);
+                themeToggleBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                try {
+                    localStorage.setItem('velour_theme', newTheme);
+                } catch (e) {}
+            });
+
+            // Load saved theme
+            try {
+                const savedTheme = localStorage.getItem('velour_theme');
+                if (savedTheme) {
+                    document.body.setAttribute('data-theme', savedTheme);
+                    themeToggleBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+                }
+            } catch (e) {}
+        }
+
+        // Mobile Menu Toggle
+        if (mobileMenuBtn && navLinks) {
+            mobileMenuBtn.addEventListener('click', () => {
+                if (navLinks.style.display === 'flex') {
+                    navLinks.style.display = 'none';
+                } else {
+                    navLinks.style.display = 'flex';
+                    navLinks.style.flexDirection = 'column';
+                    navLinks.style.position = 'absolute';
+                    navLinks.style.top = '72px';
+                    navLinks.style.left = '0';
+                    navLinks.style.width = '100%';
+                    navLinks.style.background = 'var(--surface-color)';
+                    navLinks.style.padding = '20px';
+                    navLinks.style.borderBottom = '1px solid var(--border-color)';
+                }
+            });
+        }
+
+        // Contact Form Submission handler
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('contactName').value;
+                showToast(`Thank you, ${name}! Your message has been sent.`, '✅');
+                contactForm.reset();
+            });
+        }
+
+        // Initial Render on Load
+        renderProducts('all');
+        renderCart();
+    </script>
+</body>
+</html>
