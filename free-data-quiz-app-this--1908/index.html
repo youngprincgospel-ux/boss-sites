@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>QuizData NG - Free Data Quiz App</title>
+<meta name="description" content="Free‑Data Quiz App. This should help: Mobile‑friendly web app offering quick exam‑topic quizzes; each completed quiz unlocks a free‑data voucher via OPay a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<style>
+:root {
+  --primary: #10B981;
+  --primary-dark: #059669;
+  --primary-light: #D1FAE5;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --danger: #EF4444;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+[data-theme="dark"] {
+  --bg: #0F172A;
+  --card: #1E293B;
+  --text: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border: #334155;
+  --primary-light: #064E3B;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 90px;
+  transition: background 0.3s, color 0.3s;
+}
+
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.icon-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+main {
+  flex: 1;
+  padding: 16px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+h1, h2, h3 {
+  margin-bottom: 12px;
+}
+
+p {
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  display: block;
+  transition: background 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  margin-top: 10px;
+}
+
+.quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.quiz-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.quiz-card:hover {
+  border-color: var(--primary);
+}
+
+.quiz-info h4 {
+  font-size: 1rem;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.quiz-info p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.badge {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.option-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.option-btn.selected {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.option-btn.correct {
+  background: #D1FAE5;
+  border-color: #10B981;
+  color: #065F46;
+}
+
+.option-btn.wrong {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #991B1B;
+}
+
+.timer-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.timer-progress {
+  height: 100%;
+  background: var(--primary);
+  width: 100%;
+  transition: width 1s linear;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 16px calc(12px + var(--safe-bottom)) 16px;
+  z-index: 100;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item span.icon {
+  font-size: 1.25rem;
+}
+
+.voucher-box {
+  background: var(--primary-light);
+  border: 2px dashed var(--primary);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.voucher-code {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: 2px;
+  margin: 10px 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.stat-card p {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.premium-banner {
+  background: linear-gradient(135deg, #059669, #10B981);
+  color: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.premium-banner h3 {
+  color: white;
+}
+
+.premium-banner p {
+  color: rgba(255,255,255,0.9);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧠 QuizData NG</div>
+  <div class="header-actions">
+    <button class="icon-btn" id="themeToggleBtn">🌙</button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME / QUIZ LIST VIEW -->
+  <section id="homeView" class="view active">
+    <div class="card premium-banner">
+      <h3>Win Free Data Daily! 📶</h3>
+      <p>Complete 5 quick exam topics correctly, unlock your OPay sponsored 100MB data voucher instantly.</p>
+    </div>
+    
+    <h3 style="margin-bottom: 12px;">Available Quizzes</h3>
+    <div class="quiz-grid" id="quizGrid">
+      <!-- Injected via JS -->
+    </div>
+  </section>
+
+  <!-- ACTIVE QUIZ VIEW -->
+  <section id="quizView" class="view">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h4 id="quizTitleHeader" style="margin:0; font-size: 0.9rem; color: var(--text-muted);">Topic</h4>
+        <span id="questionCounter" class="badge">Q 1/5</span>
+      </div>
+      <div class="timer-bar">
+        <div class="timer-progress" id="timerProgress"></div>
+      </div>
+      <h1 id="questionText" style="font-size: 1.15rem; margin-bottom: 16px;">Question loading...</h2>
+      <div class="options-list" id="optionsList">
+        <!-- Injected via JS -->
+      </div>
+      <button class="btn" id="nextQuestionBtn" style="margin-top: 20px; display: none;">Next Question</button>
+    </div>
+  </section>
+
+  <!-- RESULT / VOUCHER VIEW -->
+  <section id="resultView" class="view">
+    <div class="card" style="text-align: center;">
+      <h2 id="resultTitle">Quiz Completed! 🎉</h2>
+      <p id="resultScoreText">You scored 5 out of 5 correctly.</p>
+      
+      <div id="voucherContainer" style="display: none;">
+        <div class="voucher-box">
+          <p style="margin: 0; font-weight: 600; color: var(--primary-dark);">Your OPay Data Voucher Unlocked:</p>
+          <div class="voucher-code" id="voucherCodeText">QD-8942-OPAY</div>
+          <p style="font-size: 0.8rem; margin: 0;">Click below to redeem via OPay affiliate link</p>
+        </div>
+        <a href="#" id="redeemVoucherBtn" class="btn" target="_blank" rel="noopener">Claim 100MB Free Data via OPay</a>
+      </div>
+
+      <div id="failedContainer" style="display: none;">
+        <p style="color: var(--danger);">You need at least 4/5 correct answers to unlock the data voucher. Try again!</p>
+        <button class="btn" id="retryQuizBtn">Retry Quiz</button>
+      </div>
+
+      <button class="btn btn-secondary" id="backToHomeBtn">Back to Quizzes</button>
+    </div>
+  </section>
+
+  <!-- ANALYTICS / STATS VIEW -->
+  <section id="statsView" class="view">
+    <h2 style="margin-bottom: 16px;">Your Learning & Analytics</h2>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3 id="statTotalQuizzes">0</h3>
+        <p>Quizzes Taken</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="statTotalVouchers">0</h3>
+        <p>Vouchers Unlocked</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="statAvgScore">0%</h3>
+        <p>Average Score</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="statDataEarned">0 MB</h3>
+        <p>Total Data Claimed</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🚀 Premium Pass</h3>
+      <p>Upgrade to Ad-Free + Detailed AI Quiz Analytics & Topic breakdowns for ₦400 / month.</p>
+      <div id="premiumStatusArea">
+        <button class="btn" id="upgradeBtn">Upgrade for ₦400 / month</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="homeView">
+    <span class="icon">🏠</span>
+    <span>Quizzes</span>
+  </button>
+  <button class="nav-item" data-target="statsView">
+    <span class="icon">📊</span>
+    <span>Analytics</span>
+  </button>
+</nav>
+
+<script>
+const quizzes = [
+  {
+    id: 'waec-math',
+    title: 'WAEC Mathematics Essentials',
+    category: 'Exam Prep',
+    questions: [
+      { q: 'Evaluate log₁₀(1000)', options: ['2', '3', '4', '10'], answer: 1 },
+      { q: 'If 3x - 5 = 10, find x', options: ['3', '5', '7.5', '15'], answer: 1 },
+      { q: 'Find the area of a circle with radius 7cm (π = 22/7)', options: ['154 cm²', '44 cm²', '308 cm²', '88 cm²'], answer: 0 },
+      { q: 'Simplify: 2a + 3b - a + 4b', options: ['3a + 7b', 'a + 7b', '3a - b', 'a - b'], answer: 1 },
+      { q: 'What is the sum of angles in a triangle?', options: ['90°', '180°', '270°', '360°'], answer: 1 }
+    ]
+  },
+  {
+    id: 'utme-eng',
+    title: 'JAMB UTME English Language',
+    category: 'University Entrance',
+    questions: [
+      { q: 'Choose the correct spelling:', options: ['Accomodate', 'Acommodate', 'Accommodate', 'Acomodate'], answer: 2 },
+      { q: 'What is a synonym for "Ephemeral"?', options: ['Eternal', 'Short-lived', 'Transparent', 'Heavy'], answer: 1 },
+      { q: 'Choose the antonym of "Ample":', options: ['Meagre', 'Abundant', 'Sufficient', 'Large'], answer: 0 },
+      { q: 'He is allergic ___ dust.', options: ['with', 'from', 'to', 'at'], answer: 2 },
+      { q: 'Identify the noun phrase in: "The clever boy won the prize."', options: ['won the prize', 'The clever boy', 'clever boy', 'the prize'], answer: 1 }
+    ]
+  },
+  {
+    id: 'civic-ed',
+    title: 'Nigerian Civic Education',
+    category: 'General Knowledge',
+    questions: [
+      { q: 'Which of these is a fundamental human right in Nigeria?', options: ['Right to vote only', 'Right to personal liberty', 'Right to rule', 'Right to free fuel'], answer: 1 },
+      { q: 'What do the two green stripes on the Nigerian flag represent?', options: ['Agriculture & Forests', 'Peace & Unity', 'Wealth & Oil', 'Education & Youth'], answer: 0 },
+      { q: 'NYSC was established in what year?', options: ['1960', '1973', '1999', '1980'], answer: 1 },
+      { q: 'The highest law of the land in Nigeria is:', options: ['The Police Act', 'The Constitution', 'The Penal Code', 'Executive Orders'], answer: 1 },
+      { q: 'Which arm of government interprets the laws?', options: ['Executive', 'Legislature', 'Judiciary', 'Press'], answer: 2 }
+    ]
+  },
+  {
+    id: 'biz-fin',
+    title: 'Personal Finance & Tech',
+    category: 'Skills',
+    questions: [
+      { q: 'What is compounding interest?', options: ['Interest on principal only', 'Interest on principal and accumulated interest', 'A bank fee', 'A tax deduction'], answer: 1 },
+      { q: 'Which is a primary asset in digital entrepreneurship?', options: ['Paper ledger', 'Attention & Audience', 'Physical storefront', 'Office furniture'], answer: 1 },
+      { q: 'What does ROI stand for?', options: ['Return on Investment', 'Rate of Inflation', 'Revenue on Item', 'Risk of Insolvency'], answer: 0 },
+      { q: 'Emergency savings should ideally cover how many months of expenses?', options: ['1 week', '1-2 months', '3-6 months', '10 years'], answer: 2 },
+      { q: 'What is bootstrapping in business?', options: ['Buying shoes', 'Building using only personal/internal revenue', 'Taking massive bank loans', 'Selling shares immediately'], answer: 1 }
+    ]
+  }
+];
+
+let state = {
+  theme: localStorage.getItem('qd_theme') || 'light',
+  currentQuiz: null,
+  currentQuestionIndex: 0,
+  score: 0,
+  selectedOption: null,
+  timer: null,
+  timeLeft: 20,
+  stats: JSON.parse(localStorage.getItem('qd_stats')) || {
+    totalQuizzes: 0,
+    totalVouchers: 0,
+    totalScoreSum: 0,
+    totalQuestionsAnswered: 0,
+    dataEarnedMB: 0,
+    isPremium: false
+  }
+};
+
+const dom = {
+  themeToggleBtn: document.getElementById('themeToggleBtn'),
+  quizGrid: document.getElementById('quizGrid'),
+  quizView: document.getElementById('quizView'),
+  homeView: document.getElementById('homeView'),
+  resultView: document.getElementById('resultView'),
+  statsView: document.getElementById('statsView'),
+  quizTitleHeader: document.getElementById('quizTitleHeader'),
+  questionCounter: document.getElementById('questionCounter'),
+  timerProgress: document.getElementById('timerProgress'),
+  questionText: document.getElementById('questionText'),
+  optionsList: document.getElementById('optionsList'),
+  nextQuestionBtn: document.getElementById('nextQuestionBtn'),
+  resultTitle: document.getElementById('resultTitle'),
+  resultScoreText: document.getElementById('resultScoreText'),
+  voucherContainer: document.getElementById('voucherContainer'),
+  voucherCodeText: document.getElementById('voucherCodeText'),
+  redeemVoucherBtn: document.getElementById('redeemVoucherBtn'),
+  failedContainer: document.getElementById('failedContainer'),
+  retryQuizBtn: document.getElementById('retryQuizBtn'),
+  backToHomeBtn: document.getElementById('backToHomeBtn'),
+  statTotalQuizzes: document.getElementById('statTotalQuizzes'),
+  statTotalVouchers: document.getElementById('statTotalVouchers'),
+  statAvgScore: document.getElementById('statAvgScore'),
+  statDataEarned: document.getElementById('statDataEarned'),
+  upgradeBtn: document.getElementById('upgradeBtn'),
+  premiumStatusArea: document.getElementById('premiumStatusArea'),
+  navItems: document.querySelectorAll('.nav-item')
+};
+
+function initTheme() {
+  if (state.theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    dom.themeToggleBtn.textContent = '☀️';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    dom.themeToggleBtn.textContent = '🌙';
+  }
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('qd_theme', state.theme);
+  initTheme();
+}
+
+function renderQuizList() {
+  if (!dom.quizGrid) return;
+  dom.quizGrid.innerHTML = '';
+  quizzes.forEach(quiz => {
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <div class="quiz-info">
+        <h4>${quiz.title}</h4>
+        <p>${quiz.questions.length} Questions • 100MB Voucher</p>
+      </div>
+      <span class="badge">${quiz.category}</span>
+    `;
+    card.addEventListener('click', () => startQuiz(quiz.id));
+    dom.quizGrid.appendChild(card);
+  });
+}
+
+function startQuiz(quizId) {
+  state.currentQuiz = quizzes.find(q => q.id === quizId);
+  state.currentQuestionIndex = 0;
+  state.score = 0;
+  switchView('quizView');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  clearInterval(state.timer);
+  state.selectedOption = null;
+  dom.nextQuestionBtn.style.display = 'none';
+
+  const quiz = state.currentQuiz;
+  const qIndex = state.currentQuestionIndex;
+  const currentQ = quiz.questions[qIndex];
+
+  dom.quizTitleHeader.textContent = quiz.title;
+  dom.questionCounter.textContent = `Q ${qIndex + 1}/${quiz.questions.length}`;
+  dom.questionText.textContent = currentQ.q;
+
+  dom.optionsList.innerHTML = '';
+  currentQ.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => selectOption(idx));
+    dom.optionsList.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  state.timeLeft = 20;
+  dom.timerProgress.style.width = '100%';
+  
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    const pct = (state.timeLeft / 20) * 100;
+    dom.timerProgress.style.width = `${pct}%`;
+
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timer);
+      handleTimeOut();
+    }
+  }, 1000);
+}
+
+function selectOption(idx) {
+  if (state.selectedOption !== null) return; // already answered
+  clearInterval(state.timer);
+  state.selectedOption = idx;
+
+  const currentQ = state.currentQuiz.questions[state.currentQuestionIndex];
+  const optionButtons = dom.optionsList.querySelectorAll('.option-btn');
+
+  optionButtons.forEach((btn, i) => {
+    if (i === currentQ.answer) {
+      btn.classList.add('correct');
+    } else if (i === idx) {
+      btn.classList.add('wrong');
+    }
+  });
+
+  if (idx === currentQ.answer) {
+    state.score++;
+  }
+
+  dom.nextQuestionBtn.style.display = 'block';
+}
+
+function handleTimeOut() {
+  const currentQ = state.currentQuiz.questions[state.currentQuestionIndex];
+  const optionButtons = dom.optionsList.querySelectorAll('.option-btn');
+  optionButtons.forEach((btn, i) => {
+    if (i === currentQ.answer) {
+      btn.classList.add('correct');
+    }
+  });
+  dom.nextQuestionBtn.style.display = 'block';
+}
+
+function nextQuestion() {
+  state.currentQuestionIndex++;
+  if (state.currentQuestionIndex < state.currentQuiz.questions.length) {
+    loadQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+
+function finishQuiz() {
+  switchView('resultView');
+  const totalQ = state.currentQuiz.questions.length;
+  dom.resultScoreText.textContent = `You scored ${state.score} out of ${totalQ} correctly.`;
+
+  // Update stats
+  state.stats.totalQuizzes++;
+  state.stats.totalScoreSum += state.score;
+  state.stats.totalQuestionsAnswered += totalQ;
+
+  const passed = state.score >= 4;
+  if (passed) {
+    dom.voucherContainer.style.display = 'block';
+    dom.failedContainer.style.display = 'none';
+    const randomCode = 'QD-' + Math.floor(1000 + Math.random() * 9000) + '-OPAY';
+    dom.voucherCodeText.textContent = randomCode;
+    dom.redeemVoucherBtn.href = `https://opayweb.com?aff_voucher=${randomCode}`;
+    
+    state.stats.totalVouchers++;
+    state.stats.dataEarnedMB += 100;
+  } else {
+    dom.voucherContainer.style.display = 'none';
+    dom.failedContainer.style.display = 'block';
+  }
+
+  localStorage.setItem('qd_stats', JSON.stringify(state.stats));
+  updateStatsDisplay();
+}
+
+function updateStatsDisplay() {
+  dom.statTotalQuizzes.textContent = state.stats.totalQuizzes;
+  dom.statTotalVouchers.textContent = state.stats.totalVouchers;
+  
+  const avg = state.stats.totalQuestionsAnswered > 0 
+    ? Math.round((state.stats.totalScoreSum / state.stats.totalQuestionsAnswered) * 100) 
+    : 0;
+  dom.statAvgScore.textContent = `${avg}%`;
+  dom.statDataEarned.textContent = `${state.stats.dataEarnedMB} MB`;
+
+  if (state.stats.isPremium) {
+    dom.premiumStatusArea.innerHTML = `<p style="color: var(--primary); font-weight: 700; margin: 0;">✨ Premium Active: Ad-Free + Deep Analytics Enabled</p>`;
+  }
+}
+
+function switchView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.getAttribute('data-target') === viewId || (viewId === 'resultView' && item.getAttribute('data-target') === 'homeView')) {
+      item.classList.add('active');
+    } else if (viewId !== 'quizView') {
+      item.classList.remove('active');
+    }
+  });
+}
+
+// Event Listeners
+if (dom.themeToggleBtn) dom.themeToggleBtn.addEventListener('click', toggleTheme);
+if (dom.nextQuestionBtn) dom.nextQuestionBtn.addEventListener('click', nextQuestion);
+if (dom.retryQuizBtn) dom.retryQuizBtn.addEventListener('click', () => startQuiz(state.currentQuiz.id));
+if (dom.backToHomeBtn) dom.backToHomeBtn.addEventListener('click', () => switchView('homeView'));
+
+if (dom.upgradeBtn) {
+  dom.upgradeBtn.addEventListener('click', () => {
+    state.stats.isPremium = true;
+    localStorage.setItem('qd_stats', JSON.stringify(state.stats));
+    updateStatsDisplay();
+    alert('Subscription successful! Welcome to QuizData NG Premium.');
+  });
+}
+
+dom.navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const target = item.getAttribute('data-target');
+    switchView(target);
+  });
+});
+
+// Initial load
+initTheme();
+renderQuizList();
+updateStatsDisplay();
+</script>
+</body>
+</html>
