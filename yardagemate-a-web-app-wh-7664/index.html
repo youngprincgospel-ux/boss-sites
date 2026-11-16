@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YardageMate — Tailor Yardage Calculator & Directory</title>
+<meta name="description" content="YardageMate — a web app where a tailor or customer enters body measurements + style (agbada, kaftan, gown, suit) + fabric type and gets exact yardage neede">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        .dark {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: #312e81;
+            --accent: #fbbf24;
+            --bg: #090d16;
+            --card-bg: #111827;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1f2937;
+            --success: #34d399;
+            --danger: #f87171;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 1.75rem;
+            background: var(--primary-light);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .logo-text h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--primary);
+        }
+
+        main {
+            flex: 1;
+            padding: 1.25rem;
+            max-width: 680px;
+            width: 100%;
+            margin: 0 auto;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.15rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .style-card {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .style-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .style-card .s-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .style-card .s-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+
+        .result-box {
+            background: var(--primary-light);
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 1.25rem;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 0.95rem;
+        }
+
+        .dark .result-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            font-weight: 800;
+            font-size: 1.15rem;
+            padding-top: 0.85rem;
+            color: var(--primary);
+        }
+
+        .badge {
+            background: var(--accent);
+            color: #fff;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .directory-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .directory-card:hover {
+            border-color: var(--primary);
+        }
+
+        .dir-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .dir-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .dir-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .dir-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .dir-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            width: auto;
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .fixed-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0.5rem calc(0.75rem + var(--safe-bottom)) 0.5rem;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.4rem 0.75rem;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .nav-item .n-icon {
+            font-size: 1.3rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            padding: 1.75rem;
+            box-shadow: var(--shadow);
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.2rem;
+            font-weight: 750;
+        }
+
+        .close-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .toast {
+            position: fixed;
+            top: 5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--text);
+            color: var(--card-bg);
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .saved-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+        }
+
+        .saved-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .saved-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">📏</div>
+            <div class="logo-text">
+                <h1>YardageMate</h1>
+                <p>Abuja Tailor & Fabric Suite</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Dark Mode">🌙</button>
+            <button class="icon-btn" id="listBusinessBtn" title="List Your Shop" aria-label="List Business">⭐</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: CALCULATOR -->
+        <div id="tabCalculator" class="tab-content active">
+            <div class="card">
+                <div class="card-title">🧥 Select Style</div>
+                <div class="style-grid" id="styleGrid">
+                    <div class="style-card selected" data-style="agbada">
+                        <div class="s-icon">👘</div>
+                        <div class="s-name">Agbada (Full)</div>
+                    </div>
+                    <div class="style-card" data-style="kaftan">
+                        <div class="s-icon">👔</div>
+                        <div class="s-name">Kaftan / Buba</div>
+                    </div>
+                    <div class="style-card" data-style="gown">
+                        <div class="s-icon">👗</div>
+                        <div class="s-name">Ladies Gown</div>
+                    </div>
+                    <div class="style-card" data-style="suit">
+                        <div class="s-icon">🧥</div>
+                        <div class="s-name">Suit / Blazer</div>
+                    </div>
+                </div>
+
+                <div class="card-title" style="margin-top: 1.5rem;">📏 Client Measurements (Inches)</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="heightInput">Client Height</label>
+                        <input type="number" id="heightInput" value="68" min="40" max="90" placeholder="e.g 68">
+                    </div>
+                    <div class="form-group">
+                        <label for="chestInput">Chest / Bust</label>
+                        <input type="number" id="chestInput" value="42" min="20" max="70" placeholder="e.g 42">
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label for="sleeveInput">Sleeve Length</label>
+                        <input type="number" id="sleeveInput" value="25" min="10" max="45" placeholder="e.g 25">
+                    </div>
+                    <div class="form-group">
+                        <label for="waistInput">Waist / Hips</label>
+                        <input type="number" id="waistInput" value="36" min="20" max="70" placeholder="e.g 36">
+                    </div>
+                </div>
+
+                <div class="card-title" style="margin-top: 1.5rem;">🧵 Fabric & Pricing</div>
+                <div class="form-group">
+                    <label for="fabricTypeSelect">Fabric Type & Width</label>
+                    <select id="fabricTypeSelect">
+                        <option value="60">Standard 60" Material (Ankara, Cashmere, Brocade)</option>
+                        <option value="45">Narrow 45" Material (Vlisco / Special Cotton)</option>
+                        <option value="54">Medium 54" Material (Suiting Wool / Linen)</option>
+                    </select>
+                </div>
+
+                <div class="grid-2" style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label for="fabricPriceInput">Price per Yard (₦)</label>
+                        <input type="number" id="fabricPriceInput" value="3500" step="500" placeholder="e.g 3500">
+                    </div>
+                    <div class="form-group">
+                        <label for="liningSelect">Include Lining / Accessories</label>
+                        <select id="liningSelect">
+                            <option value="yes">Yes (Add ₦2,500 accessories)</option>
+                            <option value="no">No Accessories</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn" id="calculateBtn" style="margin-top: 1.5rem;">Calculate Exact Yardage & Quote 🚀</button>
+
+                <div class="result-box" id="resultBox">
+                    <div class="card-title" style="margin-bottom: 0.75rem; color: var(--primary);">📋 Quotation Breakdown</div>
+                    <div class="result-row">
+                        <span>Net Fabric Needed:</span>
+                        <span id="resNetYards">0 yards</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Wastage Allowance (+15%):</span>
+                        <span id="resWastage">0 yards</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Total Fabric Required:</span>
+                        <strong id="resTotalYards">0 yards</strong>
+                    </div>
+                    <div class="result-row">
+                        <span>Cloth Cost:</span>
+                        <span id="resClothCost">₦0</span>
+                    </div>
+                    <div class="result-row" id="resAccessoriesRow">
+                        <span>Lining & Accessories:</span>
+                        <span id="resAccessoriesCost">₦0</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Estimated Total Job Cost:</span>
+                        <span id="resGrandTotal">₦0</span>
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                        <button class="btn btn-outline btn-sm" id="saveQuoteBtn">💾 Save Quote</button>
+                        <button class="btn btn-sm" id="whatsappQuoteBtn">💬 Send WhatsApp Quote</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: DIRECTORY -->
+        <div id="tabDirectory" class="tab-content">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="form-group">
+                    <input type="text" id="dirSearchInput" placeholder="🔍 Search Abuja tailors or fabric shops...">
+                </div>
+            </div>
+
+            <div id="directoryList">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- TAB 3: SAVED QUOTES -->
+        <div id="tabSaved" class="tab-content">
+            <div class="card">
+                <div class="card-title">📂 Saved Client Calculations</div>
+                <div id="savedQuotesList">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">No saved calculations yet. Calculate a style and tap "Save Quote".</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: MONETIZE / PARTNER -->
+        <div id="tabMonetize" class="tab-content">
+            <div class="card">
+                <div class="card-title">⭐ Grow Your Fashion Brand in Abuja</div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5;">
+                    Get featured at the top of YardageMate's directory where clients and tailors search daily for reliable fabric suppliers and master tailors.
+                </p>
+
+                <div style="background: var(--primary-light); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.25rem;">
+                    <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.3rem;">Verified Vendor Listing</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">₦3,000 <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">/ month</span></div>
+                    <ul style="font-size: 0.85rem; padding-left: 1.25rem; color: var(--text); display: flex; flex-direction: column; gap: 0.3rem;">
+                        <li>Priority placement in Abuja directory</li>
+                        <li>Direct WhatsApp button for instant client chats</li>
+                        <li>Verified badge to build immediate trust</li>
+                    </ul>
+                </div>
+
+                <button class="btn" id="openPartnerModalBtn">List My Shop Now (₦3,000/mo)</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- FIXED BOTTOM NAV -->
+    <nav class="fixed-nav">
+        <button class="nav-item active" data-tab="tabCalculator">
+            <span class="n-icon">📐</span>
+            <span>Calculator</span>
+        </button>
+        <button class="nav-item" data-tab="tabDirectory">
+            <span class="n-icon">🏬</span>
+            <span>Directory</span>
+        </button>
+        <button class="nav-item" data-tab="tabSaved">
+            <span class="n-icon">📂</span>
+            <span>Saved (<span id="savedCountBadge">0</span>)</span>
+        </button>
+        <button class="nav-item" data-tab="tabMonetize">
+            <span class="n-icon">⭐</span>
+            <span>Partner</span>
+        </button>
+    </nav>
+
+    <!-- PARTNER MODAL -->
+    <div class="modal-overlay" id="partnerModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>List Your Shop or Brand</h3>
+                <button class="close-btn" id="closePartnerModalBtn">✕</button>
+            </div>
+            <form id="partnerForm">
+                <div class="form-group">
+                    <label for="vendorName">Business Name</label>
+                    <input type="text" id="vendorName" required placeholder="e.g Abuja Silk & Cashmere Hub">
+                </div>
+                <div class="form-group">
+                    <label for="vendorCategory">Category</label>
+                    <select id="vendorCategory">
+                        <option value="Fabric Shop">Fabric Store / Wholesaler</option>
+                        <option value="Master Tailor">Master Tailor / Designer</option>
+                        <option value="Accessories">Trimmings & Accessories</option>
+                    </select>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="vendorLocation">Abuja Location</label>
+                        <input type="text" id="vendorLocation" required placeholder="e.g Wuse 2 / Garki">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendorPhone">WhatsApp Phone</label>
+                        <input type="tel" id="vendorPhone" required placeholder="e.g 08030000000">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="vendorDesc">Brief Description</label>
+                    <textarea id="vendorDesc" rows="3" required placeholder="Tell clients what you sell or specialize in..."></textarea>
+                </div>
+                <button type="submit" class="btn" style="margin-top: 1.25rem;">Proceed to Verification (₦3,000)</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Action completed successfully</div>
+
+    <script>
+        const STORAGE_KEY_SAVED = 'yardagemate_saved_quotes_v1';
+        const STORAGE_KEY_VENDORS = 'yardagemate_vendors_v1';
+
+        // Default initial directory listings (Abuja focus)
+        const defaultVendors = [
+            {
+                name: "Afritex Fabrics & Laces",
+                category: "Fabric Shop",
+                location: "Wuse 2, Abuja",
+                phone: "2348031234567",
+                desc: "Direct importers of premium Swiss Laces, Cashmere, Brocade, and Ankara fabrics in Abuja.",
+                verified: true
+            },
+            {
+                name: "Hajia Maimuna Bespoke",
+                category: "Master Tailor",
+                location: "Garki Area 2, Abuja",
+                phone: "2348098765432",
+                desc: "Expert tailoring for Agbada, Kaftans, and exquisite Senator wears with flawless fitting.",
+                verified: true
+            },
+            {
+                name: "Abuja Trimmings & Buttons",
+                category: "Accessories",
+                location: "Utako Market, Abuja",
+                phone: "2348123456789",
+                desc: "Wholesale and retail of quality inner lining, collar stay, buttons, and tailoring accessories.",
+                verified: false
+            }
+        ];
+
+        let selectedStyle = 'agbada';
+        let currentCalculation = null;
+
+        // DOM Elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const listBusinessBtn = document.getElementById('listBusinessBtn');
+        const styleGrid = document.getElementById('styleGrid');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultBox = document.getElementById('resultBox');
+        const saveQuoteBtn = document.getElementById('saveQuoteBtn');
+        const whatsappQuoteBtn = document.getElementById('whatsappQuoteBtn');
+        const savedQuotesList = document.getElementById('savedQuotesList');
+        const savedCountBadge = document.getElementById('savedCountBadge');
+        const directoryList = document.getElementById('directoryList');
+        const dirSearchInput = document.getElementById('dirSearchInput');
+        const partnerModal = document.getElementById('partnerModal');
+        const openPartnerModalBtn = document.getElementById('openPartnerModalBtn');
+        const closePartnerModalBtn = document.getElementById('closePartnerModalBtn');
+        const partnerForm = document.getElementById('partnerForm');
+        const toast = document.getElementById('toast');
+
+        // Navigation tabs
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetTab = item.getAttribute('data-tab');
+                navItems.forEach(n => n.classList.remove('active'));
+                tabContents.forEach(t => t.classList.remove('active'));
+                item.classList.add('active');
+                const targetEl = document.getElementById(targetTab);
+                if (targetEl) targetEl.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Theme Toggle
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            themeToggleBtn.textContent = isDark ? '☀️' : '🌙';
+            try {
+                localStorage.setItem('yardagemate_dark', isDark ? '1' : '0');
+            } catch(e){}
+        });
+
+        if (localStorage.getItem('yardagemate_dark') === '1') {
+            document.body.classList.add('dark');
+            themeToggleBtn.textContent = '☀️';
+        }
+
+        // Style Selection
+        const styleCards = document.querySelectorAll('.style-card');
+        styleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                styleCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedStyle = card.getAttribute('data-style');
+            });
+        });
+
+        // Calculation logic
+        calculateBtn.addEventListener('click', () => {
+            const height = parseFloat(document.getElementById('heightInput').value) || 68;
+            const chest = parseFloat(document.getElementById('chestInput').value) || 42;
+            const sleeve = parseFloat(document.getElementById('sleeveInput').value) || 25;
+            const waist = parseFloat(document.getElementById('waistInput').value) || 36;
+            const fabricWidth = parseFloat(document.getElementById('fabricTypeSelect').value) || 60;
+            const pricePerYard = parseFloat(document.getElementById('fabricPriceInput').value) || 3500;
+            const liningOption = document.getElementById('liningSelect').value;
+
+            let netYards = 3.5;
+            if (selectedStyle === 'agbada') {
+                netYards = (height / 12) + (sleeve / 12) + 2.5;
+                if (fabricWidth === 45) netYards *= 1.35;
+            } else if (selectedStyle === 'kaftan') {
+                netYards = (height / 18) + (sleeve / 20) + 1.8;
+                if (fabricWidth === 45) netYards *= 1.25;
+            } else if (selectedStyle === 'gown') {
+                netYards = (height / 15) + (waist / 25) + 1.5;
+            } else if (selectedStyle === 'suit') {
+                netYards = 3.2 + (chest / 40);
+            }
+
+            netYards = Math.round(netYards * 10) / 10;
+            let wastage = Math.round((netYards * 0.15) * 10) / 10;
+            let totalYards = Math.ceil((netYards + wastage) * 2) / 2; // round up to nearest half yard
+
+            let clothCost = totalYards * pricePerYard;
+            let accessoriesCost = (liningOption === 'yes') ? 2500 : 0;
+            let grandTotal = clothCost + accessoriesCost;
+
+            currentCalculation = {
+                id: Date.now(),
+                style: selectedStyle,
+                netYards,
+                wastage,
+                totalYards,
+                clothCost,
+                accessoriesCost,
+                grandTotal,
+                pricePerYard,
+                date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            };
+
+            document.getElementById('resNetYards').textContent = `${netYards} yards`;
+            document.getElementById('resWastage').textContent = `${wastage} yards`;
+            document.getElementById('resTotalYards').textContent = `${totalYards} yards`;
+            document.getElementById('resClothCost').textContent = `₦${clothCost.toLocaleString()}`;
+            
+            const accRow = document.getElementById('resAccessoriesRow');
+            if (liningOption === 'yes') {
+                accRow.style.display = 'flex';
+                document.getElementById('resAccessoriesCost').textContent = `₦${accessoriesCost.toLocaleString()}`;
+            } else {
+                accRow.style.display = 'none';
+            }
+
+            document.getElementById('resGrandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
+            resultBox.classList.add('show');
+            showToast('Calculation complete!');
+        });
+
+        // Save Quote
+        saveQuoteBtn.addEventListener('click', () => {
+            if (!currentCalculation) return;
+            try {
+                let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SAVED) || '[]');
+                saved.unshift(currentCalculation);
+                localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+                renderSavedQuotes();
+                showToast('Quote saved successfully!');
+            } catch(e) {
+                showToast('Error saving quote');
+            }
+        });
+
+        // WhatsApp Quote Share
+        whatsappQuoteBtn.addEventListener('click', () => {
+            if (!currentCalculation) return;
+            const text = `Hello! Here is your fabric quotation from YardageMate:\n\nStyle: ${currentCalculation.style.toUpperCase()}\nFabric Required: *${currentCalculation.totalYards} yards*\nCloth Cost: ₦${currentCalculation.clothCost.toLocaleString()}\nTotal Estimate: *₦${currentCalculation.grandTotal.toLocaleString()}*\n\nPowered by YardageMate Abuja.`;
+            const encoded = encodeURIComponent(text);
+            window.open(`https://wa.me/?text=${encoded}`, '_blank');
+        });
+
+        // Render Saved Quotes
+        function renderSavedQuotes() {
+            try {
+                let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SAVED) || '[]');
+                savedCountBadge.textContent = saved.length;
+                if (saved.length === 0) {
+                    savedQuotesList.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">No saved calculations yet. Calculate a style and tap "Save Quote".</p>`;
+                    return;
+                }
+
+                savedQuotesList.innerHTML = '';
+                saved.forEach((item, idx) => {
+                    const el = document.createElement('div');
+                    el.className = 'saved-item';
+                    el.innerHTML = `
+                        <div class="saved-info">
+                            <h4>${item.style.toUpperCase()} — ${item.totalYards} Yards</h4>
+                            <p>${item.date} • ₦${item.grandTotal.toLocaleString()}</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="icon-btn" style="width: 34px; height: 34px; font-size: 0.9rem;" onclick="shareSaved(${item.id})" title="Share">💬</button>
+                            <button class="icon-btn" style="width: 34px; height: 34px; font-size: 0.9rem; color: var(--danger);" onclick="deleteSaved(${item.id})" title="Delete">🗑️</button>
+                        </div>
+                    `;
+                    savedQuotesList.appendChild(el);
+                });
+            } catch(e){}
+        }
+
+        window.shareSaved = function(id) {
+            let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SAVED) || '[]');
+            let item = saved.find(s => s.id === id);
+            if (!item) return;
+            const text = `Quotation for ${item.style.toUpperCase()}: *${item.totalYards} yards* (Total: ₦${item.grandTotal.toLocaleString()}). Calculated via YardageMate.`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        window.deleteSaved = function(id) {
+            let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SAVED) || '[]');
+            saved = saved.filter(s => s.id !== id);
+            localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+            renderSavedQuotes();
+            showToast('Quote removed');
+        }
+
+        // Directory Management
+        function getVendors() {
+            try {
+                let v = JSON.parse(localStorage.getItem(STORAGE_KEY_VENDORS));
+                if (!v) {
+                    localStorage.setItem(STORAGE_KEY_VENDORS, JSON.stringify(defaultVendors));
+                    return defaultVendors;
+                }
+                return v;
+            } catch(e) {
+                return defaultVendors;
+            }
+        }
+
+        function renderDirectory(filter = '') {
+            const vendors = getVendors();
+            directoryList.innerHTML = '';
+            const filtered = vendors.filter(v => 
+                v.name.toLowerCase().includes(filter.toLowerCase()) || 
+                v.category.toLowerCase().includes(filter.toLowerCase()) || 
+                v.location.toLowerCase().includes(filter.toLowerCase()) ||
+                v.desc.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                directoryList.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">No listings found matching your search.</p>`;
+                return;
+            }
+
+            filtered.forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'directory-card';
+                card.innerHTML = `
+                    <div class="dir-header">
+                        <div>
+                            <div class="dir-title">${v.name} ${v.verified ? '<span class="badge">Verified</span>' : ''}</div>
+                            <div class="dir-sub">📍 ${v.location}</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">${v.desc}</p>
+                    <div class="dir-tags">
+                        <span class="tag">${v.category}</span>
+                        <span class="tag">Abuja</span>
+                    </div>
+                    <div class="dir-actions">
+                        <a href="https://wa.me/${v.phone}?text=Hello,%20I%20found%20your%20listing%20on%20YardageMate%20and%20need%20your%20service." target="_blank" class="btn btn-sm">💬 Chat on WhatsApp</a>
+                    </div>
+                `;
+                directoryList.appendChild(card);
+            });
+        }
+
+        dirSearchInput.addEventListener('input', (e) => {
+            renderDirectory(e.target.value);
+        });
+
+        // Partner Modal Logic
+        listBusinessBtn.addEventListener('click', () => partnerModal.classList.add('active'));
+        openPartnerModalBtn.addEventListener('click', () => partnerModal.classList.add('active'));
+        closePartnerModalBtn.addEventListener('click', () => partnerModal.classList.remove('active'));
+
+        partnerModal.addEventListener('click', (e) => {
+            if (e.target === partnerModal) partnerModal.classList.remove('active');
+        });
+
+        partnerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('vendorName').value.trim();
+            const category = document.getElementById('vendorCategory').value;
+            const location = document.getElementById('vendorLocation').value.trim();
+            const phone = document.getElementById('vendorPhone').value.trim();
+            const desc = document.getElementById('vendorDesc').value.trim();
+
+            if (!name || !location || !phone || !desc) return;
+
+            const newVendor = { name, category, location, phone, desc, verified: true };
+            try {
+                let vendors = getVendors();
+                vendors.unshift(newVendor);
+                localStorage.setItem(STORAGE_KEY_VENDORS, JSON.stringify(vendors));
+                renderDirectory();
+                partnerModal.classList.remove('active');
+                partnerForm.reset();
+                showToast('Listing submitted successfully!');
+            } catch(e) {
+                showToast('Error saving listing');
+            }
+        });
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Initial render
+        renderSavedQuotes();
+        renderDirectory();
+    </script>
+</body>
+</html>
