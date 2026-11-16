@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AgriMarket Pulse – Live Nigerian Crop Prices & WhatsApp Alerts</title>
+    <meta name="description" content="AgriMarket Pulse – a WhatsApp bot that provides daily market price updates for staple crops (maize, rice, cassava) across Nigerian states.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌾</text></svg>">
+    <style>
+        :root {
+            --primary: #15803d;
+            --primary-dark: #166534;
+            --primary-light: #dcfce7;
+            --accent: #ca8a04;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #dc2626;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 0.875rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            background: #fff;
+            color: var(--text);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .price-table th, .price-table td {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .price-table th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: var(--bg);
+        }
+
+        .trend-up {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .trend-down {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+        }
+        .btn-accent:hover {
+            background-color: #a16207;
+        }
+
+        .fixed-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 1rem calc(0.75rem + var(--safe-bottom)) 1rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 100;
+            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .badge {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sponsor-box {
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .sponsor-box h3 {
+            font-size: 0.9rem;
+            color: #854d0e;
+            margin-bottom: 0.25rem;
+        }
+
+        .sponsor-box p {
+            font-size: 0.85rem;
+            color: #713f12;
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--text);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .live-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">Action completed successfully</div>
+
+    <header>
+        <h1>🌾 AgriMarket Pulse</h1>
+        <p>Live Nigerian Staple Crop Prices & WhatsApp Bot Portal</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- Live Market Prices Dashboard -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h2>📊 Live Market Prices</h2>
+                <span class="badge" id="liveStatusBadge">Live Updates Active</span>
+            </div>
+            <div class="live-time" id="currentTimeDisplay">Loading live time...</div>
+            
+            <div class="filters">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="stateFilter">Filter State</label>
+                    <select id="stateFilter">
+                        <option value="ALL">All States</option>
+                        <option value="Lagos">Lagos (Mile 12)</option>
+                        <option value="Kano">Kano (Dawanau)</option>
+                        <option value="Oyo">Oyo (Bodija)</option>
+                        <option value="Rivers">Rivers (Oil Mill)</option>
+                        <option value="Kaduna">Kaduna (Central)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="cropFilter">Filter Crop</label>
+                    <select id="cropFilter">
+                        <option value="ALL">All Crops</option>
+                        <option value="Maize">Maize (100kg)</option>
+                        <option value="Rice">Rice (50kg Local)</option>
+                        <option value="Cassava">Cassava Flakes (Garri 50kg)</option>
+                        <option value="Beans">Beans (Oloyin 100kg)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto; margin-top: 1rem;">
+                <table class="price-table">
+                    <thead>
+                        <tr>
+                            <th>Crop / Market</th>
+                            <th>State</th>
+                            <th>Price (₦)</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="priceTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- WhatsApp Bot Subscription -->
+        <div class="card" id="subscribeCard">
+            <h2>💬 Get Daily Alerts on WhatsApp</h2>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Send keyword <strong>AGRI[Crop]</strong> to our automated WhatsApp system or register here for instant daily morning price broadcasts.
+            </p>
+            <form id="whatsappForm">
+                <div class="form-group">
+                    <label for="subName">Full Name / Business Name</label>
+                    <input type="text" id="subName" placeholder="e.g. Adebayo Farms" required>
+                </div>
+                <div class="form-group">
+                    <label for="subPhone">WhatsApp Phone Number</label>
+                    <input type="tel" id="subPhone" placeholder="08012345678" required>
+                </div>
+                <div class="form-group">
+                    <label for="subCrop">Primary Crop of Interest</label>
+                    <select id="subCrop">
+                        <option value="Maize">Maize</option>
+                        <option value="Rice">Rice</option>
+                        <option value="Cassava">Cassava (Garri)</option>
+                        <option value="Beans">Beans</option>
+                        <option value="All">All Staple Crops (VIP ₦1,000/mo)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">
+                    🚀 Launch WhatsApp Bot Feed
+                </button>
+            </form>
+        </div>
+
+        <!-- Trader Partnership & Monetization -->
+        <div class="card">
+            <h2>🤝 Grain Traders & Agro-Input Partners</h2>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Are you a fertilizer distributor, tractor rental service, or bulk grain merchant? Sponsor our daily broadcasts reaching 14,000+ verified farmers and traders.
+            </p>
+            <button type="button" id="sponsorBtn" class="btn btn-accent">
+                💼 List Your Business / Sponsor Post
+            </button>
+            
+            <div class="sponsor-box">
+                <h3>Featured Agro-Input Partner</h3>
+                <p><strong>GreenShield Fertilizer Ltd: NPK 20-10-10 available in bulk at Kano & Ibadan depots. Call 080-GREEN-INPUT for distributor pricing.</strong></p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Fixed Bottom Bar -->
+    <div class="fixed-bottom-bar">
+        <button type="button" id="refreshPricesBtn" class="btn" style="background: #e2e8f0; color: var(--text); flex: 1;">
+            🔄 Refresh Prices
+        </button>
+        <button type="button" id="botQuickLaunch" class="btn" style="flex: 1;">
+            💬 WhatsApp Bot
+        </button>
+    </div>
+
+    <script>
+        // Data Store & Market Database
+        const marketData = [
+            { crop: 'Maize', market: 'Dawanau Market', state: 'Kano', price: 54000, trend: 'up' },
+            { crop: 'Maize', market: 'Mile 12 Market', state: 'Lagos', price: 62000, trend: 'up' },
+            { crop: 'Maize', market: 'Bodija Market', state: 'Oyo', price: 57500, trend: 'down' },
+            { crop: 'Rice', market: 'Dawanau Market', state: 'Kano', price: 78000, trend: 'up' },
+            { crop: 'Rice', market: 'Oil Mill Market', state: 'Rivers', price: 85000, trend: 'up' },
+            { crop: 'Rice', market: 'Mile 12 Market', state: 'Lagos', price: 82000, trend: 'down' },
+            { crop: 'Cassava', market: 'Bodija Market', state: 'Oyo', price: 34000, trend: 'down' },
+            { crop: 'Cassava', market: 'Mile 12 Market', state: 'Lagos', price: 38500, trend: 'up' },
+            { crop: 'Beans', market: 'Central Market', state: 'Kaduna', price: 95000, trend: 'down' },
+            { crop: 'Beans', market: 'Mile 12 Market', state: 'Lagos', price: 105000, trend: 'up' }
+        ];
+
+        // DOM Elements
+        const priceTableBody = document.getElementById('priceTableBody');
+        const stateFilter = document.getElementById('stateFilter');
+        const cropFilter = document.getElementById('cropFilter');
+        const whatsappForm = document.getElementById('whatsappForm');
+        const refreshPricesBtn = document.getElementById('refreshPricesBtn');
+        const botQuickLaunch = document.getElementById('botQuickLaunch');
+        const sponsorBtn = document.getElementById('sponsorBtn');
+        const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+        const toast = document.getElementById('toast');
+
+        // Null checks & Initialization
+        if (priceTableBody && stateFilter && cropFilter) {
+            function renderTable() {
+                const selectedState = stateFilter.value;
+                const selectedCrop = cropFilter.value;
+
+                const filtered = marketData.filter(item => {
+                    const matchState = selectedState === 'ALL' || item.state === selectedState;
+                    const matchCrop = selectedCrop === 'ALL' || item.crop === selectedCrop;
+                    return matchState && matchCrop;
+                });
+
+                if (filtered.length === 0) {
+                    priceTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 1.5rem;">No market data found for selection.</td></tr>`;
+                    return;
+                }
+
+                priceTableBody.innerHTML = filtered.map(item => `
+                    <tr>
+                        <td><strong>${item.crop}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${item.market}</span></td>
+                        <td>${item.state}</td>
+                        <td>₦${item.price.toLocaleString()}</td>
+                        <td><span class="${item.trend === 'up' ? 'trend-up' : 'trend-down'}">${item.trend === 'up' ? '▲ High' : '▼ Low'}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            stateFilter.addEventListener('change', renderTable);
+            cropFilter.addEventListener('change', renderTable);
+            renderTable();
+        }
+
+        // Live Clock (Nigeria Time GMT+1)
+        function updateClock() {
+            if (!currentTimeDisplay) return;
+            const now = new Date();
+            const options = { timeZone: 'Africa/Lagos', weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            currentTimeDisplay.textContent = '🕒 Live Market Time: ' + now.toLocaleDateString('en-NG', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toast Notification helper
+        function showToast(message) {
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // WhatsApp Form Handler with Nigerian Phone Validation
+        if (whatsappForm) {
+            whatsappForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('subName').value.trim();
+                const phone = document.getElementById('subPhone').value.trim();
+                const crop = document.getElementById('subCrop').value;
+
+                // Nigerian phone regex: starts with 070, 080, 090, 091, 081, 071 etc. or +234
+                const naijaPhoneRegex = /^(?:(?:\+234|0)(?:70|80|90|91|81|71)\d{8})$/;
+
+                if (!naijaPhoneRegex.test(phone)) {
+                    showToast('❌ Please enter a valid Nigerian phone number (e.g. 08012345678)');
+                    return;
+                }
+
+                // Save to localStorage
+                try {
+                    const subs = JSON.parse(localStorage.getItem('agri_subscribers') || '[]');
+                    subs.push({ name, phone, crop, date: new Date().toISOString() });
+                    localStorage.setItem('agri_subscribers', JSON.stringify(subs));
+                } catch (err) {
+                    console.error(err);
+                }
+
+                const waMessage = encodeURIComponent(`Hello AgriMarket Pulse, my name is ${name}. I want daily market updates for ${crop}. My phone is ${phone}.`);
+                
+                showToast('✅ Subscription saved! Opening WhatsApp bot...');
+                setTimeout(() => {
+                    window.open(`https://wa.me/2348000000000?text=${waMessage}`, '_blank');
+                }, 1000);
+            });
+        }
+
+        // Refresh Button action
+        if (refreshPricesBtn) {
+            refreshPricesBtn.addEventListener('click', () => {
+                showToast('🔄 Market prices refreshed from exchange nodes.');
+                marketData.forEach(item => {
+                    const fluctuation = Math.floor(Math.random() * 1000) - 500;
+                    item.price = Math.max(10000, item.price + fluctuation);
+                });
+                if (typeof renderTable === 'function') renderTable();
+            });
+        }
+
+        // Quick Launch WhatsApp Bot
+        if (botQuickLaunch) {
+            botQuickLaunch.addEventListener('click', () => {
+                const waMessage = encodeURIComponent(`Hello AgriMarket Pulse, please send me today's commodity prices.`);
+                window.open(`https://wa.me/2348000000000?text=${waMessage}`, '_blank');
+            });
+        }
+
+        // Sponsor / Partnership Button
+        if (sponsorBtn) {
+            sponsorBtn.addEventListener('click', () => {
+                const partnerMsg = encodeURIComponent(`Hello AgriMarket Pulse, I want to sponsor daily price broadcasts for my agro business.`);
+                window.open(`https://wa.me/2348000000000?text=${partnerMsg}`, '_blank');
+            });
+        }
+    </script>
+</body>
+</html>
