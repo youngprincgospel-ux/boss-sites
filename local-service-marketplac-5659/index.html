@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HireLocal NG – Extension Simulator & Marketplace</title>
+<meta name="description" content="Local Service Marketplace Chrome Extension – an extension that injects a “Hire Local” button on any business website (e.g., auto repair, tailoring, electri">
+    <link rel="icon" href="🛠️">
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #d1fae5;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-live {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p.intro {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* Simulator Website Frame */
+        .browser-mockup {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .browser-bar {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .browser-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+
+        .browser-url {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex: 1;
+        }
+
+        .simulated-site-content {
+            padding: 24px 16px;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(to bottom, #f8fafc, #ffffff);
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .simulated-site-content h3 {
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+
+        .simulated-site-content p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* Injected Button */
+        .hire-local-btn {
+            background: linear-gradient(135deg, var(--accent), #d97706);
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.1s ease;
+        }
+
+        .hire-local-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Filters & Search */
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        @media(max-width: 500px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Provider Cards List */
+        .provider-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .provider-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .provider-card.premium {
+            border-color: var(--accent);
+            background: #fffbeb;
+        }
+
+        .provider-info h4 {
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .provider-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .provider-action {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .price-tag {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+        }
+
+        .btn-sm {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-sm:active {
+            background: var(--primary-dark);
+        }
+
+        /* Revenue / Monetization Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        @media(max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box .val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .stat-box .lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #fff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .btn-full {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* Fixed Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 50;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .badge-premium {
+            background: #fef3c7;
+            color: #d97706;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>🛠️</span> HireLocal NG
+        </div>
+        <div class="badge-live" id="liveTimeBadge">Live 12:54 AM</div>
+    </header>
+
+    <main>
+        <!-- TAB 1: EXTENSION SIMULATOR -->
+        <div id="tab-simulator" class="tab-content active">
+            <div class="card">
+                <h1>🌐 Chrome Extension Simulator</h2>
+                <p class="intro">Our extension detects small business sites and injects a “Hire Local” button to instantly convert site visitors into bookings for vetted local artisans.</p>
+                
+                <div class="browser-mockup">
+                    <div class="browser-bar">
+                        <div class="browser-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <div class="browser-url" id="browserUrlText">https://adetailor.ng/custom-mens-wear</div>
+                    </div>
+                    <div class="simulated-site-content">
+                        <h3 id="simSiteTitle">Ade Tailoring & Fashion House</h3>
+                        <p id="simSiteDesc">Quality native wears & corporate alterations in Ikeja, Lagos.</p>
+                        <!-- Injected Button -->
+                        <button class="hire-local-btn" id="injectedHireBtn" type="button">
+                            <span>🛠️</span> Hire Local Expert Now
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="siteSelector">Test Extension on Sample Sites:</label>
+                    <select id="siteSelector">
+                        <option value="tailor">Ade Tailoring Services (Ikeja)</option>
+                        <option value="mechanic">Emeka Auto Repair & Diagnostics (Surulere)</option>
+                        <option value="electrician">Alhaji Power Electrician & Solar (Abuja)</option>
+                        <option value="plumber">Mama T Plumbing & Borehole (Ibadan)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: MARKETPLACE & BOOKINGS -->
+        <div id="tab-marketplace" class="tab-content">
+            <div class="card">
+                <h2>🔍 Vetted Local Service Providers</h2>
+                <p class="intro">Browse or search verified artisans. 5% commission applies on confirmed bookings.</p>
+
+                <div class="filter-row">
+                    <input type="text" id="searchInput" placeholder="Search service or location...">
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Tailor">Tailor / Fashion</option>
+                        <option value="Mechanic">Auto Mechanic</option>
+                        <option value="Electrician">Electrician</option>
+                        <option value="Plumber">Plumber</option>
+                    </select>
+                </div>
+
+                <div class="provider-list" id="providerListContainer">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: MONETIZATION & DASHBOARD -->
+        <div id="tab-dashboard" class="tab-content">
+            <div class="card">
+                <h2>📈 Revenue & Business Dashboard</h2>
+                <p class="intro">Track commission earnings, premium placement subscriptions, and lead-capture sales.</p>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="lbl">Bookings (5%)</div>
+                        <div class="val" id="statBookingsCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="lbl">Premium Subs</div>
+                        <div class="val" id="statSubsCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="lbl">Total Revenue</div>
+                        <div class="val" id="statTotalRevenue">₦0</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-sm" id="promoteProviderBtn" style="flex:1; padding: 10px;">🌟 Upgrade Provider (₦2,000/mo)</button>
+                    <button class="btn-sm" id="exportLeadsBtn" style="background: var(--accent); flex:1; padding: 10px;">📥 Export Lead Network CSV</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- BOOKING MODAL -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <button class="modal-close" id="closeModalBtn" type="button">&times;</button>
+            <h3 id="modalProviderTitle">Book Service Provider</h3>
+            <form id="bookingForm">
+                <input type="hidden" id="modalProviderId">
+                <div class="form-group">
+                    <label for="clientName">Your Full Name</label>
+                    <input type="text" id="clientName" required placeholder="e.g. Chinedu Okafor">
+                </div>
+                <div class="form-group">
+                    <label for="clientPhone">Phone Number (Nigerian Format)</label>
+                    <input type="tel" id="clientPhone" required placeholder="e.g. 08031234567">
+                </div>
+                <div class="form-group">
+                    <label for="clientAddress">Service Location / Address</label>
+                    <input type="text" id="clientAddress" required placeholder="e.g. 12 Allen Avenue, Ikeja">
+                </div>
+                <div class="form-group">
+                    <label for="clientServiceDesc">Describe Job Required</label>
+                    <input type="text" id="clientServiceDesc" required placeholder="e.g. Repair AC compressor">
+                </div>
+                <button type="submit" class="btn-full">Confirm & Book (5% Commission)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIXED BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="tab-simulator">
+            <span class="icon">🔌</span>
+            <span>Extension</span>
+        </button>
+        <button class="nav-item" data-target="tab-marketplace">
+            <span class="icon">👥</span>
+            <span>Marketplace</span>
+        </button>
+        <button class="nav-item" data-target="tab-dashboard">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+    </nav>
+
+    <script>
+        // Live Date & Time Computation
+        function updateLiveTime() {
+            const badge = document.getElementById('liveTimeBadge');
+            if (!badge) return;
+            const now = new Date();
+            // Tuesday 17 November 2026, 12:54 AM equivalent formatting
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            badge.textContent = `Live ${timeStr}`;
+        }
+        setInterval(updateLiveTime, 1000);
+        updateLiveTime();
+
+        // Initial Mock Providers Data
+        const defaultProviders = [
+            { id: 1, name: "Ade Tailoring House", category: "Tailor", location: "Ikeja, Lagos", price: "₦5,000 avg", rating: 4.8, premium: true, siteUrl: "https://adetailor.ng/custom-mens-wear" },
+            { id: 2, name: "Emeka Auto & Diagnostics", category: "Mechanic", location: "Surulere, Lagos", price: "₦10,000 avg", rating: 4.9, premium: true, siteUrl: "https://emekafixedcar.ng/repair" },
+            { id: 3, name: "Alhaji Power Solar", category: "Electrician", location: "Wuse, Abuja", price: "₦8,000 avg", rating: 4.7, premium: false, siteUrl: "https://alhajisolar.ng/install" },
+            { id: 4, name: "Mama T Plumbing Solutions", category: "Plumber", location: "Bodija, Ibadan", price: "₦4,000 avg", rating: 4.6, premium: false, siteUrl: "https://mamatplumbing.ng/leak" }
+        ];
+
+        // State management with localStorage
+        let state = {
+            providers: defaultProviders,
+            bookings: [],
+            subscriptions: 2, // 2 initial paid ₦2,000/mo placements
+            leadsExported: 0
+        };
+
+        try {
+            const saved = localStorage.getItem('hirelocal_ng_state');
+            if (saved) {
+                state = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('Storage error', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('hirelocal_ng_state', JSON.stringify(state));
+            } catch (e) {
+                console.error('Storage save error', e);
+            }
+        }
+
+        // DOM Elements
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Navigation Switching
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                tabContents.forEach(tab => tab.classList.remove('active'));
+                
+                item.classList.add('active');
+                const targetTab = document.getElementById(targetId);
+                if (targetTab) targetTab.classList.add('active');
+            });
+        });
+
+        // Extension Simulator Elements
+        const siteSelector = document.getElementById('siteSelector');
+        const browserUrlText = document.getElementById('browserUrlText');
+        const simSiteTitle = document.getElementById('simSiteTitle');
+        const simSiteDesc = document.getElementById('simSiteDesc');
+        const injectedHireBtn = document.getElementById('injectedHireBtn');
+
+        const siteDataMap = {
+            tailor: { title: "Ade Tailoring & Fashion House", desc: "Quality native wears & corporate alterations in Ikeja, Lagos.", url: "https://adetailor.ng/custom-mens-wear", category: "Tailor" },
+            mechanic: { title: "Emeka Auto Repair & Diagnostics", desc: "Expert engine tuning, scanning and repairs in Surulere.", url: "https://emekafixedcar.ng/repair", category: "Mechanic" },
+            electrician: { title: "Alhaji Power Electrician & Solar", desc: "Inverter installation & fault troubleshooting in Abuja.", url: "https://alhajisolar.ng/install", category: "Electrician" },
+            plumber: { title: "Mama T Plumbing & Borehole", desc: "Pipe repairs, tank installation & pump fixes in Ibadan.", url: "https://mamatplumbing.ng/leak", category: "Plumber" }
+        };
+
+        if (siteSelector) {
+            siteSelector.addEventListener('change', (e) => {
+                const key = e.target.value;
+                const data = siteDataMap[key];
+                if (data) {
+                    browserUrlText.textContent = data.url;
+                    simSiteTitle.textContent = data.title;
+                    simSiteDesc.textContent = data.desc;
+                }
+            });
+        }
+
+        // Modal Elements
+        const bookingModal = document.getElementById('bookingModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalProviderTitle = document.getElementById('modalProviderTitle');
+        const modalProviderId = document.getElementById('modalProviderId');
+        const bookingForm = document.getElementById('bookingForm');
+
+        function openBookingModal(provider) {
+            if (!bookingModal) return;
+            modalProviderTitle.textContent = `Book: ${provider.name} (${provider.category})`;
+            modalProviderId.value = provider.id;
+            bookingModal.classList.add('active');
+        }
+
+        function closeBookingModal() {
+            if (!bookingModal) return;
+            bookingModal.classList.remove('active');
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeBookingModal);
+        }
+
+        if (bookingModal) {
+            bookingModal.addEventListener('click', (e) => {
+                if (e.target === bookingModal) closeBookingModal();
+            });
+        }
+
+        // Injected button click opens modal for the selected site or first match
+        if (injectedHireBtn) {
+            injectedHireBtn.addEventListener('click', () => {
+                const selectedKey = siteSelector ? siteSelector.value : 'tailor';
+                const currentSiteInfo = siteDataMap[selectedKey];
+                const matchedProvider = state.providers.find(p => p.category === currentSiteInfo.category) || state.providers[0];
+                openBookingModal(matchedProvider);
+            });
+        }
+
+        // Render Providers in Marketplace
+        const providerListContainer = document.getElementById('providerListContainer');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        function renderProviders() {
+            if (!providerListContainer) return;
+            
+            const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
+            const catVal = categoryFilter ? categoryFilter.value : '';
+
+            const filtered = state.providers.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchVal) || p.location.toLowerCase().includes(searchVal);
+                const matchesCat = catVal === '' || p.category === catVal;
+                return matchesSearch && matchesCat;
+            });
+
+            // Sort premium first
+            filtered.sort((a, b) => (b.premium ? 1 : 0) - (a.premium ? 1 : 0));
+
+            if (filtered.length === 0) {
+                providerListContainer.innerHTML = `<div class="empty-state">No service providers found matching criteria.</div>`;
+                return;
+            }
+
+            providerListContainer.innerHTML = filtered.map(p => `
+                <div class="provider-card ${p.premium ? 'premium' : ''}">
+                    <div class="provider-info">
+                        <h4>
+                            ${p.name} 
+                            ${p.premium ? '<span class="badge-premium">Featured</span>' : ''}
+                        </h4>
+                        <p>📍 ${p.location} • ⭐ ${p.rating}</p>
+                        <p style="font-size: 0.8rem; color: var(--primary-dark); margin-top:2px;">Category: ${p.category}</p>
+                    </div>
+                    <div class="provider-action">
+                        <span class="price-tag">${p.price}</span>
+                        <button class="btn-sm book-trigger" data-id="${p.id}">Book Now</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Bind book buttons
+            document.querySelectorAll('.book-trigger').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.getAttribute('data-id'), 10);
+                    const provider = state.providers.find(item => item.id === id);
+                    if (provider) openBookingModal(provider);
+                });
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', renderProviders);
+        if (categoryFilter) categoryFilter.addEventListener('change', renderProviders);
+
+        // Booking Form Submission
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const pId = parseInt(modalProviderId.value, 10);
+                const provider = state.providers.find(item => item.id === pId);
+                const name = document.getElementById('clientName').value;
+                const phone = document.getElementById('clientPhone').value;
+                const address = document.getElementById('clientAddress').value;
+                const desc = document.getElementById('clientServiceDesc').value;
+
+                // Simple validation for Nigerian phone format
+                const phoneRegex = /^(0[789][01]\d{8}|\+234[789][01]\d{8})$/;
+                if (!phoneRegex.test(phone.trim())) {
+                    alert('Please enter a valid Nigerian phone number (e.g. 08031234567 or +2348031234567).');
+                    return;
+                }
+
+                const newBooking = {
+                    id: Date.now(),
+                    providerName: provider ? provider.name : 'Unknown',
+                    clientName: name,
+                    clientPhone: phone,
+                    clientAddress: address,
+                    serviceDesc: desc,
+                    commission: 500, // Estimated ₦500 commission per confirmed booking
+                    timestamp: new Date().toLocaleDateString()
+                };
+
+                state.bookings.push(newBooking);
+                saveState();
+                updateDashboardStats();
+                closeBookingModal();
+                bookingForm.reset();
+                alert('Booking confirmed successfully! ₦500 commission logged to your platform wallet.');
+            });
+        }
+
+        // Dashboard Stats Update
+        const statBookingsCount = document.getElementById('statBookingsCount');
+        const statSubsCount = document.getElementById('statSubsCount');
+        const statTotalRevenue = document.getElementById('statTotalRevenue');
+        const promoteProviderBtn = document.getElementById('promoteProviderBtn');
+        const exportLeadsBtn = document.getElementById('exportLeadsBtn');
+
+        function updateDashboardStats() {
+            const bookingsCount = state.bookings.length;
+            const subsCount = state.subscriptions;
+            
+            // Revenue calculations: 500 per booking commission + 2,000 per monthly subscription
+            const bookingRevenue = bookingsCount * 500;
+            const subRevenue = subsCount * 2000;
+            const leadRevenue = state.leadsExported * 1500; // ₦1,500 per lead batch sold
+            const totalRevenue = bookingRevenue + subRevenue + leadRevenue;
+
+            if (statBookingsCount) statBookingsCount.textContent = bookingsCount;
+            if (statSubsCount) statSubsCount.textContent = subsCount;
+            if (statTotalRevenue) statTotalRevenue.textContent = `₦${totalRevenue.toLocaleString()}`;
+        }
+
+        if (promoteProviderBtn) {
+            promoteProviderBtn.addEventListener('click', () => {
+                state.subscriptions += 1;
+                saveState();
+                updateDashboardStats();
+                renderProviders();
+                alert('New provider subscribed to ₦2,000/month Premium Placement! Revenue updated.');
+            });
+        }
+
+        if (exportLeadsBtn) {
+            exportLeadsBtn.addEventListener('click', () => {
+                state.leadsExported += 1;
+                saveState();
+                updateDashboardStats();
+                alert('Lead-capture network export generated! ₦1,500 credited from service-provider network buyer.');
+            });
+        }
+
+        // Initial Render
+        renderProviders();
+        updateDashboardStats();
+    </script>
+</body>
+</html>
