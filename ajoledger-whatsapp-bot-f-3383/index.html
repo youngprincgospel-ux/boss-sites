@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AjoLedger – WhatsApp Savings Bot</title>
+<meta name="description" content="AjoLedger — WhatsApp bot for informal savings groups (ajo/esusu). Members join with a phone number, admin sets contribution amount and date, bot posts dail">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E💰%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#fafafa;
+  --txt:#111;
+  --accent:#0066cc;
+  --danger:#d00;
+  --border:#ccc;
+  --radius:8px;
+  --spacing:0.75rem;
+}
+html{font-family:sans-serif;font-size:16px;background:var(--bg);color:var(--txt);}
+body{
+  margin:0;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  padding-bottom:calc( env(safe-area-inset-bottom) + 70px );
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+header{
+  background:var(--accent);
+  color:#fff;
+  padding:var(--spacing);
+  text-align:center;
+}
+h1{margin:0;font-size:1.5rem;}
+main{
+  flex:1;
+  padding:var(--spacing);
+}
+section{margin-bottom:1.5rem;}
+label{
+  display:block;
+  margin-bottom:0.25rem;
+  font-weight:600;
+}
+input, button, select{
+  width:100%;
+  padding:0.5rem;
+  font-size:1rem;
+  margin-bottom:var(--spacing);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-sizing:border-box;
+}
+button{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+button:active{background:#004a99;}
+ul{list-style:none;padding:0;margin:0;}
+li{
+  padding:0.5rem;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+li:last-child{border-bottom:none;}
+.member-name{font-weight:500;}
+.payment-status{
+  background:var(--accent);
+  color:#fff;
+  padding:0.2rem 0.5rem;
+  border-radius:4px;
+  font-size:0.85rem;
+}
+.payment-status.unpaid{background:var(--danger);}
+.toast{
+  position:fixed;
+  bottom:80px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#333;
+  color:#fff;
+  padding:0.75rem 1.25rem;
+  border-radius:4px;
+  opacity:0;
+  transition:opacity .3s;
+  pointer-events:none;
+}
+.toast.show{opacity:0.9;}
+footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:#eee;
+  text-align:center;
+  padding:0.5rem;
+  font-size:0.85rem;
+  border-top:1px solid var(--border);
+}
+@media (min-width:600px){
+  input, button{max-width:400px;margin:auto;}
+}
+</style>
+</head>
+<body>
+<header><h1>AjoLedger</h1></header>
+<main>
+<section id="config">
+<h2>Group Settings</h2>
+<label for="contrib">Contribution Amount (₦)</label>
+<input id="contrib" type="number" min="0" aria-describedby="contribHelp">
+<div id="contribHelp" style="font-size:0.85rem;color:#555;">Enter the amount each member should contribute.</div>
+<label for="due">Contribution Day</label>
+<input id="due" type="date" aria-describedby="dueHelp">
+<div id="dueHelp" style="font-size:0.85rem;color:#555;">Select the day contributions are due.</div>
+</section>
+
+<section id="members">
+<h2>Members</h2>
+<form id="addMemberForm" novalidate>
+<label for="phone">Phone Number</label>
+<input id="phone" type="tel" placeholder="e.g., 08012345678" aria-describedby="phoneHelp" required>
+<div id="phoneHelp" style="font-size:0.85rem;color:#555;">Nigerian mobile number (080, 070, 090 or +234).</div>
+<button type="submit">Add Member</button>
+</form>
+<ul id="memberList" aria-live="polite"></ul>
+</section>
+
+<section id="payments">
+<h2>Payments</h2>
+<ul id="paymentLog" aria-live="polite"></ul>
+<button id="sendReminder">Send Reminder to All</button>
+</section>
+
+<section id="pricing">
+<h2>Pricing</h2>
+<p>Admin tier: <strong>₦500/month</strong> for groups with more than 10 members. <a href="https://paystack.com/pay/example" target="_blank" rel="noopener">Pay via OPay</a></p>
+<p>One‑time registration: <strong>₦2,000</strong>. Referral cut from licensed MFB applied.</p>
+</section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer>© 2026 AjoLedger</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  // Elements
+  const contribEl = document.getElementById('contrib');
+  const dueEl = document.getElementById('due');
+  const phoneEl = document.getElementById('phone');
+  const addMemberForm = document.getElementById('addMemberForm');
+  const memberListEl = document.getElementById('memberList');
+  const paymentLogEl = document.getElementById('paymentLog');
+  const sendReminderBtn = document.getElementById('sendReminder');
+  const toastEl = document.getElementById('toast');
+
+  // State
+  let state = {
+    contribution: '',
+    dueDate: '',
+    members: [] // {phone:string, paid:boolean, lastPaid:string}
+  };
+
+  // Helpers
+  function showToast(msg){
+    if(!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(()=>toastEl.classList.remove('show'),3000);
+  }
+
+  function saveState(){
+    try{
+      localStorage.setItem('ajoledgerState', JSON.stringify(state));
+    }catch(e){
+      console.warn('LocalStorage unavailable',e);
+    }
+  }
+
+  function loadState(){
+    try{
+      const saved = localStorage.getItem('ajoledgerState');
+      if(saved){
+        const parsed = JSON.parse(saved);
+        if(parsed && typeof parsed === 'object'){
+          state = parsed;
+        }
+      }
+    }catch(e){
+      console.warn('Failed to load state',e);
+    }
+  }
+
+  function renderSettings(){
+    if(contribEl) contribEl.value = state.contribution || '';
+    if(dueEl) dueEl.value = state.dueDate || '';
+  }
+
+  function renderMembers(){
+    if(!memberListEl) return;
+    memberListEl.innerHTML = '';
+    state.members.forEach((m,i)=>{
+      const li = document.createElement('li');
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'member-name';
+      nameSpan.textContent = m.phone;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = m.paid ? 'Mark Unpaid' : 'Mark Paid';
+      btn.style.minWidth = '80px';
+      btn.addEventListener('click',()=>togglePaid(i));
+      li.appendChild(nameSpan);
+      li.appendChild(btn);
+      memberListEl.appendChild(li);
+    });
+  }
+
+  function renderPayments(){
+    if(!paymentLogEl) return;
+    paymentLogEl.innerHTML = '';
+    state.members.forEach(m=>{
+      if(m.paid && m.lastPaid){
+        const li = document.createElement('li');
+        li.textContent = `${m.phone} paid on ${m.lastPaid}`;
+        paymentLogEl.appendChild(li);
+      }
+    });
+  }
+
+  function addMember(phone){
+    if(state.members.find(m=>m.phone===phone)){
+      showToast('Member already exists');
+      return;
+    }
+    state.members.push({phone, paid:false, lastPaid:''});
+    saveState();
+    renderMembers();
+    renderPayments();
+    showToast('Member added');
+  }
+
+  function togglePaid(index){
+    const member = state.members[index];
+    if(!member) return;
+    member.paid = !member.paid;
+    if(member.paid){
+      const now = new Date();
+      member.lastPaid = now.toLocaleString();
+      showToast(`${member.phone} marked as paid`);
+    }else{
+      member.lastPaid = '';
+      showToast(`${member.phone} marked as unpaid`);
+    }
+    saveState();
+    renderMembers();
+    renderPayments();
+  }
+
+  function sendReminder(){
+    const unpaid = state.members.filter(m=>!m.paid);
+    if(unpaid.length===0){
+      showToast('All members have paid');
+      return;
+    }
+    const now = new Date().toLocaleString();
+    unpaid.forEach(m=>{
+      // In a real app, you'd trigger WhatsApp API here.
+      console.log(`Reminder sent to ${m.phone} at ${now}`);
+    });
+    showToast(`Reminders sent to ${unpaid.length} member(s)`);
+  }
+
+  // Validation
+  function isValidNigerianPhone(num){
+    const cleaned = num.replace(/\s+/g,'');
+    const regex = /^(?:\+234|0)(?:80|70|90)\d{8}$/;
+    return regex.test(cleaned);
+  }
+
+  // Event Listeners
+  if(addMemberForm){
+    addMemberForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      if(!phoneEl) return;
+      const phone = phoneEl.value.trim();
+      if(!isValidNigerianPhone(phone)){
+        showToast('Invalid Nigerian phone number');
+        return;
+      }
+      addMember(phone);
+      phoneEl.value = '';
+    });
+  }
+
+  if(contribEl){
+    contribEl.addEventListener('change',function(){
+      state.contribution = contribEl.value;
+      saveState();
+    });
+  }
+
+  if(dueEl){
+    dueEl.addEventListener('change',function(){
+      state.dueDate = dueEl.value;
+      saveState();
+    });
+  }
+
+  if(sendReminderBtn){
+    sendReminderBtn.addEventListener('click',sendReminder);
+  }
+
+  // Init
+  loadState();
+  renderSettings();
+  renderMembers();
+  renderPayments();
+});
+</script>
+</body>
+</html>
