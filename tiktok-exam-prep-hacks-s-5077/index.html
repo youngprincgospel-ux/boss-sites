@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ExamHack TikTok Series & Funnel | Naija Student Prep</title>
+<meta name="description" content="TikTok “Exam‑Prep Hacks” Shoppable Series: produce a 5‑episode weekly TikTok reel series each highlighting a specific exam‑prep hack that fits within the 1">
+    <link rel="icon" href="📱">
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d29;
+            --bg-card: #222638;
+            --accent: #fe2c55; /* TikTok pink */
+            --accent-cyan: #25f4ee; /* TikTok cyan */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --border: #374151;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--bg-secondary);
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        header h1 span {
+            background: linear-gradient(45deg, var(--accent), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+            flex: 1;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Episode Cards */
+        .episode-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .episode-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .episode-badge {
+            background: rgba(254, 44, 85, 0.15);
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .episode-data-tag {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .episode-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .episode-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .episode-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            flex: 1;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-cyan {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        /* Funnel & Checkout View */
+        .funnel-hero {
+            background: linear-gradient(135deg, rgba(254, 44, 85, 0.15), rgba(37, 244, 238, 0.15));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .funnel-hero h2 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .funnel-hero .price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            margin: 12px 0;
+        }
+
+        .perks-list {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .perks-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .perks-list li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        /* Analytics / Earnings Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-top: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Fixed Bottom Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
+            animation: fadeInOut 3s forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span>ExamHack</span> TikTok Series</h1>
+        <p id="live-clock">Loading time...</p>
+    </header>
+
+    <div id="toast-container"></div>
+
+    <div class="container">
+        <!-- VIEW 1: EPISODES FEED -->
+        <section id="view-episodes" class="view active">
+            <div style="margin-bottom: 16px;">
+                <h2 style="font-size: 1.1rem; margin-bottom: 4px;">Weekly 5-Episode Series</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Each hack engineered under 100MB daily data for Nigerian exam candidates.</p>
+            </div>
+            
+            <div id="episodes-list">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: SHOPPABLE FUNNEL -->
+        <section id="view-funnel" class="view">
+            <div class="funnel-hero">
+                <span class="episode-badge">All-in-One Bundle</span>
+                <h2>WAEC/JAMB Zero-Data Mastery Vault</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Get all offline PDF past questions, AI voice summaries & instant formula sheets.</p>
+                <div class="price">₦500</div>
+                <button type="button" class="btn btn-cyan" id="btn-buy-vault" style="width: 100%; margin-top: 10px;">
+                    ⚡ Instant Checkout (Paystack)
+                </button>
+            </div>
+
+            <div class="episode-card">
+                <h3 style="font-size: 1rem; margin-bottom: 12px;">What's Inside the Vault:</h3>
+                <ul class="perks-list">
+                    <li>5 Years Compiled Past Questions (Offline PDF)</li>
+                    <li>Audio Voice Explanations (Under 15MB total)</li>
+                    <li>Partnered CBT Practice App Free Access</li>
+                    <li>WhatsApp Daily Exam Reminder Bot Pass</li>
+                </ul>
+            </div>
+
+            <div class="episode-card">
+                <h3 style="font-size: 1rem; margin-bottom: 12px;">Quick Order Form</h3>
+                <form id="order-form">
+                    <div class="form-group">
+                        <label class="form-label" for="order-name">Full Name</label>
+                        <input type="text" id="order-name" class="form-input" placeholder="e.g. Oluwaseun Adebayo" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="order-phone">WhatsApp Number (e.g., 080... or +234...)</label>
+                        <input type="tel" id="order-phone" class="form-input" placeholder="08012345678" required>
+                    </div>
+                    <button type="submit" class="btn" id="btn-submit-order">
+                        Confirm & Access Vault
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- VIEW 3: ANALYTICS & DASHBOARD -->
+        <section id="view-analytics" class="view">
+            <div style="margin-bottom: 16px;">
+                <h2 style="font-size: 1.1rem; margin-bottom: 4px;">Creator Dashboard</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Track your TikTok funnel traffic, ₦500 sales, and affiliate commissions.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="stat-revenue">₦0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Vault Sales</div>
+                    <div class="stat-value" id="stat-sales">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">TikTok Clicks</div>
+                    <div class="stat-value" id="stat-clicks">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Affiliate Bonus</div>
+                    <div class="stat-value" id="stat-affiliate">₦0</div>
+                </div>
+            </div>
+
+            <div class="episode-card">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">Recent Funnel Transactions</h3>
+                <div id="transactions-list" style="font-size: 0.85rem; color: var(--text-muted);">
+                    No sales recorded yet. Share your TikTok videos to start earning!
+                </div>
+            </div>
+
+            <div class="episode-card">
+                <button type="button" class="btn btn-secondary" id="btn-reset-data" style="width: 100%;">
+                    🔄 Reset Dashboard Data
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Fixed Bottom Navigation Bar -->
+    <nav class="nav-bar">
+        <button type="button" class="nav-item active" data-target="view-episodes">
+            <span class="icon">🎬</span>
+            <span>TikTok Series</span>
+        </button>
+        <button type="button" class="nav-item" data-target="view-funnel">
+            <span class="icon">🛒</span>
+            <span>Vault Funnel</span>
+        </button>
+        <button type="button" class="nav-item" data-target="view-analytics">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+    </nav>
+
+    <script>
+        // Live Date & Time Computation for Nigeria (UTC+1)
+        function updateClock() {
+            const clockEl = document.getElementById('live-clock');
+            if (!clockEl) return;
+            const now = new Date();
+            const options = { 
+                timeZone: 'Africa/Lagos', 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            };
+            clockEl.textContent = now.toLocaleString('en-US', options) + ' (WAT)';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // State Management with localStorage
+        const STORAGE_KEY = 'examhack_series_state_v1';
+        let state = {
+            revenue: 0,
+            sales: 0,
+            clicks: 0,
+            affiliate: 0,
+            transactions: []
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    state = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Failed to load storage', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error('Failed to save storage', e);
+            }
+        }
+
+        loadState();
+
+        // Toast Notifications
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>💡</span> <div>${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Episodes Data
+        const episodes = [
+            {
+                id: 1,
+                title: "Ep 1: The 15MB Past Questions PDF Hack",
+                dataSize: "14.2 MB",
+                desc: "How to download 5 years of WAEC core mathematics past questions compressed into a single ultra-light PDF.",
+                partner: "ExamPadi CBT Partner"
+            },
+            {
+                id: 2,
+                title: "Ep 2: Audio Mnemonics for Biology & Physics",
+                dataSize: "18.5 MB",
+                desc: "Listen to 2-minute voice summaries of complex biological cycles without buffering on slow networks.",
+                partner: "NaijaVoiceLearn"
+            },
+            {
+                id: 3,
+                title: "Ep 3: JAMB CBT Simulator Offline Shortcut",
+                dataSize: "22.0 MB",
+                desc: "Run full speed practice tests directly inside your browser cache without consuming mobile data.",
+                partner: "CBT MasterNG"
+            },
+            {
+                id: 4,
+                title: "Ep 4: Chemistry Equation Flashcards",
+                dataSize: "12.8 MB",
+                desc: "Master periodic tables and balancing equations with our high-yield interactive mobile flashcards.",
+                partner: "ScienceHub NG"
+            },
+            {
+                id: 5,
+                title: "Ep 5: Final Exam Night Panic Control & Formula Sheet",
+                dataSize: "9.5 MB",
+                desc: "The ultimate 1-page cheat sheet for quick morning review right before entering the exam hall.",
+                partner: "ScholarPass Africa"
+            }
+        ];
+
+        // Render Episodes
+        const episodesListEl = document.getElementById('episodes-list');
+        if (episodesListEl) {
+            episodesListEl.innerHTML = episodes.map(ep => `
+                <div class="episode-card">
+                    <div class="episode-header">
+                        <span class="episode-badge">Episode ${ep.id} of 5</span>
+                        <span class="episode-data-tag">📶 ${ep.dataSize} used</span>
+                    </div>
+                    <h3 class="episode-title">${ep.title}</h3>
+                    <p class="episode-desc">${ep.desc}</p>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
+                        Partnered with: <strong style="color: var(--text-main);">${ep.partner}</strong>
+                    </div>
+                    <div class="episode-actions">
+                        <button type="button" class="btn btn-secondary share-tiktok-btn" data-ep="${ep.id}">
+                            📤 Share TikTok Reel
+                        </button>
+                        <button type="button" class="btn get-vault-btn">
+                            🛒 Get ₦500 Vault
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Navigation Switching
+        const navItems = document.querySelectorAll('.nav-item');
+        const views = document.querySelectorAll('.view');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetViewId = item.getAttribute('data-target');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                views.forEach(view => {
+                    if (view.id === targetViewId) {
+                        view.classList.add('active');
+                    } else {
+                        view.classList.remove('active');
+                    }
+                });
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Update Dashboard UI
+        function updateDashboardUI() {
+            const revEl = document.getElementById('stat-revenue');
+            const salesEl = document.getElementById('stat-sales');
+            const clicksEl = document.getElementById('stat-clicks');
+            const affEl = document.getElementById('stat-affiliate');
+            const txListEl = document.getElementById('transactions-list');
+
+            if (revEl) revEl.textContent = `₦${state.revenue.toLocaleString()}`;
+            if (salesEl) salesEl.textContent = state.sales;
+            if (clicksEl) clicksEl.textContent = state.clicks;
+            if (affEl) affEl.textContent = `₦${state.affiliate.toLocaleString()}`;
+
+            if (txListEl) {
+                if (state.transactions.length === 0) {
+                    txListEl.innerHTML = 'No sales recorded yet. Share your TikTok videos to start earning!';
+                } else {
+                    txListEl.innerHTML = state.transactions.map(tx => `
+                        <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: var(--text-main);">${tx.name}</strong><br>
+                                <span style="font-size: 0.75krem; color: var(--text-muted);">${tx.phone} • ${tx.time}</span>
+                            </div>
+                            <span style="color: var(--success); font-weight: 700;">+₦500</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+        updateDashboardUI();
+
+        // Handle Share TikTok buttons
+        document.querySelectorAll('.share-tiktok-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const epId = e.currentTarget.getAttribute('data-ep');
+                state.clicks += 1;
+                saveState();
+                updateDashboardUI();
+
+                const shareText = `Check out Episode ${epId} of the ExamPrep Hack TikTok series! Save data, pass WAEC/JAMB: https://youngprincgospel-ux.github.io/boss-sites/`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'ExamPrep Hack TikTok Series',
+                        text: shareText,
+                        url: window.location.href
+                    }).catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(shareText);
+                    showToast('TikTok link copied to clipboard! Ready to paste.');
+                }
+            });
+        });
+
+        // Direct Vault navigation triggers
+        document.querySelectorAll('.get-vault-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('[data-target="view-funnel"]').click();
+            });
+        });
+
+        // Checkout / Order Form Submission
+        const orderForm = document.getElementById('order-form');
+        if (orderForm) {
+            orderForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('order-name');
+                const phoneInput = document.getElementById('order-phone');
+
+                const name = nameInput.value.trim();
+                const phone = phoneInput.value.trim();
+
+                // Simple Nigerian phone validator (070, 080, 090, 091, +234)
+                const phoneRegex = /^(?:\+234|0)[789][01]\d{8}$/;
+                if (!phoneRegex.test(phone)) {
+                    showToast('Please enter a valid Nigerian phone number (e.g. 08012345678)');
+                    phoneInput.focus();
+                    return;
+                }
+
+                // Simulate successful Paystack payment & order fulfillment
+                state.sales += 1;
+                state.revenue += 500;
+                state.affiliate += 100; // partnered platform commission bonus
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit' });
+
+                state.transactions.unshift({
+                    name: name,
+                    phone: phone,
+                    time: timeString
+                });
+
+                saveState();
+                updateDashboardUI();
+
+                showToast(`Payment confirmed, ${name}! Vault access link sent to ${phone}.`);
+                orderForm.reset();
+
+                // Switch to dashboard to show earnings
+                setTimeout(() => {
+                    document.querySelector('[data-target="view-analytics"]').click();
+                }, 1500);
+            });
+        }
+
+        const btnBuyVault = document.getElementById('btn-buy-vault');
+        if (btnBuyVault) {
+            btnBuyVault.addEventListener('click', () => {
+                showToast('Redirecting to secure Paystack checkout gateway...');
+                setTimeout(() => {
+                    // Scroll to order form for smooth UX
+                    document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
+                }, 800);
+            });
+        }
+
+        // Reset Dashboard Data
+        const btnResetData = document.getElementById('btn-reset-data');
+        if (btnResetData) {
+            btnResetData.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all recorded sales and analytics?')) {
+                    state = {
+                        revenue: 0,
+                        sales: 0,
+                        clicks: 0,
+                        affiliate: 0,
+                        transactions: []
+                    };
+                    saveState();
+                    updateDashboardUI();
+                    showToast('Dashboard stats reset successfully.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
