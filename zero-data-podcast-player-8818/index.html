@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PodNaija Lite - Zero-Data Podcast Player for Commuters</title>
+<meta name="description" content="Zero‑Data Podcast Player for Nigerian Commuters. This should help: Compresses popular Nigerian and international podcasts to ultra‑low‑data audio streams, ">
+    <link rel="icon" href="🎧">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7-kqJlNT4S2LVoIg1clJCMAf93DLpI9RKyA5I5u8sA0F7/C2M4t4bE" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --secondary: #1F2937;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #111827;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --danger: #EF4444;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #34D399;
+            --primary-dark: #10B981;
+            --secondary: #9CA3AF;
+            --bg: #111827;
+            --card-bg: #1F2937;
+            --text: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --border: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+            background: var(--primary);
+            color: white;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: 140px; /* leaves room for sticky player & bottom nav */
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Banner Card */
+        .data-saver-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .banner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .banner-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .banner-header span {
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+
+        .banner-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        /* Search & Filters */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .categories {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text);
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Podcast List */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .podcast-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .podcast-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .podcast-card:active {
+            transform: scale(0.98);
+        }
+
+        .podcast-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+
+        .podcast-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .podcast-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .podcast-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .meta-badges {
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .meta-badges span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .play-action-btn {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* Sticky Mini Player */
+        .mini-player {
+            position: fixed;
+            bottom: 64px;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 99;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .mini-player.hidden {
+            transform: translateY(150%);
+        }
+
+        .mini-thumb {
+            width: 42px;
+            height: 42px;
+            border-radius: 6px;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .mini-info {
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+        }
+
+        .mini-info h5 {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mini-info p {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mini-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mini-controls button {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mini-controls .main-play {
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            font-size: 14px;
+        }
+
+        /* Fullscreen Player Modal */
+        .player-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--card-bg);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .player-modal.open {
+            transform: translateY(0);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .player-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .player-artwork {
+            width: 220px;
+            height: 220px;
+            border-radius: 16px;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .player-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .player-podcast {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .progress-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-wrap {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .progress-filled {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            width: 0%;
+            position: relative;
+        }
+
+        .time-stamps {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .player-controls-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .player-controls-main button {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .player-controls-main .big-play {
+            background: var(--primary);
+            color: white;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .compression-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding-bottom: var(--safe-bottom);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Subscription & Monetization Views */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .pricing-card {
+            text-align: center;
+            border: 2px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: "POPULAR";
+            position: absolute;
+            top: 14px;
+            right: -30px;
+            background: var(--primary);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 4px 30px;
+            transform: rotate(45deg);
+        }
+
+        .price {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--secondary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .sponsor-ad {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .sponsor-ad a {
+            color: white;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fa-solid fa-podcast"></i></div>
+            <div class="logo-text">
+                <h1>PodNaija Lite</h1>
+                <span>Zero-Data Mode</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="toast" id="toast">Action completed successfully</div>
+
+    <main>
+        <!-- EXPLORE VIEW -->
+        <div class="view active" id="exploreView">
+            <div class="data-saver-banner">
+                <div class="banner-header">
+                    <h3>Commuter Data Saver</h3>
+                    <span id="compressionRate">16kbps AAC</span>
+                </div>
+                <p style="font-size: 13px; opacity: 0.9;">Listening compressed. You use 90% less internet data than standard podcast apps.</p>
+                <div class="banner-stats">
+                    <div><i class="fa-solid fa-database"></i> <span id="dataSavedTotal">48.2 MB</span> saved</div>
+                    <div><i class="fa-solid fa-clock"></i> <span id="hoursListenedTotal">3.5 hrs</span> streamed</div>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search Nigerian podcasts, tech, business...">
+            </div>
+
+            <div class="categories" id="categoryChips">
+                <div class="chip active" data-category="All">All</div>
+                <div class="chip" data-category="Tech & Startups">Tech & Startups</div>
+                <div class="chip" data-category="Pidgin & Culture">Pidgin & Culture</div>
+                <div class="chip" data-category="Business & Money">Business & Money</div>
+                <div class="chip" data-category="News & Politics">News & Politics</div>
+            </div>
+
+            <div class="sponsor-ad">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <strong>Sponsored Partner</strong>
+                    <span style="font-size: 10px; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px;">Ad</span>
+                </div>
+                <p style="margin-bottom: 8px;">Get reliable high-speed fiber internet for your remote office with SwiftNaija.</p>
+                <a href="#" id="sponsorLink" target="_blank" rel="noopener">Claim 1GB Free Bonus Data &rarr;</a>
+            </div>
+
+            <div class="section-title">
+                <span>Trending Episodes</span>
+                <span style="font-size: 12px; color: var(--primary); cursor: pointer;" id="refreshFeed">Refresh</span>
+            </div>
+
+            <div class="podcast-list" id="podcastList">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- DOWNLOADS VIEW -->
+        <div class="view" id="downloadsView">
+            <div class="section-title">
+                <span>Offline Downloads</span>
+                <span id="storageUsed" style="font-size: 12px; color: var(--text-muted);">0 MB used</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Episodes stored securely on your device for offline listening in traffic.</p>
+            
+            <div class="podcast-list" id="downloadsList">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- PREMIUM VIEW -->
+        <div class="view" id="premiumView">
+            <div class="card pricing-card">
+                <div style="font-size: 12px; color: var(--primary); font-weight: 700; letter-spacing: 1px;">PODNAIJA PRO</div>
+                <div class="price">₦500 <span style="font-size: 12px; color: var(--text-muted); font-weight: 400;">/ month</span></div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Unlock unlimited offline downloads, true HD compressed audio (32kbps), and zero ads.</p>
+                <ul style="text-align: left; font-size: 13px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; padding-left: 20px;">
+                    <li>Zero ads or sponsor interruptions</li>
+                    <li>Unlimited background downloads</li>
+                    <li>Priority ultra-low data stream routes</li>
+                    <li>Support independent Nigerian podcasters</li>
+                </ul>
+                <button class="btn" id="upgradeBtn"><i class="fa-solid fa-bolt"></i> Upgrade via Paystack</button>
+            </div>
+
+            <div class="card">
+                <h4 style="font-size: 15px; margin-bottom: 8px;"><i class="fa-solid fa-handshake" style="color: var(--primary);"></i> Are you a podcaster?</h4>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Submit your RSS feed to reach thousands of data-conscious Nigerian commuters daily.</p>
+                <button class="btn btn-outline" id="submitPodcastBtn"><i class="fa-solid fa-plus"></i> Submit RSS Feed</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sticky Mini Player -->
+    <div class="mini-player hidden" id="miniPlayer">
+        <div class="mini-thumb" id="miniThumb">🎧</div>
+        <div class="mini-info" id="miniInfoTrigger">
+            <h5 id="miniTitle">Select an episode</h5>
+            <p id="miniPodcast">PodNaija Lite</p>
+        </div>
+        <div class="mini-controls">
+            <button id="miniPlayBtn" class="main-play" aria-label="Play/Pause"><i class="fa-solid fa-play"></i></button>
+            <button id="miniCloseBtn" aria-label="Close Player"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <!-- Fullscreen Player Modal -->
+    <div class="player-modal" id="playerModal">
+        <div class="player-header">
+            <button class="icon-btn" id="closePlayerModal" aria-label="Minimize Player"><i class="fa-solid fa-chevron-down"></i></button>
+            <div class="compression-badge"><i class="fa-solid fa-bolt"></i> Ultra-Low Data (16kbps)</div>
+            <button class="icon-btn" id="downloadCurrentBtn" aria-label="Download Episode"><i class="fa-solid fa-download"></i></button>
+        </div>
+        <div class="player-body">
+            <div class="player-artwork" id="fullArtwork">🎧</div>
+            <div class="player-title" id="fullTitle">Episode Title Here</div>
+            <div class="player-podcast" id="fullPodcast">Podcast Name</div>
+
+            <div class="progress-container">
+                <div class="progress-bar-wrap" id="progressBarWrap">
+                    <div class="progress-filled" id="progressFilled"></div>
+                </div>
+                <div class="time-stamps">
+                    <span id="currentTime">00:00</span>
+                    <span id="totalDuration">00:00</span>
+                </div>
+            </div>
+
+            <div class="player-controls-main">
+                <button id="skipBackward" aria-label="Skip Back 10s"><i class="fa-solid fa-rotate-left"></i> 10s</button>
+                <button id="fullPlayBtn" class="big-play" aria-label="Play/Pause"><i class="fa-solid fa-play"></i></button>
+                <button id="skipForward" aria-label="Skip Forward 10s">10s <i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="exploreView">
+            <i class="fa-solid fa-compass"></i>
+            <span>Explore</span>
+        </button>
+        <button class="nav-item" data-target="downloadsView">
+            <i class="fa-solid fa-download"></i>
+            <span>Downloads</span>
+        </button>
+        <button class="nav-item" data-target="premiumView">
+            <i class="fa-solid fa-crown"></i>
+            <span>Pro / Ad-free</span>
+        </button>
+    </nav>
+
+    <script>
+        // Database of Podcasts tailored for Nigerian Commuters
+        const podcastsData = [
+            {
+                id: 1,
+                title: "Ep 45: Surviving Third Mainland Traffic & Building Tech",
+                podcast: "Tech Cabal Lagos",
+                category: "Tech & Startups",
+                duration: "24:15",
+                durationSec: 1455,
+                size: "2.8 MB",
+                icon: "💻",
+                audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                downloads: 1420
+            },
+            {
+                id: 2,
+                title: "How To Calculate Profit When Dollar Rate Fluctuates",
+                podcast: "Market Square Naija",
+                category: "Business & Money",
+                duration: "18:40",
+                durationSec: 1120,
+                size: "2.1 MB",
+                icon: "📈",
+                audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                downloads: 2310
+            },
+            {
+                id: 3,
+                title: "Why Owambe Parties Are The Best Networking Spot",
+                podcast: "Pidgin Vibes & Cruise",
+                category: "Pidgin & Culture",
+                duration: "32:10",
+                durationSec: 1930,
+                size: "3.7 MB",
+                icon: "🇳🇬",
+                audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                downloads: 3890
+            },
+            {
+                id: 4,
+                title: "Inside Abuja Public Transport & Smart Card Policies",
+                podcast: "Naija Policy Watch",
+                category: "News & Politics",
+                duration: "15:05",
+                durationSec: 905,
+                size: "1.8 MB",
+                icon: "🏛️",
+                audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+                downloads: 940
+            },
+            {
+                id: 5,
+                title: "Scaling Your Jollof Rice Delivery Business in 2026",
+                podcast: "Market Square Naija",
+                category: "Business & Money",
+                duration: "21:50",
+                durationSec: 1310,
+                size: "2.5 MB",
+                icon: "🍲",
+                audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+                downloads: 1820
+            },
+            {
+                id: 6,
+                title: "Building Mobile Apps with Zero Internet Budgets",
+                podcast: "Tech Cabal Lagos",
+                category: "Tech & Startups",
+                duration: "28:30",
+                durationSec: 1710,
+                size: "3.2 MB",
+                icon: "⚡",
+                audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
+                downloads: 2150
+            }
+        ];
+
+        // State Management
+        let state = {
+            theme: localStorage.getItem('podnaija_theme') || 'light',
+            activeCategory: 'All',
+            searchQuery: '',
+            currentTrack: null,
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0,
+            downloadedIds: JSON.parse(localStorage.getItem('podnaija_downloads') || '[]'),
+            dataSaved: parseFloat(localStorage.getItem('podnaija_datasaved') || '48.2'),
+            hoursListened: parseFloat(localStorage.getItem('podnaija_hours') || '3.5')
+        };
+
+        // HTML Audio Element
+        const audioElement = new Audio();
+
+        // DOM Elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const searchInput = document.getElementById('searchInput');
+        const categoryChips = document.getElementById('categoryChips');
+        const podcastList = document.getElementById('podcastList');
+        const downloadsList = document.getElementById('downloadsList');
+        const storageUsed = document.getElementById('storageUsed');
+        const miniPlayer = document.getElementById('miniPlayer');
+        const miniThumb = document.getElementById('miniThumb');
+        const miniTitle = document.getElementById('miniTitle');
+        const miniPodcast = document.getElementById('miniPodcast');
+        const miniPlayBtn = document.getElementById('miniPlayBtn');
+        const miniCloseBtn = document.getElementById('miniCloseBtn');
+        const miniInfoTrigger = document.getElementById('miniInfoTrigger');
+        const playerModal = document.getElementById('playerModal');
+        const closePlayerModal = document.getElementById('closePlayerModal');
+        const fullArtwork = document.getElementById('fullArtwork');
+        const fullTitle = document.getElementById('fullTitle');
+        const fullPodcast = document.getElementById('fullPodcast');
+        const fullPlayBtn = document.getElementById('fullPlayBtn');
+        const skipBackward = document.getElementById('skipBackward');
+        const skipForward = document.getElementById('skipForward');
+        const progressBarWrap = document.getElementById('progressBarWrap');
+        const progressFilled = document.getElementById('progressFilled');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalDurationEl = document.getElementById('totalDuration');
+        const downloadCurrentBtn = document.getElementById('downloadCurrentBtn');
+        const dataSavedTotal = document.getElementById('dataSavedTotal');
+        const hoursListenedTotal = document.getElementById('hoursListenedTotal');
+        const toast = document.getElementById('toast');
+        const sponsorLink = document.getElementById('sponsorLink');
+        const refreshFeed = document.getElementById('refreshFeed');
+        const upgradeBtn = document.getElementById('upgradeBtn');
+        const submitPodcastBtn = document.getElementById('submitPodcastBtn');
+        const navItems = document.querySelectorAll('.nav-item');
+        const views = document.querySelectorAll('.view');
+
+        // Initialize Theme
+        if (state.theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        }
+
+        function showToast(message) {
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Render Explore View
+        function renderPodcasts() {
+            if (!podcastList) return;
+            let filtered = podcastsData.filter(item => {
+                let matchesCategory = state.activeCategory === 'All' || item.category === state.activeCategory;
+                let matchesSearch = item.title.toLowerCase().includes(state.searchQuery.toLowerCase()) || 
+                                    item.podcast.toLowerCase().includes(state.searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                podcastList.innerHTML = `<div style="text-align:center; padding: 30px; color: var(--text-muted); font-size: 13px;">No episodes found matching your criteria.</div>`;
+                return;
+            }
+
+            podcastList.innerHTML = filtered.map(item => `
+                <div class="podcast-card" data-id="${item.id}">
+                    <div class="podcast-thumb">${item.icon}</div>
+                    <div class="podcast-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.podcast}</p>
+                        <div class="meta-badges">
+                            <span><i class="fa-solid fa-clock"></i> ${item.duration}</span>
+                            <span><i class="fa-solid fa-database"></i> ${item.size}</span>
+                        </div>
+                    </div>
+                    <button class="play-action-btn" aria-label="Play Episode">
+                        <i class="fa-solid ${state.currentTrack && state.currentTrack.id === item.id && state.isPlaying ? 'fa-pause' : 'fa-play'}"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            // Bind click events
+            document.querySelectorAll('.podcast-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    let id = parseInt(card.getAttribute('data-id'));
+                    let track = podcastsData.find(p => p.id === id);
+                    if (track) {
+                        playTrack(track);
+                    }
+                });
+            });
+        }
+
+        // Render Downloads View
+        function renderDownloads() {
+            if (!downloadsList) return;
+            let downloadedItems = podcastsData.filter(item => state.downloadedIds.includes(item.id));
+            
+            let totalBytes = downloadedItems.length * 2.5; // estimated average MB per compressed episode
+            if (storageUsed) storageUsed.textContent = `${totalBytes.toFixed(1)} MB used`;
+
+            if (downloadedItems.length === 0) {
+                downloadsList.innerHTML = `<div style="text-align:center; padding: 30px; color: var(--text-muted); font-size: 13px;">No downloaded episodes yet. Tap the download icon on any episode for offline commuter listening.</div>`;
+                return;
+            }
+
+            downloadsList.innerHTML = downloadedItems.map(item => `
+                <div class="podcast-card" data-id="${item.id}">
+                    <div class="podcast-thumb">${item.icon}</div>
+                    <div class="podcast-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.podcast}</p>
+                        <div class="meta-badges">
+                            <span><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Downloaded (16kbps)</span>
+                        </div>
+                    </div>
+                    <button class="play-action-btn delete-download" data-id="${item.id}" aria-label="Remove Download" style="color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            // Bind click events for play & delete
+            document.querySelectorAll('.downloadsList .podcast-card, #downloadsList .podcast-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-download')) {
+                        let id = parseInt(e.target.closest('.delete-download').getAttribute('data-id'));
+                        removeDownload(id);
+                        e.stopPropagation();
+                        return;
+                    }
+                    let id = parseInt(card.getAttribute('data-id'));
+                    let track = podcastsData.find(p => p.id === id);
+                    if (track) {
+                        playTrack(track);
+                    }
+                });
+            });
+        }
+
+        function removeDownload(id) {
+            state.downloadedIds = state.downloadedIds.filter(i => i !== id);
+            try {
+                localStorage.setItem('podnaija_downloads', JSON.stringify(state.downloadedIds));
+            } catch (err) {}
+            renderDownloads();
+            showToast('Episode removed from offline storage');
+        }
+
+        // Play Track Functionality
+        function playTrack(track) {
+            if (!state.currentTrack || state.currentTrack.id !== track.id) {
+                state.currentTrack = track;
+                audioElement.src = track.audioUrl;
+                audioElement.currentTime = 0;
+            }
+
+            audioElement.play().then(() => {
+                state.isPlaying = true;
+                updatePlayerUI();
+                renderPodcasts();
+            }).catch(err => {
+                // Handle autoplay block or network gracefully
+                state.isPlaying = true;
+                updatePlayerUI();
+                renderPodcasts();
+            });
+
+            // Update stats
+            state.dataSaved = parseFloat((state.dataSaved + 0.1).toFixed(1));
+            state.hoursListened = parseFloat((state.hoursListened + 0.05).toFixed(2));
+            if (dataSavedTotal) dataSavedTotal.textContent = `${state.dataSaved} MB`;
+            if (hoursListenedTotal) hoursListenedTotal.textContent = `${state.hoursListened} hrs`;
+            try {
+                localStorage.setItem('podnaija_datasaved', state.dataSaved);
+                localStorage.setItem('podnaija_hours', state.hoursListened);
+            } catch (err) {}
+        }
+
+        function togglePlayPause() {
+            if (!state.currentTrack) {
+                if (podcastsData.length > 0) playTrack(podcastsData[0]);
+                return;
+            }
+
+            if (state.isPlaying) {
+                audioElement.pause();
+                state.isPlaying = false;
+            } else {
+                audioElement.play().catch(() => {});
+                state.isPlaying = true;
+            }
+            updatePlayerUI();
+            renderPodcasts();
+        }
+
+        function updatePlayerUI() {
+            if (!state.currentTrack) return;
+
+            // Mini player update
+            if (miniPlayer) miniPlayer.classList.remove('hidden');
+            if (miniThumb) miniThumb.textContent = state.currentTrack.icon;
+            if (miniTitle) miniTitle.textContent = state.currentTrack.title;
+            if (miniPodcast) miniPodcast.textContent = state.currentTrack.podcast;
+            if (miniPlayBtn) miniPlayBtn.innerHTML = `<i class="fa-solid ${state.isPlaying ? 'fa-pause' : 'fa-play'}"></i>`;
+
+            // Full modal update
+            if (fullArtwork) fullArtwork.textContent = state.currentTrack.icon;
+            if (fullTitle) fullTitle.textContent = state.currentTrack.title;
+            if (fullPodcast) fullPodcast.textContent = state.currentTrack.podcast;
+            if (fullPlayBtn) fullPlayBtn.innerHTML = `<i class="fa-solid ${state.isPlaying ? 'fa-pause' : 'fa-play'}"></i>`;
+        }
+
+        // Audio Events
+        audioElement.addEventListener('timeupdate', () => {
+            if (!audioElement.duration) return;
+            state.currentTime = audioElement.currentTime;
+            state.duration = audioElement.duration;
+
+            let percent = (state.currentTime / state.duration) * 100;
+            if (progressFilled) progressFilled.style.width = `${percent}%`;
+            if (currentTimeEl) currentTimeEl.textContent = formatTime(state.currentTime);
+            if (totalDurationEl) totalDurationEl.textContent = formatTime(state.duration);
+        });
+
+        audioElement.addEventListener('ended', () => {
+            state.isPlaying = false;
+            updatePlayerUI();
+            renderPodcasts();
+        });
+
+        function formatTime(seconds) {
+            let mins = Math.floor(seconds / 60);
+            let secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Event Listeners setup
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                if (state.theme === 'light') {
+                    state.theme = 'dark';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                } else {
+                    state.theme = 'light';
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                }
+                try {
+                    localStorage.setItem('podnaija_theme', state.theme);
+                } catch (err) {}
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value;
+                renderPodcasts();
+            });
+        }
+
+        if (categoryChips) {
+            categoryChips.addEventListener('click', (e) => {
+                let chip = e.target.closest('.chip');
+                if (!chip) return;
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.activeCategory = chip.getAttribute('data-category');
+                renderPodcasts();
+            });
+        }
+
+        // Navigation tab switch
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                let targetId = item.getAttribute('data-target');
+                views.forEach(v => v.classList.remove('active'));
+                let targetView = document.getElementById(targetId);
+                if (targetView) targetView.classList.add('active');
+
+                if (targetId === 'downloadsView') {
+                    renderDownloads();
+                }
+            });
+        });
+
+        // Mini player play/pause & close
+        if (miniPlayBtn) {
+            miniPlayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePlayPause();
+            });
+        }
+
+        if (miniCloseBtn) {
+            miniCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                audioElement.pause();
+                state.isPlaying = false;
+                if (miniPlayer) miniPlayer.classList.add('hidden');
+                renderPodcasts();
+            });
+        }
+
+        // Open full player modal
+        if (miniInfoTrigger) {
+            miniInfoTrigger.addEventListener('click', () => {
+                if (playerModal) playerModal.classList.add('open');
+            });
+        }
+
+        if (closePlayerModal) {
+            closePlayerModal.addEventListener('click', () => {
+                if (playerModal) playerModal.classList.remove('open');
+            });
+        }
+
+        if (fullPlayBtn) {
+            fullPlayBtn.addEventListener('click', togglePlayPause);
+        }
+
+        if (skipBackward) {
+            skipBackward.addEventListener('click', () => {
+                audioElement.currentTime = Math.max(0, audioElement.currentTime - 10);
+            });
+        }
+
+        if (skipForward) {
+            skipForward.addEventListener('click', () => {
+                audioElement.currentTime = Math.min(audioElement.duration || 0, audioElement.currentTime + 10);
+            });
+        }
+
+        if (progressBarWrap) {
+            progressBarWrap.addEventListener('click', (e) => {
+                let rect = progressBarWrap.getBoundingClientRect();
+                let clickX = e.clientX - rect.left;
+                let width = rect.width;
+                if (audioElement.duration) {
+                    audioElement.currentTime = (clickX / width) * audioElement.duration;
+                }
+            });
+        }
+
+        // Download current track for offline
+        if (downloadCurrentBtn) {
+            downloadCurrentBtn.addEventListener('click', () => {
+                if (!state.currentTrack) {
+                    showToast('Play an episode first to download');
+                    return;
+                }
+                if (!state.downloadedIds.includes(state.currentTrack.id)) {
+                    state.downloadedIds.push(state.currentTrack.id);
+                    try {
+                        localStorage.setItem('podnaija_downloads', JSON.stringify(state.downloadedIds));
+                    } catch (err) {}
+                    showToast('Compressed episode downloaded for offline!');
+                } else {
+                    showToast('Episode already in offline downloads');
+                }
+            });
+        }
+
+        // Sponsor click
+        if (sponsorLink) {
+            sponsorLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast('Redirecting to partner sponsor offer...');
+                setTimeout(() => {
+                    window.open('https://www.google.com/search?q=swiftnaija+fiber+internet', '_blank');
+                }, 1000);
+            });
+        }
+
+        if (refreshFeed) {
+            refreshFeed.addEventListener('click', () => {
+                showToast('Podcast feed refreshed with latest traffic updates');
+                renderPodcasts();
+            });
+        }
+
+        // Upgrade Pro button
+        if (upgradeBtn) {
+            upgradeBtn.addEventListener('click', () => {
+                showToast('Initializing Paystack secure checkout for PodNaija Pro...');
+                setTimeout(() => {
+                    alert('Paystack Simulation: Successfully upgraded to PodNaija Pro (₦500/mo). Enjoy zero ads and unlimited downloads!');
+                }, 800);
+            });
+        }
+
+        if (submitPodcastBtn) {
+            submitPodcastBtn.addEventListener('click', () => {
+                let feedUrl = prompt('Enter your Podcast RSS Feed URL:');
+                if (feedUrl && feedUrl.trim().length > 5) {
+                    showToast('RSS Feed submitted successfully for review!');
+                }
+            });
+        }
+
+        // Initial Render
+        renderPodcasts();
+        if (dataSavedTotal) dataSavedTotal.textContent = `${state.dataSaved} MB`;
+        if (hoursListenedTotal) hoursListenedTotal.textContent = `${state.hoursListened} hrs`;
+    </script>
+</body>
+</html>
