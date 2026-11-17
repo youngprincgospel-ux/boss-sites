@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Farm‑to‑Market Price Tracker</title>
+<meta name="description" content="Farm‑to‑Market Price Tracker – a simple web app where smallholder farmers input their crop (e.g., yam, maize, rice) and location, then receive real‑time pr">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🌾%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --primary:#2e7d32;
+  --bg:#f5f5f5;
+  --text:#212121;
+  --accent:#ff9800;
+}
+html{box-sizing:border-box}
+*,*:before,*:after{box-sizing:inherit}
+body{
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:1rem;
+  text-align:center;
+}
+h1{margin:0;font-size:1.5rem}
+#clock{font-size:.9rem;margin-top:.3rem}
+main{
+  padding:1rem;
+  max-width:600px;
+  margin:auto;
+  /* Keep content clear of the fixed bottom bar */
+  padding-bottom:calc(5rem + env(safe-area-inset-bottom));
+}
+label{
+  display:block;
+  margin-top:1rem;
+  font-weight:600;
+}
+select,input{
+  width:100%;
+  padding:.5rem;
+  font-size:1rem;
+  margin-top:.3rem;
+}
+button{
+  margin-top:1rem;
+  width:100%;
+  padding:.75rem;
+  font-size:1rem;
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  border-radius:4px;
+  min-height:44px;
+}
+button:disabled{
+  background:#9e9e9e;
+}
+#results{
+  margin-top:2rem;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:.5rem;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:.5rem;
+  text-align:left;
+}
+th{
+  background:#e0e0e0;
+}
+footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:var(--accent);
+  color:#fff;
+  text-align:center;
+  padding:0.5rem 0;
+  font-size:1rem;
+}
+footer a{
+  color:#fff;
+  text-decoration:none;
+  margin:0 .5rem;
+}
+#ad{
+  background:#fff3e0;
+  border:1px solid #ffcc80;
+  padding:1rem;
+  text-align:center;
+  margin-top:2rem;
+  font-size:.9rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Farm‑to‑Market Price Tracker</h1>
+  <div id="clock" aria-live="polite"></div>
+</header>
+<main>
+  <form id="priceForm" novalidate>
+    <label for="cropSelect">Crop</label>
+    <select id="cropSelect" required>
+      <option value="">Select a crop</option>
+      <option value="yam">Yam</option>
+      <option value="maize">Maize</option>
+      <option value="rice">Rice</option>
+      <option value="beans">Beans</option>
+    </select>
+
+    <label for="locationInput">Location (State)</label>
+    <input type="text" id="locationInput" placeholder="e.g., Lagos" required>
+
+    <button type="button" id="trackBtn">Get Prices</button>
+  </form>
+
+  <section id="results" hidden aria-live="polite">
+    <h2>Latest Prices</h2>
+    <table aria-describedby="priceDesc">
+      <caption id="priceDesc">Prices for <span id="cropName"></span> near <span id="userLocation"></span></caption>
+      <thead>
+        <tr><th>Market Hub</th><th>Price (₦/kg)</th></tr>
+      </thead>
+      <tbody id="priceBody"></tbody>
+    </table>
+  </section>
+
+  <section id="subscription">
+    <button type="button" id="subscribeBtn">Subscribe for analytics (Free)</button>
+    <p id="subStatus" hidden>✅ Subscribed – you’ll receive market insights.</p>
+  </section>
+
+  <div id="ad" role="region" aria-label="Advertisement">
+    <strong>Ad:</strong> Your ad could be here. Reach farmers nationwide!
+  </div>
+</main>
+
+<footer>
+  <a href="#" id="homeLink">Home</a>
+  <a href="#" id="subLink">Subscribe</a>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const clockEl = document.getElementById('clock');
+  const cropSelect = document.getElementById('cropSelect');
+  const locationInput = document.getElementById('locationInput');
+  const trackBtn = document.getElementById('trackBtn');
+  const resultsSec = document.getElementById('results');
+  const priceBody = document.getElementById('priceBody');
+  const cropNameSpan = document.getElementById('cropName');
+  const userLocationSpan = document.getElementById('userLocation');
+  const subscribeBtn = document.getElementById('subscribeBtn');
+  const subStatus = document.getElementById('subStatus');
+  const homeLink = document.getElementById('homeLink');
+  const subLink = document.getElementById('subLink');
+
+  // Live clock
+  function updateClock(){
+    const now = new Date();
+    const options = {weekday:'short', year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'numeric', second:'numeric', hour12:true};
+    clockEl.textContent = now.toLocaleString('en-NG', options);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Mock price data
+  const mockPrices = {
+    yam: {Abuja: 450, Lagos: 470, Kano: 430, PortHarbor: 460},
+    maize: {Abuja: 250, Lagos: 260, Kano: 240, PortHarbor: 255},
+    rice: {Abuja: 350, Lagos: 360, Kano: 340, PortHarbor: 355},
+    beans: {Abuja: 300, Lagos: 315, Kano: 290, PortHarbor: 305}
+  };
+
+  function renderPrices(crop, location){
+    const prices = mockPrices[crop];
+    if(!prices){return;}
+    priceBody.innerHTML = '';
+    Object.entries(prices).forEach(([market, price])=>{
+      const tr = document.createElement('tr');
+      const tdMarket = document.createElement('td');
+      tdMarket.textContent = market.replace(/([A-Z])/g,' $1').trim();
+      const tdPrice = document.createElement('td');
+      tdPrice.textContent = price.toLocaleString('en-NG');
+      tr.appendChild(tdMarket);
+      tr.appendChild(tdPrice);
+      priceBody.appendChild(tr);
+    });
+    cropNameSpan.textContent = crop.charAt(0).toUpperCase() + crop.slice(1);
+    userLocationSpan.textContent = location || 'your area';
+    resultsSec.hidden = false;
+  }
+
+  function saveState(state){
+    try{
+      localStorage.setItem('farmTrackerState', JSON.stringify(state));
+    }catch(e){}
+  }
+
+  function loadState(){
+    try{
+      const data = localStorage.getItem('farmTrackerState');
+      return data ? JSON.parse(data) : null;
+    }catch(e){return null;}
+  }
+
+  trackBtn.addEventListener('click', function(){
+    const crop = cropSelect.value;
+    const location = locationInput.value.trim();
+    if(!crop){
+      alert('Please select a crop.');
+      return;
+    }
+    if(!location){
+      alert('Please enter your location.');
+      return;
+    }
+    renderPrices(crop, location);
+    saveState({crop, location, timestamp:Date.now()});
+  });
+
+  // Load previous state
+  const saved = loadState();
+  if(saved && saved.crop && saved.location){
+    cropSelect.value = saved.crop;
+    locationInput.value = saved.location;
+    renderPrices(saved.crop, saved.location);
+  }
+
+  // Subscription handling
+  function updateSubscriptionUI(isSubscribed){
+    if(isSubscribed){
+      subStatus.hidden = false;
+      subscribeBtn.textContent = 'Unsubscribe';
+    }else{
+      subStatus.hidden = true;
+      subscribeBtn.textContent = 'Subscribe for analytics (Free)';
+    }
+  }
+
+  function loadSubscription(){
+    try{
+      return JSON.parse(localStorage.getItem('farmTrackerSub'))===true;
+    }catch(e){return false;}
+  }
+
+  function saveSubscription(val){
+    try{
+      localStorage.setItem('farmTrackerSub', JSON.stringify(val));
+    }catch(e){}
+  }
+
+  let isSubscribed = loadSubscription();
+  updateSubscriptionUI(isSubscribed);
+
+  subscribeBtn.addEventListener('click', function(){
+    isSubscribed = !isSubscribed;
+    saveSubscription(isSubscribed);
+    updateSubscriptionUI(isSubscribed);
+  });
+
+  // Footer navigation
+  homeLink.addEventListener('click', function(e){
+    e.preventDefault();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  subLink.addEventListener('click', function(e){
+    e.preventDefault();
+    subscribeBtn.focus();
+  });
+});
+</script>
+</body>
+</html>
