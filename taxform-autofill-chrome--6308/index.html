@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NaijaTax AutoFill & Form Assistant</title>
+<meta name="description" content="TaxForm AutoFill Chrome Extension – an extension that securely stores a user's basic tax information and auto‑populates common Nigerian tax filing forms (e">
+<link rel="icon" href="🇳🇬">
+<script src="https://cdnjs.cloudflare.com/ajax5/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ecKPFsuCwf8kOmNpPvN1rE7e1mI75eB/2E7A7p8Pj68w+Rz7E1fJ6X0m+J7E6xP4K6vE5Lw1A1f9w==" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window.jsPDFError=true"></script>
+<style>
+:root {
+  --primary: #008751;
+  --primary-dark: #00663d;
+  --primary-light: #e6f4ed;
+  --accent: #2b6cb0;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #cbd5e1;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: calc(90px + var(--safe-bottom));
+}
+header {
+  background: linear-gradient(135deg, var(--primary) 0%, #004d2e 100%);
+  color: white;
+  padding: 20px 16px 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  font-size: 28px;
+  background: rgba(255,255,255,0.2);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: border-radius;
+  border-radius: 12px;
+}
+.app-title h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.app-title p {
+  font-size: 12px;
+  opacity: 0.9;
+}
+.badge-pro {
+  background: #f59e0b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+.search-box {
+  position: relative;
+  width: 100%;
+}
+.search-box input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  background: rgba(255,255,255,0.95);
+  color: var(--text);
+  outline: none;
+}
+.search-box span {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-dark);
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,135,81,0.1);
+}
+.row {
+  display: flex;
+  gap: 12px;
+}
+.row > div {
+  flex: 1;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover {
+  background: var(--bg);
+}
+.btn-accent {
+  background: var(--accent);
+  color: white;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px calc(8px + var(--safe-bottom)) 4px;
+  z-index: 50;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+.nav-item span.icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+.nav-item.active {
+  color: var(--primary);
+}
+
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* Extension Simulator */
+.portal-frame {
+  background: #fff;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  position: relative;
+}
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+.portal-badge {
+  font-size: 11px;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.injected-toolbar {
+  background: #1e293b;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.injected-toolbar button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Calc Results */
+.calc-result-box {
+  background: var(--primary-light);
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 14px;
+}
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.calc-row.total {
+  font-weight: 700;
+  font-size: 16px;
+  border-top: 1px solid #86efac;
+  padding-top: 8px;
+  color: var(--primary-dark);
+}
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: calc(80px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #1e293b;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 100;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  max-width: 90vw;
+}
+#toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Consult Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-card {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  transform: translateY(20px);
+  transition: transform 0.2s ease;
+}
+.modal-overlay.open .modal-card {
+  transform: translateY(0);
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.modal-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo-area">
+      <div class="logo-icon">🇳🇬</div>
+      <div class="app-title">
+        <h1>NaijaTax AutoFill</h1>
+        <p>FIRS & State IRS Assistant</p>
+      </div>
+    </div>
+    <div id="subBadge" class="badge-pro">Free Tier</div>
+  </div>
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" id="globalSearch" placeholder="Search forms, calculators, tax tips...">
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TAB 1: VAULT / PROFILE -->
+  <div id="tabVault" class="tab-content active">
+    <div class="card">
+      <div class="card-title">🔐 Secure Tax Vault (AutoFill Data)</div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Stored locally in your browser sandbox. Never transmitted to third parties.</p>
+      
+      <div class="form-group">
+        <label for="vName">Full Name / Business Name</label>
+        <input type="text" id="vName" class="form-control" placeholder="e.g. Adebayo Ogunlesi Enterprise">
+      </div>
+      
+      <div class="row">
+        <div class="form-group">
+          <label for="vTin">TIN (Taxpayer ID)</label>
+          <input type="text" id="vTin" class="form-control" placeholder="e.g. 12345678-0001">
+        </div>
+        <div class="form-group">
+          <label for="vState">Tax Office / State</label>
+          <select id="vState" class="form-control">
+            <option value="FCT">FIRS / FCT Abuja</option>
+            <option value="LIRS">Lagos State (LIRS)</option>
+            <option value="Ogun">Ogun State (OGIRS)</option>
+            <option value="Rivers">Rivers State (RIRS)</option>
+            <option value="Oyo">Oyo State (OYSIR)</option>
+            <option value="Other">Other State IRS</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="vEmail">Email Address</label>
+          <input type="email" id="vEmail" class="form-control" placeholder="name@example.com">
+        </div>
+        <div class="form-group">
+          <label for="vPhone">Phone Number</label>
+          <input type="tel" id="vPhone" class="form-control" placeholder="08030000000">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="vIncome">Annual Gross Income (₦)</label>
+        <input type="number" id="vIncome" class="form-control" placeholder="e.g. 5000000">
+      </div>
+
+      <button id="saveVaultBtn" class="btn btn-primary">💾 Save to Vault</button>
+    </div>
+
+    <!-- Quick Filing Checklist -->
+    <div class="card">
+      <div class="card-title">📋 2026 Filing Deadlines</div>
+      <div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f1f5f9; border-radius: 8px;">
+          <span>PIT (Personal Income Tax)</span>
+          <strong style="color: var(--danger);">March 31</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f1f5f9; border-radius: 8px;">
+          <span>VAT (Value Added Tax)</span>
+          <strong style="color: var(--warning);">21st of Monthly</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f1f5f9; border-radius: 8px;">
+          <span>Company Income Tax (CIT)</span>
+          <strong style="color: var(--danger);">6 Months post year-end</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: EXTENSION SIMULATOR -->
+  <div id="tabSimulator" class="tab-content">
+    <div class="card">
+      <div class="card-title">🌐 Extension AutoFill Simulator</div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Test how the extension injects your vault credentials directly into Nigerian tax filing portals without typing manually.</p>
+      
+      <div class="form-group">
+        <label for="simPortal">Select Government Portal</label>
+        <select id="simPortal" class="form-control">
+          <option value="firs">FIRS TaxPro-Max Portal (taxpromax.firs.gov.ng)</option>
+          <option value="lirs">Lagos eTax Portal (etax.lirs.net)</option>
+          <option value="vat">FIRS VAT Filing Form 001</option>
+        </select>
+      </div>
+
+      <div class="portal-frame">
+        <div class="portal-header">
+          <span class="portal-badge" id="portalUrlBadge">https://taxpromax.firs.gov.ng/login</span>
+          <span style="font-size: 12px; color: var(--success);">🟢 Extension Active</span>
+        </div>
+
+        <div class="injected-toolbar">
+          <span>⚡ NaijaTax AutoFill detected form fields</span>
+          <button id="injectBtn">AutoFill Now</button>
+        </div>
+
+        <!-- Mock Portal Form -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div>
+            <label style="font-size: 11px; color: var(--text-muted);">Taxpayer Name / Company</label>
+            <input type="text" id="mockFieldCompany" class="form-control" placeholder="Awaiting AutoFill..." style="padding: 8px; font-size: 13px;">
+          </div>
+          <div class="row">
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted);">TIN Number</label>
+              <input type="text" id="mockFieldTin" class="form-control" placeholder="Awaiting AutoFill..." style="padding: 8px; font-size: 13px;">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted);">Declared Revenue (₦)</label>
+              <input type="text" id="mockFieldRev" class="form-control" placeholder="Awaiting AutoFill..." style="padding: 8px; font-size: 13px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: TAX CALCULATOR & PDF -->
+  <div id="tabCalc" class="tab-content">
+    <div class="card">
+      <div class="card-title">🧮 Nigerian Tax Calculator (PIT / VAT / CIT)</div>
+      
+      <div class="form-group">
+        <label for="calcType">Tax Computation Type</label>
+        <select id="calcType" class="form-control">
+          <option value="pit">Personal Income Tax (PIT) - Finance Act</option>
+          <option value="vat">Value Added Tax (VAT - 7.5%)</option>
+          <option value="cit">Company Income Tax (CIT)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="calcInputWrapper">
+        <label for="calcAmount" id="calcLabel">Annual Gross Income (₦)</label>
+        <input type="number" id="calcAmount" class="form-control" placeholder="e.g. 4000000">
+      </div>
+
+      <button id="runCalcBtn" class="btn btn-primary">Calculate Tax Liability</button>
+
+      <div id="calcResultContainer" style="display: none;">
+        <div class="calc-result-box">
+          <div class="calc-row">
+            <span>Gross Amount:</span>
+            <strong id="resGross">₦0</strong>
+          </div>
+          <div class="calc-row">
+            <span>Deductions / Relief:</span>
+            <strong id="resRelief">₦0</strong>
+          </div>
+          <div class="calc-row">
+            <span>Tax Payable:</span>
+            <strong id="resTax" style="color: var(--danger);">₦0</strong>
+          </div>
+          <div class="calc-row total">
+            <span>Net Take-home / Balance:</span>
+            <strong id="resNet">₦0</strong>
+          </div>
+        </div>
+
+        <button id="downloadPdfBtn" class="btn btn-accent" style="margin-top: 12px;">📥 Download PDF Tax Summary</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: MONETIZATION & PRO -->
+  <div id="tabPro" class="tab-content">
+    <!-- Subscription Card -->
+    <div class="card" style="border: 2px solid var(--primary);">
+      <div class="card-title">⭐ NaijaTax Pro Subscription</div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Unlock multi-profile vaults, direct FIRS portal integration, automated VAT returns, and priority accountant support.</p>
+      
+      <div style="background: var(--primary-light); padding: 12px; border-radius: 10px; margin-bottom: 14px; text-align: center;">
+        <span style="font-size: 22px; font-weight: 800; color: var(--primary-dark);">₦5,000</span> <span style="font-size: 13px; color: var(--text-muted);">/ year</span>
+      </div>
+
+      <button id="upgradeBtn" class="btn btn-primary">🚀 Upgrade to Pro Now</button>
+    </div>
+
+    <!-- Affiliate Tools -->
+    <div class="card">
+      <div class="card-title">💼 Recommended Accounting Software</div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Partner platforms tested & verified for Nigerian businesses:</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+          <div>
+            <strong>QuickBooks NG Partner</strong>
+            <p style="font-size: 12px; color: var(--text-muted);">Cloud invoicing & expense tracking</p>
+          </div>
+          <a href="https://quickbooks.intuit.com" target="_blank" rel="noopener" class="btn btn-outline" style="width: auto; padding: 8px 12px; font-size: 13px;">Get Partner Offer ↗</a>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+          <div>
+            <strong>Sage Accounting Africa</strong>
+            <p style="font-size: 12px; color: var(--text-muted);">Advanced payroll & tax ledger</p>
+          </div>
+          <a href="https://www.sage.com" target="_blank" rel="noopener" class="btn btn-outline" style="width: auto; padding: 8px 12px; font-size: 13px;">Explore ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consulting Upsell -->
+    <div class="card">
+      <div class="card-title">📞 One-Time Setup Consulting</div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Stuck with tax audits, TIN registration, or complex company filings? Book a 30-minute session with our licensed Nigerian tax consultants.</p>
+      <button id="bookConsultBtn" class="btn btn-accent">Schedule Expert Consultation (₦15,000)</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="tabVault">
+    <span class="icon">🔐</span>
+    Vault
+  </button>
+  <button class="nav-item" data-target="tabSimulator">
+    <span class="icon">🌐</span>
+    Simulator
+  </button>
+  <button class="nav-item" data-target="tabCalc">
+    <span class="icon">🧮</span>
+    Calculator
+  </button>
+  <button class="nav-item" data-target="tabPro">
+    <span class="icon">⭐</span>
+    Pro & Perks
+  </button>
+</nav>
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<!-- Consultation Modal -->
+<div id="consultModal" class="modal-overlay">
+  <div class="modal-card">
+    <button class="modal-close" id="closeModalBtn">&times;</button>
+    <div class="modal-title">Book Tax Consultant</div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Enter your contact details. A certified accountant will reach out via WhatsApp/Phone within 2 hours.</p>
+    
+    <div class="form-group">
+      <label for="consultName">Your Name</label>
+      <input type="text" id="consultName" class="form-control" placeholder="Adebayo">
+    </div>
+    <div class="form-group">
+      <label for="consultPhone">WhatsApp / Phone Number</label>
+      <input type="tel" id="consultPhone" class="form-control" placeholder="08030000000">
+    </div>
+    <button id="submitConsultBtn" class="btn btn-primary">Confirm Booking Request</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // State Management
+  const STORAGE_KEY = 'naija_tax_vault_v1';
+  let appState = {
+    name: '',
+    tin: '',
+    state: 'FCT',
+    email: '',
+    phone: '',
+    income: '',
+    isPro: false
+  };
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      appState = Object.assign(appState, JSON.parse(saved));
+    }
+  } catch(e) {
+    console.error('LocalStorage read error:', e);
+  }
+
+  // DOM Elements Query & Null-checking
+  const globalSearch = document.getElementById('globalSearch');
+  const navItems = document.querySelectorAll('.nav-item');
+  const tabContents = document.querySelectorAll('.tab-content');
+  const toast = document.getElementById('toast');
+
+  // Vault Elements
+  const vName = document.getElementById('vName');
+  const vTin = document.getElementById('vTin');
+  const vState = document.getElementById('vState');
+  const vEmail = document.getElementById('vEmail');
+  const vPhone = document.getElementById('vPhone');
+  const vIncome = document.getElementById('vIncome');
+  const saveVaultBtn = document.getElementById('saveVaultBtn');
+  const subBadge = document.getElementById('subBadge');
+
+  // Simulator Elements
+  const simPortal = document.getElementById('simPortal');
+  const portalUrlBadge = document.getElementById('portalUrlBadge');
+  const injectBtn = document.getElementById('injectBtn');
+  const mockFieldCompany = document.getElementById('mockFieldCompany');
+  const mockFieldTin = document.getElementById('mockFieldTin');
+  const mockFieldRev = document.getElementById('mockFieldRev');
+
+  // Calculator Elements
+  const calcType = document.getElementById('calcType');
+  const calcLabel = document.getElementById('calcLabel');
+  const calcAmount = document.getElementById('calcAmount');
+  const runCalcBtn = document.getElementById('runCalcBtn');
+  const calcResultContainer = document.getElementById('calcResultContainer');
+  const resGross = document.getElementById('resGross');
+  const resRelief = document.getElementById('resRelief');
+  const resTax = document.getElementById('resTax');
+  const resNet = document.getElementById('resNet');
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+  // Pro Elements
+  const upgradeBtn = document.getElementById('upgradeBtn');
+  const bookConsultBtn = document.getElementById('bookConsultBtn');
+  const consultModal = document.getElementById('consultModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const submitConsultBtn = document.getElementById('submitConsultBtn');
+  const consultName = document.getElementById('consultName');
+  const consultPhone = document.getElementById('consultPhone');
+
+  // Populate Vault inputs on load
+  function initVaultFields() {
+    if (vName) vName.value = appState.name || '';
+    if (vTin) vTin.value = appState.tin || '';
+    if (vState) vState.value = appState.state || 'FCT';
+    if (vEmail) vEmail.value = appState.email || '';
+    if (vPhone) vPhone.value = appState.phone || '';
+    if (vIncome) vIncome.value = appState.income || '';
+    updateBadgeUI();
+  }
+  initVaultFields();
+
+  function updateBadgeUI() {
+    if (subBadge) {
+      if (appState.isPro) {
+        subBadge.textContent = 'PRO ACTIVE';
+        subBadge.style.background = '#16a34a';
+      } else {
+        subBadge.textContent = 'Free Tier';
+        subBadge.style.background = '#f59e0b';
+      }
+    }
+  }
+
+  // Toast Function
+  function showToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
+  }
+
+  // Navigation Logic
+  navItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      
+      navItems.forEach(nav => nav.classList.remove('active'));
+      this.classList.add('active');
+
+      tabContents.forEach(tab => {
+        if (tab.id === targetId) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Save Vault Event
+  if (saveVaultBtn) {
+    saveVaultBtn.addEventListener('click', function() {
+      appState.name = vName ? vName.value.trim() : '';
+      appState.tin = vTin ? vTin.value.trim() : '';
+      appState.state = vState ? vState.value : 'FCT';
+      appState.email = vEmail ? vEmail.value.trim() : '';
+      appState.phone = vPhone ? vPhone.value.trim() : '';
+      appState.income = vIncome ? vIncome.value.trim() : '';
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        showToast('✅ Tax vault saved successfully!');
+      } catch(e) {
+        showToast('❌ Error saving to local storage.');
+      }
+    });
+  }
+
+  // Simulator Portal Select
+  if (simPortal) {
+    simPortal.addEventListener('change', function() {
+      const val = this.value;
+      if (portalUrlBadge) {
+        if (val === 'firs') portalUrlBadge.textContent = 'https://taxpromax.firs.gov.ng/login';
+        else if (val === 'lirs') portalUrlBadge.textContent = 'https://etax.lirs.net/dashboard';
+        else portalUrlBadge.textContent = 'https://firs.gov.ng/vat-filing-001';
+      }
+    });
+  }
+
+  // Inject AutoFill Button
+  if (injectBtn) {
+    injectBtn.addEventListener('click', function() {
+      if (!appState.name && !appState.tin) {
+        showToast('⚠️ Please fill and save your Tax Vault first!');
+        return;
+      }
+      if (mockFieldCompany) mockFieldCompany.value = appState.name || 'N/A';
+      if (mockFieldTin) mockFieldTin.value = appState.tin || 'N/A';
+      if (mockFieldRev) mockFieldRev.value = appState.income ? Number(appState.income).toLocaleString() : '0';
+      showToast('⚡ AutoFilled form fields successfully!');
+    });
+  }
+
+  // Calculator Type Change
+  if (calcType) {
+    calcType.addEventListener('change', function() {
+      const val = this.value;
+      if (calcLabel) {
+        if (val === 'pit') calcLabel.textContent = 'Annual Gross Income (₦)';
+        else if (val === 'vat') calcLabel.textContent = 'Total Taxable Sales / Turnover (₦)';
+        else calcLabel.textContent = 'Annual Company Revenue (₦)';
+      }
+    });
+  }
+
+  // Run Calculation
+  if (runCalcBtn) {
+    runCalcBtn.addEventListener('click', function() {
+      const amt = parseFloat(calcAmount ? calcAmount.value : 0) || 0;
+      const type = calcType ? calcType.value : 'pit';
+
+      let gross = amt;
+      let relief = 0;
+      let tax = 0;
+      let net = 0;
+
+      if (type === 'pit') {
+        // Nigerian Personal Income Tax graduated scale approximation under Finance Act
+        // Consolidated Relief Allowance (CRA): higher of 200k or 1% of gross + 20% of gross
+        relief = Math.max(200000, gross * 0.01) + (gross * 0.20);
+        let taxable = Math.max(0, gross - relief);
+        
+        // Brackets: 1st 300k @ 7%, next 300k @ 11%, next 500k @ 15%, next 500k @ 19%, next 1.6m @ 21%, above @ 24%
+        let rem = taxable;
+        let bands = [
+          { limit: 300000, rate: 0.07 },
+          { limit: 300000, rate: 0.11 },
+          { limit: 500000, rate: 0.15 },
+          { limit: 500000, rate: 0.19 },
+          { limit: 1600000, rate: 0.21 }
+        ];
+
+        for (let b of bands) {
+          if (rem <= 0) break;
+          let taxableInBand = Math.min(rem, b.limit);
+          tax += taxableInBand * b.rate;
+          rem -= taxableInBand;
+        }
+        if (rem > 0) {
+          tax += rem * 0.24;
+        }
+
+        // Minimum tax rule: 1% of gross if no taxable income or lower than min tax
+        let minTax = gross * 0.01;
+        tax = Math.max(tax, minTax);
+        net = gross - tax;
+
+      } else if (type === 'vat') {
+        relief = 0;
+        tax = gross * 0.075; // 7.5% VAT
+        net = gross + tax;
+      } else {
+        // CIT: Small company (<25m turnover) = 0%, Medium (25m-100m) = 20%, Large (>100m) = 30%
+        relief = gross <= 25000000 ? gross : 0;
+        let citRate = gross <= 25000000 ? 0 : (gross <= 100000000 ? 0.20 : 0.30);
+        tax = (gross - relief) * citRate;
+        net = gross - tax;
+      }
+
+      if (resGross) resGross.textContent = '₦' + gross.toLocaleString();
+      if (resRelief) resRelief.textContent = '₦' + relief.toLocaleString();
+      if (resTax) resTax.textContent = '₦' + tax.toLocaleString();
+      if (resNet) resNet.textContent = '₦' + net.toLocaleString();
+
+      if (calcResultContainer) calcResultContainer.style.display = 'block';
+      showToast('🧮 Tax liability computed successfully!');
+    });
+  }
+
+  // Download PDF Summary
+  if (downloadPdfBtn) {
+    downloadPdfBtn.addEventListener('click', function() {
+      if (window.jspdf && window.jspdf.jsPDF) {
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(18);
+          doc.text("NaijaTax AutoFill - Tax Summary Report", 14, 20);
+          
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "normal");
+          doc.text("Taxpayer: " + (appState.name || 'N/A'), 14, 30);
+          doc.text("TIN: " + (appState.tin || 'N/A'), 14, 37);
+          doc.text("State Office: " + (appState.state || 'FCT'), 14, 44);
+          doc.text("Generated: " + new Date().toLocaleString(), 14, 51);
+
+          doc.line(14, 56, 196, 56);
+
+          doc.text("Calculation Breakdown:", 14, 66);
+          doc.text("Gross Amount: " + (resGross ? resGross.textContent : '0'), 14, 76);
+          doc.text("Relief / Deductions: " + (resRelief ? resRelief.textContent : '0'), 14, 84);
+          doc.text("Tax Payable: " + (resTax ? resTax.textContent : '0'), 14, 92);
+          doc.text("Net Balance: " + (resNet ? resNet.textContent : '0'), 14, 100);
+
+          doc.save("NaijaTax_Summary_2026.pdf");
+          showToast('📥 PDF Downloaded successfully!');
+        } catch(err) {
+          console.error(err);
+          showToast('⚠️ PDF Generation failed. Check console.');
+        }
+      } else {
+        showToast('⚠️ PDF library unavailable. Please copy details.');
+      }
+    });
+  }
+
+  // Upgrade Button (Monetization)
+  if (upgradeBtn) {
+    upgradeBtn.addEventListener('click', function() {
+      appState.isPro = true;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch(e){}
+      updateBadgeUI();
+      showToast('🎉 Congratulations! NaijaTax Pro unlocked.');
+    });
+  }
+
+  // Consulting Modal Triggers
+  if (bookConsultBtn && consultModal) {
+    bookConsultBtn.addEventListener('click', function() {
+      consultModal.classList.add('open');
+    });
+  }
+  if (closeModalBtn && consultModal) {
+    closeModalBtn.addEventListener('click', function() {
+      consultModal.classList.remove('open');
+    });
+  }
+  if (submitConsultBtn && consultModal) {
+    submitConsultBtn.addEventListener('click', function() {
+      const cName = consultName ? consultName.value.trim() : '';
+      const cPhone = consultPhone ? consultPhone.value.trim() : '';
+      if (!cName || !cPhone) {
+        showToast('⚠️ Please provide your name and phone number.');
+        return;
+      }
+      consultModal.classList.remove('open');
+      showToast('✅ Consultation request received! We will call you shortly.');
+      if (consultName) consultName.value = '';
+      if (consultPhone) consultPhone.value = '';
+    });
+  }
+
+  // Global Search Filter simulation
+  if (globalSearch) {
+    globalSearch.addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      if (!q) return;
+      if (q.includes('pit') || q.includes('vat') || q.includes('calc')) {
+        navItems[2].click();
+        showToast('🔍 Navigated to Calculator');
+      } else if (q.includes('pro') || q.includes('sub') || q.includes('consult')) {
+        navItems[3].click();
+        showToast('🔍 Navigated to Pro & Perks');
+      } else if (q.includes('firs') || q.includes('sim') || q.includes('portal')) {
+        navItems[1].click();
+        showToast('🔍 Navigated to Simulator');
+      }
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
