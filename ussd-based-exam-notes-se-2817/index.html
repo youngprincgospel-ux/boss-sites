@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaStudy USSD Portal | WAEC, NECO & JAMB Offline Revision</title>
+<meta name="description" content="USSD‑Based Exam Notes Service. This should help: Delivers concise daily revision notes and past questions for WAEC, NECO, and JAMB via USSD, reaching stude">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #065f46;
+            --primary-light: #d1fae5;
+            --accent: #f59e0b;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #064e3b;
+            --accent: #fbbf24;
+            --bg: #111827;
+            --card-bg: #1f2937;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --danger: #f87171;
+            --danger-light: #7f1d1d;
+            --success: #34d399;
+            --success-light: #064e3b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(80px + var(--safe-bottom));
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-area span {
+            font-size: 1.5rem;
+        }
+
+        .logo-area h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* USSD Simulator Screen */
+        .ussd-container {
+            background-color: #0f172a;
+            color: #38bdf8;
+            border-radius: 16px;
+            border: 4px solid #334155;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            font-family: monospace;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ussd-screen-header {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            border-bottom: 1px dashed #334155;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .ussd-output {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+
+        .ussd-input-group {
+            display: flex;
+            gap: 0.5rem;
+            background: #1e293b;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+
+        .ussd-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f8fafc;
+            font-family: monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .ussd-send-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .dialer-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .dial-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+
+        .dial-btn:active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .dial-btn span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 0.15rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: #111827;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        /* Bottom Nav Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0.55rem calc(0.5rem + var(--safe-bottom)) 0.55rem;
+            z-index: 100;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.25rem 0.2rem;
+            flex: 1;
+            max-width: 75px;
+            border-radius: 8px;
+            transition: color 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.3rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            color: var(--text);
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            pointer-events: auto;
+            animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            transform: scale(0.95);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.15rem;
+        }
+
+        .list-item {
+            background: var(--bg);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .note-content {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 0.75rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card .num {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card .label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span>📱</span>
+            <h1>NaijaStudy USSD</h1>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+        </div>
+    </header>
+
+    <div id="toast-container"></div>
+
+    <main>
+        <!-- VIEW 1: USSD SIMULATOR -->
+        <section id="view-ussd" class="view-section active">
+            <div class="ussd-container" id="ussd-container">
+                <div class="ussd-screen-header">
+                    <span>MTN / AIRTEL / GLO / 9MOBILE</span>
+                    <span id="ussd-signal">📶 4G</span>
+                </div>
+                <div class="ussd-output" id="ussd-output">Welcome to NaijaStudy USSD!
+Dial *347*88# to start your offline revision for WAEC, NECO & JAMB.
+
+1. WAEC Prep
+2. NECO Daily Notes
+3. JAMB Past Questions
+4. Check Subscription Status
+5. Buy ₦200 Weekly Plan</div>
+                <div class="ussd-input-group" id="ussd-input-group" style="display:none;">
+                    <input type="text" class="ussd-input" id="ussd-user-input" placeholder="Enter option..." autocomplete="off">
+                    <button class="ussd-send-btn" id="ussd-send-btn">Send</button>
+                </div>
+            </div>
+
+            <div class="dialer-pad" id="dialer-pad">
+                <button class="dial-btn" data-val="1">1<span>&nbsp;</span></button>
+                <button class="dial-btn" data-val="2">2<span>ABC</span></button>
+                <button class="dial-btn" data-val="3">3<span>DEF</span></button>
+                <button class="dial-btn" data-val="4">4<span>GHI</span></button>
+                <button class="dial-btn" data-val="5">5<span>JKL</span></button>
+                <button class="dial-btn" data-val="6">6<span>MNO</span></button>
+                <button class="dial-btn" data-val="7">7<span>PQRS</span></button>
+                <button class="dial-btn" data-val="8">8<span>TUV</span></button>
+                <button class="dial-btn" data-val="9">9<span>WXYZ</span></button>
+                <button class="dial-btn" data-val="*"><span>*</span><span>*</span></button>
+                <button class="dial-btn" data-val="0">0<span>+</span></button>
+                <button class="dial-btn" data-val="#"><span>#</span><span>#</span></button>
+                <button class="dial-btn" data-val="CLEAR" style="background: var(--danger-light); color: var(--danger);">C<span>Clear</span></button>
+                <button class="dial-btn" data-val="DIAL" style="background: var(--primary-light); color: var(--primary-dark); font-weight:900;">📞<span>Dial</span></button>
+                <button class="dial-btn" data-val="BACK" style="background: var(--bg);">🔙<span>Back</span></button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: SUBSCRIPTION & BILLING -->
+        <section id="view-sub" class="view-section">
+            <div class="card">
+                <h2>💳 USSD Subscription</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Enjoy unlimited offline USSD revision notes and past questions for just <strong>₦200 weekly</strong> per phone number.
+                </p>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="num" id="stat-sub-status">Inactive</div>
+                        <div class="label">Status</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="num" id="stat-days-left">0</div>
+                        <div class="label">Days Left</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="num" id="stat-saved-notes">0</div>
+                        <div class="label">Downloaded</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sub-phone">Nigerian Phone Number</label>
+                    <input type="tel" id="sub-phone" class="form-control" placeholder="e.g. 08031234567" maxlength="11">
+                </div>
+
+                <div class="form-group">
+                    <label for="sub-plan">Select Plan</label>
+                    <select id="sub-plan" class="form-control">
+                        <option value="200">Weekly Standard (₦200)</option>
+                        <option value="700">Monthly Saver (₦700) - Save ₦100</option>
+                        <option value="1500">School Group Bulk (₦1,500 / 10 Numbers)</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" id="btn-pay-ussd">⚡ Pay ₦200 via Airtime / USSD</button>
+            </div>
+
+            <div class="card">
+                <h2>📑 Active Subscriptions</h2>
+                <div id="subscriptions-list">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">No active subscription recorded on this device.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: STUDY NOTES & OFFLINE CACHE -->
+        <section id="view-notes" class="view-section">
+            <div class="card">
+                <h2>📚 Daily Revision Notes</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Bite-sized notes delivered via SMS & USSD. Synced locally for offline review.
+                </p>
+                <div class="form-group">
+                    <select id="notes-filter" class="form-control">
+                        <option value="ALL">All Subjects & Exams</option>
+                        <option value="WAEC">WAEC Notes</option>
+                        <option value="NECO">NECO Notes</option>
+                        <option value="JAMB">JAMB Past Questions</option>
+                    </select>
+                </div>
+                <div id="notes-container">
+                    <!-- Dynamic Notes Loaded Here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: PERSONALIZED STUDY PLANS (SMS UPSALE) -->
+        <section id="view-plans" class="view-section">
+            <div class="card">
+                <h2>🎯 Personalized Study Plan via SMS</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Get an AI-curated daily SMS timetable tailored to your weak subjects and target aggregate score.
+                </p>
+
+                <div class="form-group">
+                    <label for="plan-exam">Target Examination</label>
+                    <select id="plan-exam" class="form-control">
+                        <option value="JAMB UTME">JAMB UTME (Target: 280+)</option>
+                        <option value="WAEC SSCE">WAEC SSCE (Target: 7+ A's)</option>
+                        <option value="NECO GCE">NECO GCE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="plan-subjects">Weak Subjects (Comma separated)</label>
+                    <input type="text" id="plan-subjects" class="form-control" placeholder="e.g. Mathematics, Physics, Chemistry">
+                </div>
+
+                <div class="form-group">
+                    <label for="plan-phone">Phone Number for Daily SMS Timetable</label>
+                    <input type="tel" id="plan-phone" class="form-control" placeholder="08012345678" maxlength="11">
+                </div>
+
+                <button class="btn btn-accent" id="btn-request-plan">📩 Request SMS Study Plan (₦500)</button>
+            </div>
+
+            <div class="card">
+                <h2>👥 School Group / Bulk Access</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Register up to 50 students at once for school tutorial centers or NGO outreach programs.
+                </p>
+                <button class="btn btn-primary" id="btn-bulk-modal">Generate Bulk Access Codes</button>
+            </div>
+        </section>
+
+        <!-- VIEW 5: ANALYTICS & STATS -->
+        <section id="view-stats" class="view-section">
+            <div class="card">
+                <h2>📊 USSD Engagement & Analytics</h2>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="num" id="stat-total-dials">1,420</div>
+                        <div class="label">Total Dials</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="num" id="stat-active-users">312</div>
+                        <div class="label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="num" id="stat-revenue">₦62.4k</div>
+                        <div class="label">Revenue</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Quick Actions</h3>
+                    <button class="btn btn-primary" id="btn-export-logs" style="margin-bottom: 0.5rem;">📥 Export USSD Session Logs (CSV)</button>
+                    <button class="btn" id="btn-reset-data" style="background: var(--danger-light); color: var(--danger);">⚠️ Reset Local USSD Cache</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- BULK MODAL -->
+    <div class="modal-overlay" id="bulk-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Bulk School Discount Generator</h3>
+                <button class="icon-btn" id="close-modal">✕</button>
+            </div>
+            <div class="form-group">
+                <label for="bulk-school-name">School / Tutorial Name</label>
+                <input type="text" id="bulk-school-name" class="form-control" placeholder="e.g. Success Tutorial College, Ibadan">
+            </div>
+            <div class="form-group">
+                <label for="bulk-count">Number of Students</label>
+                <input type="number" id="bulk-count" class="form-control" value="20" min="5" max="200">
+            </div>
+            <div style="background: var(--bg); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
+                <div>Total Cost: <strong id="bulk-total-price">₦3,000</strong> (₦150/student)</div>
+                <div>Discount Applied: 25% Off Standard Rate</div>
+            </div>
+            <button class="btn btn-primary" id="btn-process-bulk">Process Bulk Voucher Codes</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-ussd">
+            <span class="icon">📞</span>
+            <span>USSD</span>
+        </button>
+        <button class="nav-item" data-target="view-sub">
+            <span class="icon">💳</span>
+            <span>Billing</span>
+        </button>
+        <button class="nav-item" data-target="view-notes">
+            <span class="icon">📚</span>
+            <span>Notes</span>
+        </button>
+        <button class="nav-item" data-target="view-plans">
+            <span class="icon">🎯</span>
+            <span>Plans</span>
+        </button>
+        <button class="nav-item" data-target="view-stats">
+            <span class="icon">📊</span>
+            <span>Stats</span>
+        </button>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State Management
+            const state = {
+                theme: localStorage.getItem('naija_theme') || 'light',
+                ussdState: 'HOME', // HOME, WAEC, NECO, JAMB, SUB, QUIZ
+                ussdBuffer: '',
+                subscriptions: JSON.parse(localStorage.getItem('naija_subs') || '[]'),
+                notes: [
+                    { id: 1, exam: 'WAEC', subject: 'Mathematics', title: 'Surds and Indices Quick Rules', content: '1. a^m × a^n = a^(m+n)\n2. √(ab) = √a × √b\n3. Rationalize denominators by multiplying numerator and denominator by conjugate.' },
+                    { id: 2, exam: 'JAMB', subject: 'English Language', title: 'Lexis and Structure Common Pitfalls', content: '• "Equally as good" is incorrect; use "Equally good" or "As good as".\n• "All and sundry" is correct.\n• Beware of misleading concord rules with collective nouns.' },
+                    { id: 3, exam: 'NECO', subject: 'Physics', title: 'Simple Harmonic Motion (SHM) Formulae', content: '• T = 2π√(m/k)\n• f = 1/T\n• Maximum velocity vmax = ωA\n• Acceleration a = -ω²x' },
+                    { id: 4, exam: 'WAEC', subject: 'Biology', title: 'Characteristics of Living Organisms (MR N GERG)', content: 'Movement, Respiration, Nutrition, Growth, Excretion, Reproduction, Gaseous exchange.' },
+                    { id: 5, exam: 'JAMB', subject: 'Chemistry', title: 'Gas Laws Summary', content: '• Boyle: P1V1 = P2V2 (T constant)\n• Charles: V1/T1 = V2/T2 (P constant)\n• General Gas Equation: (P1V1)/T1 = (P2V2)/T2' }
+                ],
+                analytics: JSON.parse(localStorage.getItem('naija_analytics') || '{"dials": 1420, "users": 312, "revenue": 62400}')
+            };
+
+            // Theme setup
+            if (state.theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const themeBtn = document.getElementById('theme-toggle');
+                if (themeBtn) themeBtn.textContent = '☀️';
+            }
+
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const current = document.documentElement.getAttribute('data-theme');
+                    if (current === 'dark') {
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('naija_theme', 'light');
+                        themeToggle.textContent = '🌙';
+                        showToast('Switched to Light Mode', 'info');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('naija_theme', 'dark');
+                        themeToggle.textContent = '☀️';
+                        showToast('Switched to Dark Mode', 'info');
+                    }
+                });
+            }
+
+            // Navigation handler
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.view-section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    sections.forEach(sec => sec.classList.remove('active'));
+
+                    item.classList.add('active');
+                    const targetSec = document.getElementById(targetId);
+                    if (targetSec) targetSec.classList.add('active');
+                });
+            });
+
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                let icon = 'ℹ️';
+                if (type === 'success') icon = '✅';
+                if (type === 'error') icon = '⚠️';
+                if (type === 'payment') icon = '💰';
+                
+                toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
+            // USSD Simulator Engine
+            const ussdOutput = document.getElementById('ussd-output');
+            const ussdUserInput = document.getElementById('ussd-user-input');
+            const ussdSendBtn = document.getElementById('ussd-send-btn');
+            const ussdInputGroup = document.getElementById('ussd-input-group');
+            const dialBtns = document.querySelectorAll('.dial-btn');
+
+            const ussdScreens = {
+                HOME: {
+                    text: `Welcome to NaijaStudy USSD!
+Dial *347*88# to start.
+
+1. WAEC Prep Notes
+2. NECO Daily Notes
+3. JAMB Past Questions
+4. Check Subscription Status
+5. Buy ₦200 Weekly Plan
+6. Request SMS Study Plan`,
+                    options: {
+                        '1': 'WAEC',
+                        '2': 'NECO',
+                        '3': 'JAMB',
+                        '4': 'STATUS',
+                        '5': 'BUY',
+                        '6': 'PLAN'
+                    }
+                },
+                WAEC: {
+                    text: `=== WAEC REVISION ===
+1. Mathematics (Surds & Indices)
+2. English Language (Concord)
+3. Biology (Cell Division)
+0. Back to Main Menu`,
+                    options: {
+                        '1': 'WAEC_MATH',
+                        '2': 'WAEC_ENG',
+                        '3': 'WAEC_BIO',
+                        '0': 'HOME'
+                    }
+                },
+                WAEC_MATH: {
+                    text: `WAEC Math: Surds & Indices
+Rule: Simplify radicals by extracting perfect squares. e.g. √75 = √(25×3) = 5√3.
+0. Back | 00. Main Menu`,
+                    options: { '0': 'WAEC', '00': 'HOME' }
+                },
+                WAEC_ENG: {
+                    text: `WAEC English: Concord
+Rule: Singular subject takes singular verb (-s/es). "The basket of mangoes is sweet" (not are).
+0. Back | 00. Main Menu`,
+                    options: { '0': 'WAEC', '00': 'HOME' }
+                },
+                WAEC_BIO: {
+                    text: `WAEC Biology: Cell Division
+Mitosis produces 2 identical diploid cells for growth. Meiosis produces 4 haploid gametes.
+0. Back | 00. Main Menu`,
+                    options: { '0': 'WAEC', '00': 'HOME' }
+                },
+                NECO: {
+                    text: `=== NECO DAILY NOTES ===
+1. Physics (SHM Formulae)
+2. Chemistry (Organic Nomenclature)
+0. Back to Main Menu`,
+                    options: {
+                        '1': 'NECO_PHYS',
+                        '2': 'NECO_CHEM',
+                        '0': 'HOME'
+                    }
+                },
+                NECO_PHYS: {
+                    text: `NECO Physics: SHM
+Period T = 2π√(m/k). Frequency f = 1/T. Max velocity = ωA.
+0. Back | 00. Main Menu`,
+                    options: { '0': 'NECO', '00': 'HOME' }
+                },
+                NECO_CHEM: {
+                    text: `NECO Chemistry: Organic
+Alkanes (CnH2n+2), Alkenes (CnH2n), Alkynes (CnH2n-2).
+0. Back | 00. Main Menu`,
+                    options: { '0': 'NECO', '00': 'HOME' }
+                },
+                JAMB: {
+                    text: `=== JAMB CBT PRACTICE ===
+1. Use of English (Idioms)
+2. Government (1999 Constitution)
+0. Back to Main Menu`,
+                    options: {
+                        '1': 'JAMB_ENG',
+                        '2': 'JAMB_GOV',
+                        '0': 'HOME'
+                    }
+                },
+                JAMB_ENG: {
+                    text: `JAMB Idiom: "To spill the beans" means to reveal a secret prematurely.
+0. Back | 00. Main Menu`,
+                    options: { '0': 'JAMB', '00': 'HOME' }
+                },
+                JAMB_GOV: {
+                    text: `JAMB Govt: The 1999 Constitution established 3 arms of government: Executive, Legislature, Judiciary.
+0. Back | 00. Main Menu`,
+                    options: { '0': 'JAMB', '00': 'HOME' }
+                },
+                STATUS: {
+                    text: `Subscription Status:
+Phone: 0803****123
+Status: ACTIVE ✅
+Expires in: 5 days (Weekly Plan)
+0. Main Menu`,
+                    options: { '0': 'HOME' }
+                },
+                BUY: {
+                    text: `Buy Weekly Plan (₦200):
+1. Pay with Airtime (MTN/Airtel)
+2. Pay with Bank USSD (*737#)
+3. Pay via Paystack Transfer
+0. Main Menu`,
+                    options: {
+                        '1': 'BUY_SUCCESS',
+                        '2': 'BUY_SUCCESS',
+                        '3': 'BUY_SUCCESS',
+                        '0': 'HOME'
+                    }
+                },
+                BUY_SUCCESS: {
+                    text: `🎉 PAYMENT SUCCESSFUL!
+₦200 deducted. Your NaijaStudy USSD access is active for 7 days. SMS confirmation sent!
+0. Main Menu`,
+                    options: { '0': 'HOME' }
+                },
+                PLAN: {
+                    text: `SMS Study Plan (₦500):
+Tailored daily SMS notes for your weak subjects.
+1. Confirm Order
+0. Main Menu`,
+                    options: { '1': 'BUY_SUCCESS', '0': 'HOME' }
+                }
+            };
+
+            function renderUssdScreen(screenKey) {
+                state.ussdState = screenKey;
+                const screen = ussdScreens[screenKey] || ussdScreens.HOME;
+                ussdOutput.textContent = screen.text;
+                state.ussdBuffer = '';
+                if (ussdUserInput) ussdUserInput.value = '';
+            }
+
+            function handleUssdInput(val) {
+                const currentScreen = ussdScreens[state.ussdState] || ussdScreens.HOME;
+                if (currentScreen.options && currentScreen.options[val]) {
+                    const nextKey = currentScreen.options[val];
+                    renderUssdScreen(nextKey);
+                    showToast(`USSD Response Received`, 'success');
+                } else {
+                    showToast(`Invalid option: ${val}`, 'error');
+                }
+            }
+
+            dialBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const val = btn.getAttribute('data-val');
+                    if (val === 'CLEAR') {
+                        state.ussdBuffer = '';
+                        if (ussdUserInput) ussdUserInput.value = '';
+                    } else if (val === 'BACK') {
+                        renderUssdScreen('HOME');
+                    } else if (val === 'DIAL') {
+                        if (ussdUserInput && ussdUserInput.value.trim() === '*347*88#') {
+                            renderUssdScreen('HOME');
+                            showToast('USSD Session Initiated: *347*88#', 'success');
+                        } else {
+                            showToast('Dial *347*88# to start session', 'info');
+                            if (ussdUserInput) ussdUserInput.value = '*347*88#';
+                        }
+                    } else {
+                        state.ussdBuffer += val;
+                        if (ussdUserInput) ussdUserInput.value = state.ussdBuffer;
+                        if (state.ussdBuffer.length >= 1 && ussdScreens[state.ussdState].options) {
+                            // Instant execution on digit press for realistic feel
+                            handleUssdInput(state.ussdBuffer.trim());
+                        }
+                    }
+                });
+            });
+
+            if (ussdSendBtn && ussdUserInput) {
+                ussdSendBtn.addEventListener('click', () => {
+                    const val = ussdUserInput.value.trim();
+                    if (val === '*347*88#') {
+                        renderUssdScreen('HOME');
+                        showToast('USSD Session Started', 'success');
+                    } else {
+                        handleUssdInput(val);
+                    }
+                });
+            }
+
+            // Subscription Management
+            const btnPayUssd = document.getElementById('btn-pay-ussd');
+            const subPhone = document.getElementById('sub-phone');
+            const subPlan = document.getElementById('sub-plan');
+            const subscriptionsList = document.getElementById('subscriptions-list');
+            const statSubStatus = document.getElementById('stat-sub-status');
+            const statDaysLeft = document.getElementById('stat-days-left');
+            const statSavedNotes = document.getElementById('stat-saved-notes');
+
+            function updateDashboardStats() {
+                if (statSavedNotes) statSavedNotes.textContent = state.notes.length;
+                if (state.subscriptions.length > 0) {
+                    if (statSubStatus) {
+                        statSubStatus.textContent = 'Active';
+                        statSubStatus.style.color = 'var(--success)';
+                    }
+                    if (statDaysLeft) statDaysLeft.textContent = '6';
+                }
+            }
+
+            function renderSubscriptions() {
+                if (!subscriptionsList) return;
+                if (state.subscriptions.length === 0) {
+                    subscriptionsList.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">No active subscription recorded on this device.</p>`;
+                    return;
+                }
+                subscriptionsList.innerHTML = state.subscriptions.map(sub => `
+                    <div class="list-item">
+                        <div>
+                            <strong>${sub.phone}</strong><br>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">₦${sub.amount} • Expires: ${sub.expiry}</span>
+                        </div>
+                        <span class="badge">Active</span>
+                    </div>
+                `).join('');
+            }
+
+            if (btnPayUssd) {
+                btnPayUssd.addEventListener('click', () => {
+                    const phone = subPhone ? subPhone.value.trim() : '';
+                    if (!phone || phone.length < 10) {
+                        showToast('Please enter a valid Nigerian phone number', 'error');
+                        return;
+                    }
+                    const amount = subPlan ? subPlan.value : '200';
+                    const newSub = {
+                        phone,
+                        amount,
+                        expiry: new Date(Date.now() + 7*24*60*60*1000).toLocaleDateString()
+                    };
+                    state.subscriptions.push(newSub);
+                    localStorage.setItem('naija_subs', JSON.stringify(state.subscriptions));
+                    renderSubscriptions();
+                    updateDashboardStats();
+                    showToast(`Successfully subscribed phone ${phone} for ₦${amount}!`, 'payment');
+                    if (subPhone) subPhone.value = '';
+                });
+            }
+
+            renderSubscriptions();
+            updateDashboardStats();
+
+            // Study Notes Rendering
+            const notesContainer = document.getElementById('notes-container');
+            const notesFilter = document.getElementById('notes-filter');
+
+            function renderNotes(filter = 'ALL') {
+                if (!notesContainer) return;
+                const filtered = filter === 'ALL' ? state.notes : state.notes.filter(n => n.exam === filter);
+                if (filtered.length === 0) {
+                    notesContainer.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">No notes found for this category.</p>`;
+                    return;
+                }
+                notesContainer.innerHTML = filtered.map(note => `
+                    <div class="card" style="background: var(--bg); margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span class="badge">${note.exam} - ${note.subject}</span>
+                            <span style="font-size: 0.7rem; color: var(--text-muted);">Offline Ready</span>
+                        </div>
+                        <h3 style="font-size: 1rem; margin-bottom: 0.35rem;">${note.title}</h3>
+                        <div class="note-content" style="white-space: pre-wrap;">${note.content}</div>
+                    </div>
+                `).join('');
+            }
+
+            if (notesFilter) {
+                notesFilter.addEventListener('change', (e) => {
+                    renderNotes(e.target.value);
+                });
+            }
+            renderNotes('ALL');
+
+            // SMS Personalized Plan Request
+            const btnRequestPlan = document.getElementById('btn-request-plan');
+            if (btnRequestPlan) {
+                btnRequestPlan.addEventListener('click', () => {
+                    const phoneInput = document.getElementById('plan-phone');
+                    const subInput = document.getElementById('plan-subjects');
+                    const phone = phoneInput ? phoneInput.value.trim() : '';
+                    const subjects = subInput ? subInput.value.trim() : '';
+
+                    if (!phone || phone.length < 10) {
+                        showToast('Please provide a valid SMS phone number', 'error');
+                        return;
+                    }
+                    if (!subjects) {
+                        showToast('Please specify your weak subjects', 'error');
+                        return;
+                    }
+                    showToast('SMS Study Plan requested successfully! You will receive daily revision notes.', 'success');
+                    if (phoneInput) phoneInput.value = '';
+                    if (subInput) subInput.value = '';
+                });
+            }
+
+            // Bulk Modal Handlers
+            const bulkModal = document.getElementById('bulk-modal');
+            const btnBulkModal = document.getElementById('btn-bulk-modal');
+            const closeModal = document.getElementById('close-modal');
+            const bulkCount = document.getElementById('bulk-count');
+            const bulkTotalPrice = document.getElementById('bulk-total-price');
+            const btnProcessBulk = document.getElementById('btn-process-bulk');
+
+            if (btnBulkModal && bulkModal) {
+                btnBulkModal.addEventListener('click', () => bulkModal.classList.add('open'));
+            }
+            if (closeModal && bulkModal) {
+                closeModal.addEventListener('click', () => bulkModal.classList.remove('open'));
+            }
+            if (bulkCount && bulkTotalPrice) {
+                bulkCount.addEventListener('input', (e) => {
+                    const count = parseInt(e.target.value) || 10;
+                    bulkTotalPrice.textContent = `₦${(count * 150).toLocaleString()}`;
+                });
+            }
+            if (btnProcessBulk && bulkModal) {
+                btnProcessBulk.addEventListener('click', () => {
+                    bulkModal.classList.remove('open');
+                    showToast('Bulk school access vouchers generated & sent to admin email!', 'success');
+                });
+            }
+
+            // Analytics & Export
+            const btnExportLogs = document.getElementById('btn-export-logs');
+            if (btnExportLogs) {
+                btnExportLogs.addEventListener('click', () => {
+                    const csvContent = "data:text/csv;charset=utf-8,SessionID,Timestamp,Exam,Status\n" +
+                        "USSD_881,2026-11-18 10:00,WAEC,SUCCESS\n" +
+                        "USSD_882,2026-11-18 10:15,JAMB,SUCCESS\n" +
+                        "USSD_883,2026-11-18 10:42,NECO,SUCCESS";
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", "naijastudy_ussd_logs.csv");
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    showToast('USSD session logs exported as CSV', 'success');
+                });
+            }
+
+            const btnResetData = document.getElementById('btn-reset-data');
+            if (btnResetData) {
+                btnResetData.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to reset all local subscriptions and offline cache?')) {
+                        localStorage.removeItem('naija_subs');
+                        state.subscriptions = [];
+                        renderSubscriptions();
+                        updateDashboardStats();
+                        showToast('Local USSD cache reset successfully', 'info');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
