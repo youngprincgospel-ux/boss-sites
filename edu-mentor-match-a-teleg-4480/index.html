@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Edu-Mentor Match | Connect with Vetted Exam Tutors</title>
+<meta name="description" content="Edu‑Mentor Match – a Telegram bot that pairs secondary‑school students with vetted volunteer mentors for exam subjects (WAEC, NECO, JAMB). The bot handles ">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+<style>
+:root {
+  --primary: #10B981;
+  --primary-dark: #059669;
+  --primary-light: #D1FAE5;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --text: #1E293B;
+  --text-secondary: #64748B;
+  --border: #E2E8F0;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--primary-dark);
+}
+
+.brand span {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: var(--text);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-green { background: var(--primary-light); color: var(--primary-dark); }
+.badge-yellow { background: #FEF3C7; color: #D97706; }
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0.5rem calc(0.5rem + var(--safe-bottom)) 0.5rem;
+  z-index: 1000;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  padding: 0.25rem;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item span.icon {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+/* Chat Simulator UI */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 450px;
+  background: #EFEAE2;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.chat-header {
+  background: #075E54;
+  color: white;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message {
+  max-width: 80%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  position: relative;
+  word-break: break-word;
+}
+
+.message.bot {
+  background: white;
+  align-self: flex-start;
+  border-top-left-radius: 2px;
+}
+
+.message.user {
+  background: #DCF8C6;
+  align-self: flex-end;
+  border-top-right-radius: 2px;
+}
+
+.chat-input-area {
+  padding: 0.75rem;
+  background: #F0F0F0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.chat-input-area input {
+  background: white;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+}
+
+.chat-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.option-chip {
+  background: white;
+  border: 1px solid var(--primary);
+  color: var(--primary-dark);
+  padding: 0.3rem 0.6rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.option-chip:hover {
+  background: var(--primary-light);
+}
+
+/* Toast */
+#toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: #1E293B;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  transition: transform 0.3s ease;
+  font-size: 0.9rem;
+  text-align: center;
+  max-width: 90%;
+}
+#toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.sponsor-banner {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 1px solid #F59E0B;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: #92400E;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>🤖 Bot</span> Edu-Mentor Match
+  </div>
+  <div id="live-time" style="font-size: 0.8rem; color: var(--text-secondary);"></div>
+</header>
+
+<div id="toast"></div>
+
+<main class="container">
+
+  <!-- VIEW 1: BOT SIMULATOR -->
+  <section id="view-bot" class="view-section active">
+    <div class="sponsor-banner">
+      📢 <strong>Sponsored by Pearson Prep Tutors:</strong> Get 20% off WAEC past questions when you book a mentor today!
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-avatar">EM</div>
+        <div>
+          <div style="font-weight: 600; font-size: 0.95rem;">Edu-Mentor Bot 🇳🇬</div>
+          <div style="font-size: 0.75rem; opacity: 0.8;">Online • Telegram API Simulated</div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <!-- Messages injected dynamically -->
+      </div>
+
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type a message or select option...">
+        <button class="btn" id="chatSendBtn" style="width: auto; padding: 0.5rem 1rem;">Send</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+      <h1>⚡ Fast-Track Access (₦400)</h2>
+      <p>Skip the queue, get priority mentor matching within 10 minutes, and unlock verified WAEC/JAMB video solutions.</p>
+      <button class="btn" id="payFastTrackBtn">Pay ₦400 via Paystack Mock</button>
+    </div>
+  </section>
+
+  <!-- VIEW 2: MENTORS DIRECTORY -->
+  <section id="view-mentors" class="view-section">
+    <h2>Vetted Volunteer Mentors</h2>
+    <p>Connect with university scholars and certified teachers ready to help you ace your exams.</p>
+    
+    <div class="form-group">
+      <input type="text" id="mentorSearch" placeholder="Search by subject or name (e.g. Mathematics)...">
+    </div>
+
+    <div id="mentorList">
+      <!-- Injected mentors -->
+    </div>
+  </section>
+
+  <!-- VIEW 3: SCHEDULE & SESSIONS -->
+  <section id="view-schedule" class="view-section">
+    <h2>Booked Sessions & Reminders</h2>
+    <p>Manage your upcoming tutoring sessions and WhatsApp/Telegram reminder alerts.</p>
+    
+    <div class="card">
+      <h2>Schedule New Session</h2>
+      <div class="form-group">
+        <label>Select Mentor</label>
+        <select id="bookingMentorSelect">
+          <option value="Dr. Adebayo (Mathematics)">Dr. Adebayo (Mathematics)</option>
+          <option value="Blessing Okafor (Physics & Chemistry)">Blessing Okafor (Physics & Chemistry)</option>
+          <option value="Ibrahim Sani (English Language)">Ibrahim Sani (English Language)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date & Time</label>
+        <input type="datetime-local" id="bookingDateTime">
+      </div>
+      <button class="btn" id="bookSessionBtn">Confirm Session & Set Reminder</button>
+    </div>
+
+    <h2 style="margin-top: 1.5rem;">My Active Sessions</h2>
+    <div id="sessionList">
+      <!-- Booked sessions injected here -->
+    </div>
+  </section>
+
+  <!-- VIEW 4: SPONSORSHIPS -->
+  <section id="view-sponsors" class="view-section">
+    <h2>Publishers & Tutoring Centers</h2>
+    <p>Reach over 15,000 active Nigerian secondary school students preparing for WAEC, NECO, and JAMB.</p>
+    
+    <div class="card">
+      <h2>Book Bot Broadcast Spot (₦5,000 / week)</h2>
+      <div class="form-group">
+        <label>Center / Publisher Name</label>
+        <input type="text" id="sponsorName" placeholder="e.g. Excellence Tutorials Lagos">
+      </div>
+      <div class="form-group">
+        <label>Promotional Message (Max 160 chars)</label>
+        <textarea id="sponsorMsg" rows="3" placeholder="Get 50% discount on our intensive JAMB CBT practice software..."></textarea>
+      </div>
+      <button class="btn" id="submitSponsorBtn">Launch Sponsored Ad</button>
+    </div>
+
+    <div class="card">
+      <h2>Active Network Sponsors</h2>
+      <div id="sponsorList">
+        <!-- Live sponsors -->
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="view-bot">
+    <span class="icon">🤖</span>
+    Bot Chat
+  </button>
+  <button class="nav-item" data-target="view-mentors">
+    <span class="icon">👨‍🏫</span>
+    Mentors
+  </button>
+  <button class="nav-item" data-target="view-schedule">
+    <span class="icon">📅</span>
+    Sessions
+  </button>
+  <button class="nav-item" data-target="view-sponsors">
+    <span class="icon">📢</span>
+    Sponsors
+  </button>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Live Clock
+  const timeEl = document.getElementById('live-time');
+  function updateTime() {
+    const now = new Date('2026-11-18T08:54:00');
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Toast helper
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // Navigation logic
+  const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('.view-section');
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const target = item.getAttribute('data-target');
+      navItems.forEach(n => n.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      
+      item.classList.add('active');
+      const targetSec = document.getElementById(target);
+      if (targetSec) targetSec.classList.add('active');
+    });
+  });
+
+  // State in Memory & LocalStorage
+  let state = {
+    sessions: JSON.parse(localStorage.getItem('edu_sessions') || '[]'),
+    sponsors: JSON.parse(localStorage.getItem('edu_sponsors') || '[{"name": "Pearson Prep Tutors", "msg": "Get 20% off WAEC past questions!"}]'),
+    fastTrack: JSON.parse(localStorage.getItem('edu_fasttrack') || 'false')
+  };
+
+  function saveState() {
+    try {
+      localStorage.setItem('edu_sessions', JSON.stringify(state.sessions));
+      localStorage.setItem('edu_sponsors', JSON.stringify(state.sponsors));
+      localStorage.setItem('edu_fasttrack', JSON.stringify(state.fastTrack));
+    } catch(e) {}
+  }
+
+  // Bot Simulator Logic
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const chatSendBtn = document.getElementById('chatSendBtn');
+
+  const botFlows = {
+    start: {
+      text: "👋 Welcome to Edu-Mentor Match! I connect Nigerian students with vetted volunteer mentors for WAEC, NECO & JAMB.\n\nWhat would you like to do?",
+      options: [
+        { label: "Book a Mentor", next: "select_exam" },
+        { label: "Check Fast-Track Status", next: "check_ft" },
+        { label: "Become a Volunteer Mentor", next: "volunteer" }
+      ]
+    },
+    select_exam: {
+      text: "Which exam are you preparing for?",
+      options: [
+        { label: "JAMB UTME", next: "select_subject_jamb" },
+        { label: "WAEC / NECO", next: "select_subject_waec" }
+      ]
+    },
+    select_subject_jamb: {
+      text: "Select your primary JAMB subject:",
+      options: [
+        { label: "Use of English", next: "match_success" },
+        { label: "Mathematics", next: "match_success" },
+        { label: "Physics / Chemistry", next: "match_success" }
+      ]
+    },
+    select_subject_waec: {
+      text: "Select your key WAEC subject:",
+      options: [
+        { label: "General Mathematics", next: "match_success" },
+        { label: "English Language", next: "match_success" },
+        { label: "Biology", next: "match_success" }
+      ]
+    },
+    match_success: {
+      text: `✅ Mentor matched successfully! ${state.fastTrack ? '⚡ [Fast-Track Priority Active]' : ''}\n\nYour mentor is Dr. Adebayo (10+ years exam coaching). Go to the Sessions tab to schedule your first live audio walkthrough!`,
+      options: [
+        { label: "Start Over", next: "start" }
+      ]
+    },
+    check_ft: {
+      text: state.fastTrack ? "✅ Your Fast-Track access is ACTIVE. You have VIP priority matching." : "❌ Fast-Track is not active. Pay ₦400 to unlock instant priority matching and past-question video banks.",
+      options: [
+        { label: "Main Menu", next: "start" }
+      ]
+    },
+    volunteer: {
+      text: "That's wonderful! We require university students or graduates with at least a B3 in WAEC. Please send your Full Name and Subject to @EduMentorAdmin on Telegram.",
+      options: [
+        { label: "Main Menu", next: "start" }
+      ]
+    }
+  };
+
+  function appendMessage(sender, text, options = []) {
+    if (!chatMessages) return;
+    const div = document.createElement('div');
+    div.className = `message ${sender}`;
+    div.style.whiteSpace = 'pre-line';
+    div.textContent = text;
+    chatMessages.appendChild(div);
+
+    if (options.length > 0) {
+      const optContainer = document.createElement('div');
+      optContainer.className = 'chat-options';
+      options.forEach(opt => {
+        const chip = document.createElement('button');
+        chip.className = 'option-chip';
+        chip.textContent = opt.label;
+        chip.addEventListener('click', () => {
+          appendMessage('user', opt.label);
+          handleBotFlow(opt.next);
+        });
+        optContainer.appendChild(chip);
+      });
+      chatMessages.appendChild(optContainer);
+    }
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function handleBotFlow(flowKey) {
+    const flow = botFlows[flowKey] || botFlows['start'];
+    setTimeout(() => {
+      appendMessage('bot', flow.text, flow.options);
+    }, 400);
+  }
+
+  // Initialize bot chat
+  appendMessage('bot', botFlows.start.text, botFlows.start.options);
+
+  if (chatSendBtn && chatInput) {
+    chatSendBtn.addEventListener('click', () => {
+      const val = chatInput.value.trim();
+      if (!val) return;
+      appendMessage('user', val);
+      chatInput.value = '';
+      setTimeout(() => {
+        appendMessage('bot', "🤖 I received your message. Use the interactive buttons above or type 'menu' to restart.", botFlows.start.options);
+      }, 500);
+    });
+  }
+
+  // Fast-Track Payment
+  const payFastTrackBtn = document.getElementById('payFastTrackBtn');
+  if (payFastTrackBtn) {
+    payFastTrackBtn.addEventListener('click', () => {
+      showToast('Opening secure Paystack gateway...');
+      setTimeout(() => {
+        state.fastTrack = true;
+        saveState();
+        showToast('🎉 Payment of ₦400 confirmed! Fast-Track unlocked.');
+        appendMessage('bot', '⚡ Payment confirmed! Your account has been upgraded to Fast-Track priority.');
+      }, 1500);
+    });
+  }
+
+  // Mentors Directory Data
+  const mentors = [
+    { name: "Dr. Adebayo", subject: "Mathematics & Further Math", rating: "4.9 ⭐", exp: "12 yrs exp", badge: "WAEC Examiner" },
+    { name: "Blessing Okafor", subject: "Physics & Chemistry", rating: "4.8 ⭐", exp: "6 yrs exp", badge: "First Class UNILAG" },
+    { name: "Ibrahim Sani", subject: "English & Literature", rating: "5.0 ⭐", exp: "9 yrs exp", badge: "JAMB Top Tutor" },
+    { name: "Chioma Nnamdi", subject: "Biology & Agricultural Science", rating: "4.7 ⭐", exp: "5 yrs exp", badge: "Certified Educator" }
+  ];
+
+  const mentorList = document.getElementById('mentorList');
+  const mentorSearch = document.getElementById('mentorSearch');
+
+  function renderMentors(filter = '') {
+    if (!mentorList) return;
+    mentorList.innerHTML = '';
+    const filtered = mentors.filter(m => m.name.toLowerCase().includes(filter.toLowerCase()) || m.subject.toLowerCase().includes(filter.toLowerCase()));
+    
+    if (filtered.length === 0) {
+      mentorList.innerHTML = '<p>No mentors found matching your search.</p>';
+      return;
+    }
+
+    filtered.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">
+          <div>
+            <h3>${m.name}</h3>
+            <p style="margin:0; font-size:0.85rem; color:var(--primary-dark); font-weight:600;">${m.subject}</p>
+          </div>
+          <span class="badge badge-green">${m.badge}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+          <span>${m.rating}</span>
+          <span>${m.exp}</span>
+        </div>
+        <button class="btn btn-secondary" onclick="document.querySelector('[data-target=\\'view-schedule\\']').click()">Book Session</button>
+      `;
+      mentorList.appendChild(div);
+    });
+  }
+  renderMentors();
+
+  if (mentorSearch) {
+    mentorSearch.addEventListener('input', (e) => {
+      renderMentors(e.target.value);
+    });
+  }
+
+  // Sessions & Scheduling
+  const bookSessionBtn = document.getElementById('bookSessionBtn');
+  const bookingMentorSelect = document.getElementById('bookingMentorSelect');
+  const bookingDateTime = document.getElementById('bookingDateTime');
+  const sessionList = document.getElementById('sessionList');
+
+  function renderSessions() {
+    if (!sessionList) return;
+    sessionList.innerHTML = '';
+    if (state.sessions.length === 0) {
+      sessionList.innerHTML = '<p>No tutoring sessions booked yet.</p>';
+      return;
+    }
+
+    state.sessions.forEach((s, idx) => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <strong>${s.mentor}</strong>
+          <span class="badge badge-yellow">Confirmed</span>
+        </div>
+        <p style="margin:0 0 0.75rem 0; font-size:0.85rem;">📅 ${new Date(s.datetime).toLocaleString()}</p>
+        <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.5rem;" onclick="window.cancelSession(${idx})">Cancel & Reschedule</button>
+      `;
+      sessionList.appendChild(div);
+    });
+  }
+
+  window.cancelSession = function(idx) {
+    state.sessions.splice(idx, 1);
+    saveState();
+    renderSessions();
+    showToast('Session cancelled.');
+  };
+
+  renderSessions();
+
+  if (bookSessionBtn) {
+    bookSessionBtn.addEventListener('click', () => {
+      const mentor = bookingMentorSelect.value;
+      const dt = bookingDateTime.value;
+      if (!dt) {
+        showToast('Please select a valid date and time.');
+        return;
+      }
+      state.sessions.push({ mentor, datetime: dt });
+      saveState();
+      renderSessions();
+      showToast('✅ Session booked! WhatsApp reminder scheduled.');
+    });
+  }
+
+  // Sponsors
+  const submitSponsorBtn = document.getElementById('submitSponsorBtn');
+  const sponsorName = document.getElementById('sponsorName');
+  const sponsorMsg = document.getElementById('sponsorMsg');
+  const sponsorList = document.getElementById('sponsorList');
+
+  function renderSponsors() {
+    if (!sponsorList) return;
+    sponsorList.innerHTML = '';
+    state.sponsors.forEach(sp => {
+      const div = document.createElement('div');
+      div.style.padding = '0.5rem 0';
+      div.style.borderBottom = '1px solid var(--border)';
+      div.innerHTML = `<strong>${sp.name}</strong><p style="font-size:0.85rem; margin:0;">${sp.msg}</p>`;
+      sponsorList.appendChild(div);
+    });
+  }
+  renderSponsors();
+
+  if (submitSponsorBtn) {
+    submitSponsorBtn.addEventListener('click', () => {
+      const name = sponsorName.value.trim();
+      const msg = sponsorMsg.value.trim();
+      if (!name || !msg) {
+        showToast('Please fill in both sponsor fields.');
+        return;
+      }
+      state.sponsors.unshift({ name, msg });
+      saveState();
+      renderSponsors();
+      sponsorName.value = '';
+      sponsorMsg.value = '';
+      showToast('🚀 Sponsored ad successfully added to bot broadcast queue!');
+    });
+  }
+
+});
+</script>
+</body>
+</html>
