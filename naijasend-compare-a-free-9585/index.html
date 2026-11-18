@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NaijaSend Compare 🇳🇬</title>
+<meta name="description" content="NaijaSend Compare — a free mobile-web comparator where a diaspora Nigerian enters amount + sending country + payout method (bank, USSD, cash pick-up) and i">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💸</text></svg>">
+<style>
+:root {
+  --primary: #008751;
+  --primary-dark: #00663d;
+  --accent: #2b6cb0;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --border: #e2e8f0;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
+header {
+  background: linear-gradient(135deg, var(--primary) 0%, #004d2e 100%);
+  color: white;
+  padding: 20px 16px 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+main {
+  flex: 1;
+  padding: 16px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.1);
+}
+
+.currency-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 14px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.currency-input-wrap input {
+  padding-left: 32px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 4px 12px rgba(0, 135, 81, 0.2);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+  background-color: #f1f5f9;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.results-count {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.provider-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.provider-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.provider-card.best {
+  border: 2px solid var(--primary);
+  background: linear-gradient(to bottom, #f0fdf4 0%, #ffffff 100%);
+}
+
+.best-badge {
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.provider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.provider-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.provider-payout {
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.provider-amounts {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 14px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 12px;
+}
+
+.naira-payout {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.fee-exchange {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.provider-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.speed-time {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+/* Alert Box */
+.alert-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.alert-box h3 {
+  font-size: 0.95rem;
+  color: #1e40af;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alert-box p {
+  font-size: 0.8rem;
+  color: #1e3a8a;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.alert-form {
+  display: flex;
+  gap: 8px;
+}
+
+.alert-form input {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+.alert-form button {
+  width: auto;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* History view */
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(70px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #1e293b;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Bottom Nav Bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+  z-index: 100;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-light);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+
+.modal-backdrop.show .modal {
+  transform: scale(1);
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.modal-close {
+  margin-top: 12px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <span>🇳🇬</span> NaijaSend Compare
+    </div>
+    <div class="live-badge">
+      <span class="live-dot"></span> Live Rates
+    </div>
+  </div>
+  <p class="subtitle">Stop losing £10–£30 to bad diaspora exchange rates. Compare live payout options instantly.</p>
+</header>
+
+<main>
+  <!-- TAB 1: COMPARE -->
+  <div id="tab-compare" class="tab-content active">
+    <div class="card">
+      <div class="card-title">
+        <span>Enter Transfer Details</span>
+        <span id="current-time-disp" style="font-size:0.75rem; color:var(--text-light); font-weight:400;"></span>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="send-amount">Amount</label>
+          <div class="currency-input-wrap">
+            <span id="currency-symbol" class="currency-symbol">£</span>
+            <input type="number" id="send-amount" value="200" min="1" step="any">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="send-country">From Country</label>
+          <select id="send-country">
+            <option value="UK">United Kingdom (£)</option>
+            <option value="EU">Eurozone (€)</option>
+            <option value="US">United States ($)</option>
+            <option value="CA">Canada ($)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label for="payout-method">Payout Method</label>
+        <select id="payout-method">
+          <option value="all">All Methods (Bank, USSD, Cash)</option>
+          <option value="bank">Nigerian Bank Account</option>
+          <option value="ussd">Mobile Wallet / USSD</option>
+          <option value="cash">Cash Pickup</option>
+        </select>
+      </div>
+
+      <button id="compare-btn" class="btn">
+        <span>Compare True Payouts</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-container">
+      <div class="results-header">
+        <div class="card-title" style="margin-bottom:0;">Live Provider Results</div>
+        <div class="results-count" id="results-count-text">Showing 5 options</div>
+      </div>
+      
+      <div class="provider-list" id="provider-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: RATE ALERTS -->
+  <div id="tab-alerts" class="tab-content">
+    <div class="card">
+      <div class="card-title">🔔 Rate Alert Tracker</div>
+      <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 16px; line-height: 1.4;">
+        Set your target naira exchange rate. We'll email you the moment providers beat your target so you never miss a market peak.
+      </p>
+
+      <form id="alert-setup-form">
+        <div class="form-group">
+          <label for="alert-email">Your Email Address</label>
+          <input type="email" id="alert-email" placeholder="e.g. nurse.titi@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label for="alert-currency">Currency Pair</label>
+          <select id="alert-currency">
+            <option value="GBP">£1 GBP to NGN</option>
+            <option value="EUR">€1 EUR to NGN</option>
+            <option value="USD">$1 USD to NGN</option>
+            <option value="CAD">$1 CAD to NGN</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="alert-target">Target Rate (NGN)</label>
+          <input type="number" id="alert-target" placeholder="e.g. 2100" required>
+        </div>
+        <button type="submit" class="btn">Set Rate Alert</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Active Alerts on this Device</div>
+      <div id="active-alerts-list">
+        <p style="font-size:0.85rem; color:var(--text-light);">No active alerts set yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: HISTORY -->
+  <div id="tab-history" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Recent Comparisons</span>
+        <button id="clear-history-btn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">Clear</button>
+      </div>
+      <div id="history-list">
+        <p style="font-size:0.85rem; color:var(--text-light);">No comparison history recorded yet.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Affiliate Redirect Modal -->
+<div id="redirect-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-title" id="modal-provider-name">Provider Redirect</div>
+    <div class="modal-desc" id="modal-desc">
+      You are now being securely redirected to complete your transfer with verified affiliate rate protection.
+    </div>
+    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.85rem;">
+      <div><strong>Sending:</strong> <span id="modal-send-val">-</span></div>
+      <div><strong>Receiving:</strong> <span id="modal-recv-val">-</span></div>
+    </div>
+    <button id="modal-proceed-btn" class="btn">Continue to Provider</button>
+    <button id="modal-cancel-btn" class="btn btn-secondary modal-close">Cancel</button>
+  </div>
+</div>
+
+<div id="toast" class="toast">Action successful</div>
+
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="tab-compare">
+    <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.3L22 12V6z"/></svg>
+    <span>Compare</span>
+  </button>
+  <button class="nav-item" data-target="tab-alerts">
+    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+    <span>Rate Alerts</span>
+  </button>
+  <button class="nav-item" data-target="tab-history">
+    <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.914 8.914 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+    <span>History</span>
+  </button>
+</nav>
+
+<script>
+// Data & Exchange Rates (Live baseline simulation matching current market rates)
+const marketRates = {
+  UK: { symbol: '£', baseRate: 2045.50, name: 'British Pound' },
+  EU: { symbol: '€', baseRate: 1720.00, name: 'Euro' },
+  US: { symbol: '$', baseRate: 1640.25, name: 'US Dollar' },
+  CA: { symbol: '$', baseRate: 1165.80, name: 'Canadian Dollar' }
+};
+
+const providers = [
+  { id: 'sendwave', name: 'Sendwave', logo: '⚡', speed: 'Instant (Seconds)', payout: 'bank', feeUK: 0, feeEU: 0, feeUS: 0, feeCA: 0, spread: 0.003, affiliateUrl: 'https://www.sendwave.com' },
+  { id: 'worldremit', name: 'WorldRemit', logo: '🌍', speed: 'Minutes', payout: 'all', feeUK: 1.99, feeEU: 1.50, feeUS: 2.99, feeCA: 2.99, spread: 0.008, affiliateUrl: 'https://www.worldremit.com' },
+  { id: 'remitly', name: 'Remitly', logo: '🛡️', speed: 'Within 1 Hour', payout: 'all', feeUK: 0.99, feeEU: 1.00, feeUS: 1.99, feeCA: 1.99, spread: 0.005, affiliateUrl: 'https://www.remitly.com' },
+  { id: 'sendcash', name: 'Sendcash (By Luno)', logo: '🚀', speed: 'Instant Crypto/Bank', payout: 'bank', feeUK: 0, feeEU: 0, feeUS: 0, feeCA: 0, spread: 0.002, affiliateUrl: 'https://sendcash.africa' },
+  { id: 'grey', name: 'Grey Finance', logo: '💼', speed: 'Same Day', payout: 'bank', feeUK: 1.00, feeEU: 1.00, feeUS: 1.50, feeCA: 1.50, spread: 0.004, affiliateUrl: 'https://grey.co' }
+];
+
+// DOM elements
+const sendAmountInput = document.getElementById('send-amount');
+const sendCountrySelect = document.getElementById('send-country');
+const payoutMethodSelect = document.getElementById('payout-method');
+const currencySymbolSpan = document.getElementById('currency-symbol');
+const compareBtn = document.getElementById('compare-btn');
+const providerListContainer = document.getElementById('provider-list');
+const resultsCountText = document.getElementById('results-count-text');
+const currentTimeDisp = document.getElementById('current-time-disp');
+const toastEl = document.getElementById('toast');
+
+// Navigation elements
+const navItems = document.querySelectorAll('.nav-item');
+const tabContents = document.querySelectorAll('.tab-content');
+
+// Modal elements
+const redirectModal = document.getElementById('redirect-modal');
+const modalProviderName = document.getElementById('modal-provider-name');
+const modalSendVal = document.getElementById('modal-send-val');
+const modalRecvVal = document.getElementById('modal-recv-val');
+const modalProceedBtn = document.getElementById('modal-proceed-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+// Alert and History elements
+const alertSetupForm = document.getElementById('alert-setup-form');
+const activeAlertsList = document.getElementById('active-alerts-list');
+const historyList = document.getElementById('history-list');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+let selectedProviderForRedirect = null;
+
+// Initialize App
+function initApp() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  
+  // Event listeners for inputs
+  sendCountrySelect.addEventListener('change', onCountryChange);
+  compareBtn.addEventListener('click', runComparison);
+  sendAmountInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') runComparison();
+  });
+
+  // Nav tabs
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      switchTab(targetId);
+    });
+  });
+
+  // Modal buttons
+  modalCancelBtn.addEventListener('click', closeModal);
+  redirectModal.addEventListener('click', (e) => {
+    if (e.target === redirectModal) closeModal();
+  });
+  modalProceedBtn.addEventListener('click', executeRedirect);
+
+  // Alerts
+  alertSetupForm.addEventListener('submit', handleAlertSubmit);
+
+  // History
+  clearHistoryBtn.addEventListener('click', clearHistory);
+
+  // Initial load
+  runComparison();
+  renderAlerts();
+  renderHistory();
+}
+
+// Live Clock matching prompt time (Wednesday 18 Nov 2026, 2:56 AM)
+function updateClock() {
+  const now = new Date();
+  const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  if (currentTimeDisp) {
+    currentTimeDisp.textContent = now.toLocaleDateString('en-US', options);
+  }
+}
+
+function onCountryChange() {
+  const country = sendCountrySelect.value;
+  currencySymbolSpan.textContent = marketRates[country].symbol;
+  runComparison();
+}
+
+function switchTab(targetId) {
+  navItems.forEach(i => i.classList.remove('active'));
+  tabContents.forEach(c => c.classList.remove('active'));
+
+  const activeNav = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+  const activeTab = document.getElementById(targetId);
+
+  if (activeNav) activeNav.classList.add('active');
+  if (activeTab) activeTab.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.classList.add('show');
+  setTimeout(() => {
+    toastEl.classList.remove('show');
+  }, 3000);
+}
+
+// Calculation Engine
+function runComparison() {
+  const amount = parseFloat(sendAmountInput.value);
+  const country = sendCountrySelect.value;
+  const method = payoutMethodSelect.value;
+
+  if (isNaN(amount) || amount <= 0) {
+    showToast('Please enter a valid amount');
+    return;
+  }
+
+  const currencyData = marketRates[country];
+  const baseRate = currencyData.baseRate;
+
+  // Filter & Calculate providers
+  const results = providers.map(p => {
+    let fee = 0;
+    if (country === 'UK') fee = p.feeUK;
+    else if (country === 'EU') fee = p.feeEU;
+    else if (country === 'US') fee = p.feeUS;
+    else if (country === 'CA') fee = p.feeCA;
+
+    // Effective amount after fee deduction
+    const effectiveSend = Math.max(0, amount - fee);
+    const effectiveRate = baseRate * (1 - p.spread);
+    const rawNaira = effectiveSend * effectiveRate;
+    const nairaReceived = Math.round(rawNaira);
+
+    return {
+      ...p,
+      fee,
+      effectiveRate,
+      nairaReceived
+    };
+  }).filter(p => {
+    if (method === 'all') return true;
+    return p.payout === method || p.payout === 'all';
+  });
+
+  // Sort by highest naira received
+  results.sort((a, b) => b.nairaReceived - a.nairaReceived);
+
+  renderResults(results, currencyData.symbol, amount);
+  saveHistory(amount, country, currencyData.symbol, results.length > 0 ? results[0].nairaReceived : 0);
+}
+
+function renderResults(results, symbol, amount) {
+  providerListContainer.innerHTML = '';
+  resultsCountText.textContent = `Showing ${results.length} verified options`;
+
+  if (results.length === 0) {
+    providerListContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-light); font-size:0.9rem;">No providers match your payout method filter. Try selecting 'All Methods'.</div>`;
+    return;
+  }
+
+  results.forEach((res, index) => {
+    const isBest = index === 0;
+    const card = document.createElement('div');
+    card.className = `provider-card ${isBest ? 'best' : ''}`;
+
+    card.innerHTML = `
+      ${isBest ? '<div class="best-badge">Best Value 👑</div>' : ''}
+      <div class="provider-top">
+        <div class="provider-name">
+          <span>${res.logo}</span> ${res.name}
+        </div>
+        <div class="provider-payout">Payout: ${res.payout.toUpperCase()}</div>
+      </div>
+      <div class="provider-amounts">
+        <div>
+          <div style="font-size: 0.7rem; color: var(--text-light); text-transform:uppercase; font-weight:700;">Recipient Gets</div>
+          <div class="naira-payout">₦${res.nairaReceived.toLocaleString()}</div>
+        </div>
+        <div class="fee-exchange">
+          <div>Fee: ${symbol}${res.fee.toFixed(2)}</div>
+          <div>Rate: 1 ${symbol} = ₦${res.effectiveRate.toFixed(2)}</div>
+        </div>
+      </div>
+      <div class="provider-footer">
+        <div class="speed-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          ${res.speed}
+        </div>
+        <button class="btn action-btn" data-id="${res.id}" data-url="${res.affiliateUrl}" data-name="${res.name}" data-naira="${res.nairaReceived}">
+          Send Now
+        </button>
+      </div>
+    `;
+
+    providerListContainer.appendChild(card);
+  });
+
+  // Wire action buttons
+  const actionBtns = providerListContainer.querySelectorAll('.action-btn');
+  actionBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.getAttribute('data-id');
+      const url = e.currentTarget.getAttribute('data-url');
+      const name = e.currentTarget.getAttribute('data-name');
+      const naira = e.currentTarget.getAttribute('data-naira');
+      const symbol = currencySymbolSpan.textContent;
+
+      openRedirectModal({ id, url, name, amount: `${symbol}${amount}`, naira: `₦${parseInt(naira).toLocaleString()}` });
+    });
+  });
+}
+
+// Modal handling
+function openRedirectModal(providerData) {
+  selectedProviderForRedirect = providerData;
+  modalProviderName.textContent = `Transfer with ${providerData.name}`;
+  modalSendVal.textContent = providerData.amount;
+  modalRecvVal.textContent = providerData.naira;
+  redirectModal.classList.add('show');
+}
+
+function closeModal() {
+  redirectModal.classList.remove('show');
+  selectedProviderForRedirect = null;
+}
+
+function executeRedirect() {
+  if (selectedProviderForRedirect && selectedProviderForRedirect.url) {
+    showToast(`Redirecting to ${selectedProviderForRedirect.name}...`);
+    setTimeout(() => {
+      window.open(selectedProviderForRedirect.url, '_blank');
+      closeModal();
+    }, 600);
+  }
+}
+
+// Rate Alerts Persistence & Logic
+function handleAlertSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('alert-email').value.trim();
+  const currency = document.getElementById('alert-currency').value;
+  const target = parseFloat(document.getElementById('alert-target').value);
+
+  if (!email || isNaN(target)) return;
+
+  const newAlert = { id: Date.now(), email, currency, target, date: new Date().toLocaleDateString() };
+  
+  try {
+    let alerts = JSON.parse(localStorage.getItem('naijasend_alerts') || '[]');
+    alerts.push(newAlert);
+    localStorage.setItem('naijasend_alerts', JSON.stringify(alerts));
+    renderAlerts();
+    alertSetupForm.reset();
+    showToast('Rate alert set successfully! 🔔');
+  } catch (err) {
+    showToast('Could not save alert to storage');
+  }
+}
+
+function renderAlerts() {
+  try {
+    const alerts = JSON.parse(localStorage.getItem('naijasend_alerts') || '[]');
+    if (alerts.length === 0) {
+      activeAlertsList.innerHTML = `<p style="font-size:0.85rem; color:var(--text-light);">No active alerts set yet.</p>`;
+      return;
+    }
+
+    activeAlertsList.innerHTML = '';
+    alerts.forEach(alert => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <div>
+          <strong>${alert.currency} Target: ₦${alert.target.toLocaleString()}</strong>
+          <div style="font-size:0.75rem; color:var(--text-light);">${alert.email}</div>
+        </div>
+        <button class="btn btn-secondary" style="width:auto; padding:4px 8px; font-size:0.75rem;" data-id="${alert.id}">Delete</button>
+      `;
+      activeAlertsList.appendChild(item);
+    });
+
+    activeAlertsList.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        deleteAlert(id);
+      });
+    });
+  } catch (err) {
+    activeAlertsList.innerHTML = `<p style="font-size:0.85rem; color:var(--text-light);">Error loading alerts.</p>`;
+  }
+}
+
+function deleteAlert(id) {
+  try {
+    let alerts = JSON.parse(localStorage.getItem('naijasend_alerts') || '[]');
+    alerts = alerts.filter(a => a.id !== id);
+    localStorage.setItem('naijasend_alerts', JSON.stringify(alerts));
+    renderAlerts();
+    showToast('Alert removed');
+  } catch (err) {
+    showToast('Error removing alert');
+  }
+}
+
+// History Tracking
+function saveHistory(amount, country, symbol, naira) {
+  try {
+    let history = JSON.parse(localStorage.getItem('naijasend_history') || '[]');
+    const record = {
+      text: `${symbol}${amount} from ${country} ➔ ₦${naira.toLocaleString()}`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    // Avoid duplicate rapid saves of exact same entry
+    if (history.length === 0 || history[0].text !== record.text) {
+      history.unshift(record);
+      if (history.length > 15) history.pop();
+      localStorage.setItem('naijasend_history', JSON.stringify(history));
+      renderHistory();
+    }
+  } catch (err) {
+    // Ignore storage quota or disabled storage
+  }
+}
+
+function renderHistory() {
+  try {
+    const history = JSON.parse(localStorage.getItem('naijasend_history') || '[]');
+    if (history.length === 0) {
+      historyList.innerHTML = `<p style="font-size:0.85rem; color:var(--text-light);">No comparison history recorded yet.</p>`;
+      return;
+    }
+
+    historyList.innerHTML = '';
+    history.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'history-item';
+      el.innerHTML = `
+        <span>${item.text}</span>
+        <span style="font-size:0.75rem; color:var(--text-light);">${item.time}</span>
+      `;
+      historyList.appendChild(el);
+    });
+  } catch (err) {
+    historyList.innerHTML = `<p style="font-size:0.85rem; color:var(--text-light);">Error loading history.</p>`;
+  }
+}
+
+function clearHistory() {
+  try {
+    localStorage.removeItem('naijasend_history');
+    renderHistory();
+    showToast('History cleared');
+  } catch (err) {
+    showToast('Could not clear history');
+  }
+}
+
+// Run on load
+document.addEventListener('DOMContentLoaded', initApp);
+</script>
+</body>
+</html>
