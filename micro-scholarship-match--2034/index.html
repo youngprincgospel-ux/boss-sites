@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaScholars AI - Micro-Scholarship Match & Hub</title>
+<meta name="description" content="Micro‑Scholarship Match Landing Page with AI‑Curated Listings. This should help: A lightweight, mobile‑first site that aggregates scholarship opportunities">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #ecfdf5;
+            --accent: #d97706;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #064e3b;
+            --accent: #f59e0b;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --danger: #f87171;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(85px + var(--safe-bottom));
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 26px;
+            background: var(--primary-light);
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .logo-text h1 {
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Banner */
+        .promo-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .promo-card h2 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .promo-card p {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .badge-pill {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Filters & Search */
+        .search-filter-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3Cline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 12px center;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* AI Match Assistant Box */
+        .ai-match-box {
+            background: var(--surface);
+            border: 2px dashed var(--primary);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .ai-match-box h3 {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .ai-match-box p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.85;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        /* Scholarship Cards */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scholarship-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .card.sponsored {
+            border: 2px solid var(--accent);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .sponsor-tag {
+            background: rgba(217, 119, 6, 0.15);
+            color: var(--accent);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .card-amount {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .tag {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card-actions button {
+            flex: 1;
+            padding: 10px;
+            font-size: 12px;
+            border-radius: 10px;
+        }
+
+        .bookmark-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .bookmark-btn.saved {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 100;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span.icon {
+            font-size: 20px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--surface);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px calc(24px + var(--safe-bottom)) 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.open .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--text);
+            color: var(--surface);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state span {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .empty-state h4 {
+            font-size: 16px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">🎓</div>
+            <div class="logo-text">
+                <h1>NaijaScholars AI</h1>
+                <span>Smart Grants & Bursaries</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">🌙</button>
+            <button class="icon-btn" id="openSponsorModalBtn" aria-label="Sponsor Listing">📢</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: HOME & MATCH -->
+        <section id="viewHome" class="view-section active">
+            <div class="promo-card">
+                <span class="badge-pill">AI Powered Match</span>
+                <h2>Never Miss a Grant Again</h2>
+                <p>Over ₦50M+ in undergraduate scholarships, PTDF, NNPC, and state bursaries currently open for Nigerian students.</p>
+                <button class="btn btn-accent" id="scrollToMatchBtn">✨ Run AI Profile Match</button>
+            </div>
+
+            <!-- AI Match Quick Form -->
+            <div class="ai-match-box" id="aiMatchSection">
+                <h3>🤖 AI Profile Matcher</h3>
+                <p>Enter your details to instantly calculate your match score with available grants.</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="inputField">Field of Study</label>
+                        <select id="inputField">
+                            <option value="All">All Disciplines</option>
+                            <option value="Engineering">Engineering & Tech</option>
+                            <option value="Medical">Medical & Health Sciences</option>
+                            <option value="Arts">Arts & Humanities</option>
+                            <option value="Science">Pure & Applied Sciences</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputGpa">Current GPA / Grade</label>
+                        <select id="inputGpa">
+                            <option value="4.5">First Class (4.5+)</option>
+                            <option value="3.5">Second Class Upper (3.5 - 4.49)</option>
+                            <option value="2.5">Second Class Lower (2.5 - 3.49)</option>
+                            <option value="2.0">Pass / Ordinary</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label for="inputLocation">State of Origin / University</label>
+                    <select id="inputLocation">
+                        <option value="All">Nationwide / Any State</option>
+                        <option value="Lagos">Lagos State</option>
+                        <option value="Rivers">Rivers State</option>
+                        <option value="Oyo">Oyo State</option>
+                        <option value="Kano">Kano State</option>
+                        <option value="Federal">Federal Universities</option>
+                    </select>
+                </div>
+                <button class="btn" id="runMatchBtn">🔍 Find Best Matches</button>
+            </div>
+
+            <div class="section-title">
+                <span>Featured Scholarships</span>
+                <span style="font-size: 12px; color: var(--primary);" id="totalCountBadge">0 Active</span>
+            </div>
+
+            <div class="search-filter-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, sponsor, keyword...">
+                <div class="filter-row">
+                    <select id="filterCategory" class="filter-select">
+                        <option value="All">All Categories</option>
+                        <option value="Stem">STEM & Tech</option>
+                        <option value="Bursary">State Bursaries</option>
+                        <option value="Corporate">Corporate Grants</option>
+                    </select>
+                    <select id="filterSort" class="filter-select">
+                        <option value="deadline">Closest Deadline</option>
+                        <option value="amount">Highest Amount</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="scholarship-list" id="scholarshipListContainer">
+                <!-- Rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: SAVED MATCHES -->
+        <section id="viewSaved" class="view-section">
+            <div class="section-title">
+                <span>My Saved Scholarships</span>
+                <span style="font-size: 12px; color: var(--primary);" id="savedCountBadge">0 Saved</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                Keep track of your bookmarked applications and prepare your documents early.
+            </p>
+            <div class="scholarship-list" id="savedListContainer">
+                <!-- Rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: PRIORITY ALERTS -->
+        <section id="viewAlerts" class="view-section">
+            <div class="promo-card" style="background: linear-gradient(135deg, #7c3aed, #4f46e5);">
+                <span class="badge-pill">VIP Subscription</span>
+                <h2>Priority SMS & WhatsApp Alerts</h2>
+                <p>Get instant notification pinged to your phone 48 hours before major scholarship portals open. Beat the rush.</p>
+                <div style="font-size: 22px; font-weight: 800; margin-bottom: 14px;">₦500 <span style="font-size: 12px; font-weight: 400;">/ month</span></div>
+                <button class="btn btn-accent" id="subscribePriorityBtn" style="background: #ffffff; color: #4f46e5;">⚡ Activate Priority Alerts</button>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title" style="margin-bottom: 8px;">📱 How Priority Alerts Work</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+                    Subscribers receive direct WhatsApp broadcast messages and custom USSD ping prompts containing direct portal application links as soon as verified scholarship boards drop guidelines.
+                </p>
+                <div class="card-meta">
+                    <span class="tag">✅ Instant WhatsApp Ping</span>
+                    <span class="tag">✅ Direct Portal Links</span>
+                    <span class="tag">✅ Essay Templates Included</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="viewHome">
+            <span class="icon">🏠</span>
+            <span>Discover</span>
+        </button>
+        <button class="nav-item" data-target="viewSaved">
+            <span class="icon">🔖</span>
+            <span>Saved (<span id="savedNavCount">0</span>)</span>
+        </button>
+        <button class="nav-item" data-target="viewAlerts">
+            <span class="icon">⚡</span>
+            <span>Priority Alerts</span>
+        </button>
+    </nav>
+
+    <!-- MODAL: SPONSOR / POST LISTING -->
+    <div class="modal-overlay" id="sponsorModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>📢 Sponsor a Scholarship Listing</h3>
+                <button class="close-modal" id="closeSponsorModal">×</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                Reach over 45,000 active Nigerian undergraduates seeking verified financial aid and grants. Placement fee: <strong>₦5,000</strong> per post.
+            </p>
+            <form id="sponsorForm">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label for="sponsorOrg">Organization / Sponsor Name</label>
+                    <input type="text" id="sponsorOrg" required placeholder="e.g. Acme Foundation">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label for="sponsorTitle">Scholarship Title</label>
+                    <input type="text" id="sponsorTitle" required placeholder="e.g. 2026 Tech Undergraduate Grant">
+                </div>
+                <div class="form-grid" style="margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label for="sponsorAmount">Award Amount (₦)</label>
+                        <input type="text" id="sponsorAmount" required placeholder="e.g. ₦150,000">
+                    </div>
+                    <div class="form-group">
+                        <label for="sponsorCategory">Category</label>
+                        <select id="sponsorCategory">
+                            <option value="Stem">STEM & Tech</option>
+                            <option value="Bursary">State Bursary</option>
+                            <option value="Corporate">Corporate Grant</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="sponsorLink">Application Portal URL</label>
+                    <input type="url" id="sponsorLink" required placeholder="https://example.com/apply">
+                </div>
+                <button type="submit" class="btn">🚀 Pay ₦5,000 & Publish Listing</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: DETAIL & APPLICATION -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card" id="detailModalContent">
+            <!-- Dynamically populated detail view -->
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastMessage">Action completed successfully</div>
+
+    <script>
+        // Zeus identity confirmed internally.
+        const APP_NAME = "NaijaScholars AI";
+        
+        // Initial Mock Database
+        const defaultScholarships = [
+            {
+                id: "sch-1",
+                title: "PTDF Undergraduate Scholarship Scheme",
+                sponsor: "Petroleum Technology Development Fund",
+                amount: "₦300,000 / yr",
+                amountVal: 300000,
+                category: "Stem",
+                field: "Engineering",
+                gpa: 3.5,
+                location: "Federal",
+                deadline: "2026-12-15",
+                description: "The PTDF annual scholarship is designed to support outstanding undergraduate students pursuing oil, gas, ICT, and renewable energy related disciplines in federal universities across Nigeria.",
+                link: "https://ptdf.gov.ng",
+                sponsored: false
+            },
+            {
+                id: "sch-2",
+                title: "MTN Science & Technology Scholarship",
+                sponsor: "MTN Foundation",
+                amount: "₦200,000 / yr",
+                amountVal: 200000,
+                category: "Stem",
+                field: "Stem",
+                gpa: 3.5,
+                location: "All",
+                deadline: "2026-11-30",
+                description: "Awarded annually to top performing 300-level students studying science and technology related courses in Nigerian public tertiary institutions.",
+                link: "https://mtn.ng/foundation",
+                sponsored: false
+            },
+            {
+                id: "sch-3",
+                title: "Lagos State Bursary Award",
+                sponsor: "Lagos State Scholarship Board",
+                amount: "₦100,000",
+                amountVal: 100000,
+                category: "Bursary",
+                field: "All",
+                gpa: 2.0,
+                location: "Lagos",
+                deadline: "2026-12-05",
+                description: "Financial assistance program for bonafide indigenes of Lagos State studying in recognized public and private tertiary institutions nationwide.",
+                link: "https://lagosschash.gov.ng",
+                sponsored: false
+            },
+            {
+                id: "sch-4",
+                title: "NNPC/Chevron JV National University Scholarship",
+                sponsor: "Chevron Nigeria Limited",
+                amount: "₦250,000 / yr",
+                amountVal: 250000,
+                category: "Corporate",
+                field: "Engineering",
+                gpa: 3.5,
+                location: "All",
+                deadline: "2026-12-20",
+                description: "In continuation of its contribution to capacity building in Nigeria, Chevron offers scholarships to second-year full-time students.",
+                link: "https://chevron.com.ng",
+                sponsored: false
+            },
+            {
+                id: "sch-5",
+                title: "Global Tech Women Undergraduate Grant",
+                sponsor: "WomenTech NG",
+                amount: "₦150,000",
+                amountVal: 150000,
+                category: "Stem",
+                field: "Stem",
+                gpa: 2.5,
+                location: "All",
+                deadline: "2026-11-25",
+                description: "Empowering female undergraduates pursuing software engineering, data science, and cyber security in Nigerian universities.",
+                link: "https://womentech.ng",
+                sponsored: true
+            }
+        ];
+
+        // Load State from LocalStorage
+        let scholarships = [];
+        let savedIds = [];
+
+        try {
+            const storedSch = localStorage.getItem('naija_scholars_list');
+            scholarships = storedSch ? JSON.parse(storedSch) : defaultScholarships;
+            
+            const storedSaved = localStorage.getItem('naija_saved_ids');
+            savedIds = storedSaved ? JSON.parse(storedSaved) : [];
+        } catch (e) {
+            scholarships = defaultScholarships;
+            savedIds = [];
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('naija_scholars_list', JSON.stringify(scholarships));
+                localStorage.setItem('naija_saved_ids', JSON.stringify(savedIds));
+            } catch (e) {}
+        }
+
+        // DOM Elements
+        const viewHome = document.getElementById('viewHome');
+        const viewSaved = document.getElementById('viewSaved');
+        const viewAlerts = document.getElementById('viewAlerts');
+        const navItems = document.querySelectorAll('.nav-item');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const scholarshipListContainer = document.getElementById('scholarshipListContainer');
+        const savedListContainer = document.getElementById('savedListContainer');
+        const totalCountBadge = document.getElementById('totalCountBadge');
+        const savedCountBadge = document.getElementById('savedCountBadge');
+        const savedNavCount = document.getElementById('savedNavCount');
+        const searchInput = document.getElementById('searchInput');
+        const filterCategory = document.getElementById('filterCategory');
+        const filterSort = document.getElementById('filterSort');
+        
+        // AI match controls
+        const scrollToMatchBtn = document.getElementById('scrollToMatchBtn');
+        const aiMatchSection = document.getElementById('aiMatchSection');
+        const runMatchBtn = document.getElementById('runMatchBtn');
+        const inputField = document.getElementById('inputField');
+        const inputGpa = document.getElementById('inputGpa');
+        const inputLocation = document.getElementById('inputLocation');
+
+        // Modals
+        const sponsorModal = document.getElementById('sponsorModal');
+        const openSponsorModalBtn = document.getElementById('openSponsorModalBtn');
+        const closeSponsorModal = document.getElementById('closeSponsorModal');
+        const sponsorForm = document.getElementById('sponsorForm');
+        
+        const detailModal = document.getElementById('detailModal');
+        const detailModalContent = document.getElementById('detailModalContent');
+        const subscribePriorityBtn = document.getElementById('subscribePriorityBtn');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Theme initialization
+        const currentTheme = localStorage.getItem('naija_theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggleBtn.textContent = '☀️';
+        }
+
+        // Navigation Controller
+        navItems.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                
+                navItems.forEach(n => n.classList.remove('active'));
+                btn.classList.add('active');
+
+                [viewHome, viewSaved, viewAlerts].forEach(v => {
+                    if (v) v.classList.remove('active');
+                });
+
+                const targetView = document.getElementById(targetId);
+                if (targetView) targetView.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Theme Toggle
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.body.removeAttribute('data-theme');
+                themeToggleBtn.textContent = '🌙';
+                localStorage.setItem('naija_theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggleBtn.textContent = '☀️';
+                localStorage.setItem('naija_theme', 'dark');
+            }
+        });
+
+        // Toast Helper
+        function showToast(msg) {
+            if (!toastMessage) return;
+            toastMessage.textContent = msg;
+            toastMessage.classList.add('show');
+            setTimeout(() => {
+                toastMessage.classList.remove('show');
+            }, 2500);
+        }
+
+        // Render Scholarships
+        function renderScholarships(itemsToRender = scholarships, container = scholarshipListContainer, isMatchMode = false) {
+            if (!container) return;
+            
+            if (itemsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>📭</span>
+                        <h4>No scholarships found</h4>
+                        <p>Try adjusting your search query or filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = itemsToRender.map(sch => {
+                const isSaved = savedIds.includes(sch.id);
+                return `
+                    <div class="card ${sch.sponsored ? 'sponsored' : ''}">
+                        <div class="card-header">
+                            <div>
+                                ${sch.sponsored ? '<span class="sponsor-tag">Featured Sponsor</span>' : ''}
+                                <h3 class="card-title" style="margin-top: ${sch.sponsored ? '4px' : '0'};">${sch.title}</h3>
+                            </div>
+                            <button class="bookmark-btn ${isSaved ? 'saved' : ''}" data-id="${sch.id}" aria-label="Save">
+                                ${isSaved ? '♥' : '♡'}
+                            </button>
+                        </div>
+                        <div class="card-amount">${sch.amount}</div>
+                        <div class="card-meta">
+                            <span class="tag">🏛️ ${sch.sponsor}</span>
+                            <span class="tag">📂 ${sch.category}</span>
+                            <span class="tag">⏳ Due: ${sch.deadline}</span>
+                            ${isMatchMode && sch.matchScore ? `<span class="tag" style="background:var(--primary-light); color:var(--primary); font-weight:700;">✨ ${sch.matchScore}% Match</span>` : ''}
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-outline view-details-btn" data-id="${sch.id}">View Details</button>
+                            <button class="btn apply-now-btn" data-link="${sch.link}">Apply on Portal</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Bind card event listeners
+            container.querySelectorAll('.bookmark-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    toggleBookmark(id);
+                });
+            });
+
+            container.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    openDetailModal(id);
+                });
+            });
+
+            container.querySelectorAll('.apply-now-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const link = e.currentTarget.getAttribute('data-link');
+                    window.open(link, '_blank');
+                    showToast('Redirecting to official portal...');
+                });
+            });
+        }
+
+        function renderSaved() {
+            const savedItems = scholarships.filter(s => savedIds.includes(s.id));
+            if (savedCountBadge) savedCountBadge.textContent = `${savedItems.length} Saved`;
+            if (savedNavCount) savedNavCount.textContent = savedItems.length;
+            renderScholarships(savedItems, savedListContainer);
+        }
+
+        // Bookmark Toggle
+        function toggleBookmark(id) {
+            const index = savedIds.indexOf(id);
+            if (index > -1) {
+                savedIds.splice(index, 1);
+                showToast('Removed from saved list');
+            } else {
+                savedIds.push(id);
+                showToast('Saved to your profile!');
+            }
+            saveState();
+            filterAndRender();
+            renderSaved();
+        }
+
+        // Filter and Search Logic
+        function filterAndRender() {
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const category = filterCategory ? filterCategory.value : 'All';
+            const sort = filterSort ? filterSort.value : 'deadline';
+
+            let filtered = scholarships.filter(sch => {
+                const matchesQuery = sch.title.toLowerCase().includes(query) || 
+                                     sch.sponsor.toLowerCase().includes(query) ||
+                                     sch.description.toLowerCase().includes(query);
+                const matchesCategory = category === 'All' || sch.category === category;
+                return matchesQuery && matchesCategory;
+            });
+
+            // Sorting
+            filtered.sort((a, b) => {
+                if (sort === 'amount') {
+                    return b.amountVal - a.amountVal;
+                } else {
+                    return new Date(a.deadline) - new Date(b.deadline);
+                }
+            });
+
+            if (totalCountBadge) totalCountBadge.textContent = `${filtered.length} Active`;
+            renderScholarships(filtered, scholarshipListContainer);
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterAndRender);
+        if (filterCategory) filterCategory.addEventListener('change', filterAndRender);
+        if (filterSort) filterSort.addEventListener('change', filterAndRender);
+
+        // AI Matcher Logic
+        if (scrollToMatchBtn && aiMatchSection) {
+            scrollToMatchBtn.addEventListener('click', () => {
+                aiMatchSection.scrollIntoView({ behavior: 'smooth' });
+                aiMatchSection.style.borderColor = 'var(--accent)';
+                setTimeout(() => {
+                    aiMatchSection.style.borderColor = 'var(--primary)';
+                }, 1000);
+            });
+        }
+
+        if (runMatchBtn) {
+            runMatchBtn.addEventListener('click', () => {
+                const fVal = inputField.value;
+                const gVal = parseFloat(inputGpa.value);
+                const lVal = inputLocation.value;
+
+                showToast('AI running deep profile analysis...');
+
+                // Calculate match scores for all scholarships
+                const scored = scholarships.map(sch => {
+                    let score = 70; // baseline
+                    if (fVal === 'All' || sch.field === fVal || sch.field === 'All') score += 15;
+                    if (gVal >= sch.gpa) score += 10;
+                    if (lVal === 'All' || sch.location === lVal || sch.location === 'All') score += 5;
+                    if (score > 98) score = 98;
+                    return { ...sch, matchScore: score };
+                });
+
+                scored.sort((a, b) => b.matchScore - a.matchScore);
+                renderScholarships(scored, scholarshipListContainer, true);
+                showToast(`Found ${scored.length} matching grants!`);
+            });
+        }
+
+        // Detail Modal
+        function openDetailModal(id) {
+            const sch = scholarships.find(s => s.id === id);
+            if (!sch || !detailModal || !detailModalContent) return;
+
+            const isSaved = savedIds.includes(sch.id);
+
+            detailModalContent.innerHTML = `
+                <div class="modal-header">
+                    <h3>Scholarship Details</h3>
+                    <button class="close-modal" id="closeDetailModal">×</button>
+                </div>
+                <h2 style="font-size:18px; font-weight:800; margin-bottom:8px;">${sch.title}</h2>
+                <div class="card-amount" style="margin-bottom:12px;">${sch.amount}</div>
+                <div class="card-meta" style="margin-bottom:16px;">
+                    <span class="tag">🏛️ ${sch.sponsor}</span>
+                    <span class="tag">📂 ${sch.category}</span>
+                    <span class="tag">⏳ Deadline: ${sch.deadline}</span>
+                </div>
+                <p style="font-size:14px; color:var(--text-secondary); line-height:1.6; margin-bottom:20px;">
+                    ${sch.description}
+                </p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-outline" id="modalSaveBtn" style="flex:1;">
+                        ${isSaved ? '♥ Saved' : '♡ Save for Later'}
+                    </button>
+                    <button class="btn" id="modalApplyBtn" style="flex:2;">Proceed to Portal ➔</button>
+                </div>
+            `;
+
+            detailModal.classList.add('open');
+
+            document.getElementById('closeDetailModal').addEventListener('click', () => {
+                detailModal.classList.remove('open');
+            });
+
+            document.getElementById('modalSaveBtn').addEventListener('click', () => {
+                toggleBookmark(sch.id);
+                openDetailModal(sch.id); // refresh modal state
+            });
+
+            document.getElementById('modalApplyBtn').addEventListener('click', () => {
+                window.open(sch.link, '_blank');
+                showToast('Redirecting to partner portal...');
+            });
+        }
+
+        // Sponsor Listing Modal
+        if (openSponsorModalBtn && sponsorModal) {
+            openSponsorModalBtn.addEventListener('click', () => {
+                sponsorModal.classList.add('open');
+            });
+            closeSponsorModal.addEventListener('click', () => {
+                sponsorModal.classList.remove('open');
+            });
+        }
+
+        if (sponsorForm) {
+            sponsorForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const org = document.getElementById('sponsorOrg').value.trim();
+                const title = document.getElementById('sponsorTitle').value.trim();
+                const amountRaw = document.getElementById('sponsorAmount').value.trim();
+                const category = document.getElementById('sponsorCategory').value;
+                const link = document.getElementById('sponsorLink').value.trim();
+
+                const newSch = {
+                    id: 'sch-' + Date.now(),
+                    title: title,
+                    sponsor: org,
+                    amount: amountRaw.startsWith('₦') ? amountRaw : '₦' + amountRaw,
+                    amountVal: parseInt(amountRaw.replace(/[^0-9]/g, '')) || 100000,
+                    category: category,
+                    field: 'All',
+                    gpa: 2.0,
+                    location: 'All',
+                    deadline: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+                    description: `Sponsored listing by ${org}. Verified financial opportunity for qualified Nigerian undergraduate students.`,
+                    link: link,
+                    sponsored: true
+                };
+
+                scholarships.unshift(newSch);
+                saveState();
+                filterAndRender();
+
+                sponsorModal.classList.remove('open');
+                sponsorForm.reset();
+                showToast('₦5,000 Payment confirmed! Listing published.');
+            });
+        }
+
+        // Priority Subscription Button
+        if (subscribePriorityBtn) {
+            subscribePriorityBtn.addEventListener('click', () => {
+                showToast('Redirecting to Paystack secure checkout for ₦500/mo...');
+                setTimeout(() => {
+                    alert('Simulated Paystack Success! 🎉 You are now subscribed to NaijaScholars Priority WhatsApp & USSD Alerts.');
+                }, 800);
+            });
+        }
+
+        // Close modal when tapping backdrop
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('open');
+            }
+        });
+
+        // Initial render run
+        filterAndRender();
+        renderSaved();
+    </script>
+</body>
+</html>
