@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ExamFee Collective & Bulk-Buy Bot</title>
+<meta name="description" content="Exam Fee Bulk‑Buy Bot – a web app where students form groups to collectively purchase WAEC, NECO, or JAMB registration fees through partnered payment gatew">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #065f46;
+            --primary-light: #ecfdf5;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: #cbd5e1;
+            --danger: #dc2626;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-pro {
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.35rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .group-item {
+            background: var(--primary-light);
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .group-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .progress-bar-container {
+            background: #cbd5e1;
+            border-radius: 99px;
+            height: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-bar {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            background: var(--primary-light);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .fixed-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0.55rem calc(0.5rem + var(--safe-bottom)) 0.55rem;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            flex: 1;
+            padding: 0.25rem 0;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+            margin-bottom: 2px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--text);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .badge-waec { background: #dbeafe; color: #1e40af; }
+        .badge-neco { background: #fef3c7; color: #92400e; }
+        .badge-jamb { background: #fce7f3; color: #9d174d; }
+
+        .flex-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .flex-row > * {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>🎓</span> ExamFee Bot
+        </div>
+        <div>
+            <span id="headerProBadge" class="badge-pro" style="display:none;">Pro Active</span>
+            <span id="liveTime" style="font-size:0.75rem; color:var(--text-secondary);">--:--</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: DASHBOARD -->
+        <div id="tabDashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-val" id="statGroups">0</div>
+                    <div class="stat-label">Active Pools</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statSaved">₦0</div>
+                    <div class="stat-label">Total Saved</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h1>⚡ Quick Actions</h2>
+                <div class="flex-row">
+                    <button class="btn" id="btnGoCreate">🚀 Create Pool</button>
+                    <button class="btn btn-secondary" id="btnGoBot">🤖 Bot Assistant</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📢 Live Pool Broadcasts</h2>
+                <div id="dashboardPoolsList">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: POOLS & GROUPS -->
+        <div id="tabPools" class="tab-content">
+            <div class="card">
+                <h2>Create Bulk-Buy Pool 
+                    <button class="btn btn-secondary" style="width: auto; padding: 0.25rem 0.5rem; font-size: 0.75rem;" id="btnResetData">Reset Data</button>
+                </h2>
+                <form id="poolForm">
+                    <div class="form-group">
+                        <label for="examType">Exam Type</label>
+                        <select id="examType" required>
+                            <option value="WAEC">WAEC (WASSCE) - Est. ₦27,000</option>
+                            <option value="NECO">NECO (SSCE) - Est. ₦22,000</option>
+                            <option value="JAMB">JAMB (UTME) - Est. ₦7,700</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="groupName">Group Title / School / Area</label>
+                        <input type="text" id="groupName" placeholder="e.g., Ikeja Exam Batch A" required>
+                    </div>
+                    <div class="flex-row">
+                        <div class="form-group">
+                            <label for="targetCount">Target Members</label>
+                            <input type="number" id="targetCount" min="5" max="100" value="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="discountRate">Target Discount (%)</label>
+                            <input type="number" id="discountRate" min="2" max="25" value="10" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="coordinatorName">Group Coordinator</label>
+                        <input type="text" id="coordinatorName" placeholder="Your Name or Nickname" required>
+                    </div>
+                    <button type="submit" class="btn">Launch Bulk Pool & Get OPay Discount</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Active Collective Pools</h2>
+                <div id="poolsContainer">
+                    <!-- Dynamic pools -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: BOT ASSISTANT -->
+        <div id="tabBot" class="tab-content">
+            <div class="card">
+                <h2>🤖 OPay Bulk-Buy USSD / Chat Bot</h2>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+                    Type commands or chat with Shannon AI to calculate group savings, negotiate fees, or generate USSD strings.
+                </p>
+                <div style="background:#f1f5f9; padding:0.75rem; border-radius:8px; height:200px; overflow-y:auto; margin-bottom:0.75rem; display:flex; flex-direction:column; gap:0.5rem;" id="botChatLog">
+                    <div style="background:#fff; padding:0.5rem; border-radius:6px; font-size:0.85rem; align-self:flex-start; max-width:85%;">
+                        👋 Hello Boss! I am Shannon, your ExamFee Bot assistant. Type e.g., <code>waec calc 15</code> or <code>bulkussd</code> to test.
+                    </div>
+                </div>
+                <div class="flex-row">
+                    <input type="text" id="botInput" placeholder="Type command or question...">
+                    <button class="btn" id="btnSendBot" style="width: 80px;">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: MONETIZATION / PRO -->
+        <div id="tabPro" class="tab-content">
+            <div class="card" style="border: 2px solid var(--accent);">
+                <h2>⭐ Unlimited Group Creator Pro <span class="badge-pro">PRO</span></h2>
+                <p style="font-size:0.9rem; margin-bottom:1rem;">
+                    Unlock priority OPay gateway routing, zero service fees on all transactions, automated group reminders via SMS, and custom webhook alerts.
+                </p>
+                <div class="stats-grid" style="margin-bottom:1rem;">
+                    <div class="stat-box">
+                        <div class="stat-val">₦2,500</div>
+                        <div class="stat-label">Monthly Pass</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val">₦15,000</div>
+                        <div class="stat-label">Annual Pass</div>
+                    </div>
+                </div>
+                <button class="btn btn-accent" id="btnUpgradePro">Upgrade to Pro Instantly (Paystack/OPay)</button>
+            </div>
+
+            <div class="card">
+                <h2>📊 Transaction & Fee Earnings</h2>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                    Platform fee revenue generated through collective service fees (₦200 per slot) and Pro upgrades.
+                </p>
+                <div class="stat-box" style="background:var(--primary-light);">
+                    <div class="stat-val" id="statRevenue">₦0</div>
+                    <div class="stat-label">Total Platform Revenue</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="fixed-bottom">
+        <button class="nav-item active" data-target="tabDashboard">
+            <span class="icon">📊</span>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" data-target="tabPools">
+            <span class="icon">🤝</span>
+            <span>Pools</span>
+        </button>
+        <button class="nav-item" data-target="tabBot">
+            <span class="icon">🤖</span>
+            <span>Bot</span>
+        </button>
+        <button class="nav-item" data-target="tabPro">
+            <span class="icon">⭐</span>
+            <span>Pro</span>
+        </button>
+    </nav>
+
+    <div id="toast" class="toast">Notification message</div>
+
+    <script>
+        // State Management
+        const STORAGE_KEY = 'EXAMFEE_BOT_STATE_V1';
+        let state = {
+            isPro: false,
+            revenue: 0,
+            totalSaved: 0,
+            pools: [
+                {
+                    id: 101,
+                    type: 'WAEC',
+                    name: 'Lagos Mainland SS3 Collective',
+                    target: 20,
+                    joined: 14,
+                    discount: 12,
+                    pricePerExam: 27000,
+                    coordinator: 'Mr. Adebayo',
+                    members: ['Tunde', 'Chioma', 'Ibrahim', 'Grace', 'Emeka']
+                },
+                {
+                    id: 102,
+                    type: 'JAMB',
+                    name: 'Benin City UTME Group Batch 2',
+                    target: 15,
+                    joined: 15,
+                    discount: 15,
+                    pricePerExam: 7700,
+                    coordinator: 'Blessing E.',
+                    members: ['Osas', 'Amen', 'Esther', 'Joy']
+                }
+            ]
+        };
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch(e) {
+                console.error('Storage error', e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    state = JSON.parse(saved);
+                }
+            } catch(e) {
+                console.error('Load error', e);
+            }
+        }
+
+        // Live Clock
+        function updateLiveTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const el = document.getElementById('liveTime');
+            if (el) el.textContent = timeStr;
+        }
+        setInterval(updateLiveTime, 1000);
+        updateLiveTime();
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Navigation Controller
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+
+                tabContents.forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.id === targetId) {
+                        tab.classList.add('active');
+                    }
+                });
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            });
+        });
+
+        // Shortcut buttons on dashboard
+        const btnGoCreate = document.getElementById('btnGoCreate');
+        if (btnGoCreate) {
+            btnGoCreate.addEventListener('click', () => {
+                document.querySelector('[data-target="tabPools"]').click();
+            });
+        }
+        const btnGoBot = document.getElementById('btnGoBot');
+        if (btnGoBot) {
+            btnGoBot.addEventListener('click', () => {
+                document.querySelector('[data-target="tabBot"]').click();
+            });
+        }
+
+        // Render UI
+        function renderAll() {
+            const statGroups = document.getElementById('statGroups');
+            const statSaved = document.getElementById('statSaved');
+            const statRevenue = document.getElementById('statRevenue');
+            const poolsContainer = document.getElementById('poolsContainer');
+            const dashboardPoolsList = document.getElementById('dashboardPoolsList');
+            const headerProBadge = document.getElementById('headerProBadge');
+
+            if (statGroups) statGroups.textContent = state.pools.length;
+            
+            // Calculate total saved across pools
+            let savedSum = state.pools.reduce((acc, p) => acc + (p.joined * p.pricePerExam * (p.discount / 100)), 0);
+            if (statSaved) statSaved.textContent = '₦' + Math.round(savedSum).toLocaleString();
+
+            if (statRevenue) statRevenue.textContent = '₦' + state.revenue.toLocaleString();
+            if (headerProBadge) headerProBadge.style.display = state.isPro ? 'inline-block' : 'none';
+
+            // Render pools
+            let htmlPools = '';
+            let htmlDashPools = '';
+
+            state.pools.forEach(pool => {
+                const pct = Math.min(100, Math.round((pool.joined / pool.target) * 100));
+                const normalTotal = pool.target * pool.pricePerExam;
+                const bulkTotal = normalTotal * (1 - pool.discount / 100);
+                const badgeClass = pool.type === 'WAEC' ? 'badge-waec' : (pool.type === 'NECO' ? 'badge-neco' : 'badge-jamb');
+
+                const cardHtml = `
+                    <div class="group-item">
+                        <div class="group-header">
+                            <span class="badge ${badgeClass}">${pool.type}</span>
+                            <span style="font-size:0.75rem; font-weight:600;">Coordinator: ${pool.coordinator}</span>
+                        </div>
+                        <div class="group-title">${pool.name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary); margin: 0.25rem 0;">
+                            Goal: <b>${pool.joined}</b> / ${pool.target} members joined (${pool.discount}% bulk discount)
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${pct}%"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                            <span style="font-size:0.85rem; font-weight:bold; color:var(--primary-dark);">Fee: ₦${Math.round(pool.pricePerExam * (1 - pool.discount/100)).toLocaleString()}</span>
+                            <button class="btn join-pool-btn" data-id="${pool.id}" style="width:auto; padding:0.4rem 0.8rem; font-size:0.8rem;">Join Pool</button>
+                        </div>
+                    </div>
+                `;
+                htmlPools += cardHtml;
+                htmlDashPools += cardHtml;
+            });
+
+            if (poolsContainer) poolsContainer.innerHTML = htmlPools || '<p style="font-size:0.85rem; color:var(--text-secondary);">No active pools found. Create one above!</p>';
+            if (dashboardPoolsList) dashboardPoolsList.innerHTML = htmlDashPools || '<p style="font-size:0.85rem; color:var(--text-secondary);">No active pools available.</p>';
+
+            // Wire join buttons
+            document.querySelectorAll('.join-pool-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    joinPool(id);
+                });
+            });
+        }
+
+        function joinPool(id) {
+            const pool = state.pools.find(p => p.id === id);
+            if (!pool) return;
+            if (pool.joined >= pool.target) {
+                showToast('❌ This pool has already reached its target capacity!');
+                return;
+            }
+            pool.joined += 1;
+            state.revenue += 200; // Service fee per transaction
+            saveState();
+            renderAll();
+            showToast(`✅ Successfully joined "${pool.name}" via OPay secure gateway! ₦200 service fee applied.`);
+        }
+
+        // Create Pool Form Handler
+        const poolForm = document.getElementById('poolForm');
+        if (poolForm) {
+            poolForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const examType = document.getElementById('examType').value;
+                const groupName = document.getElementById('groupName').value.trim();
+                const targetCount = parseInt(document.getElementById('targetCount').value);
+                const discountRate = parseInt(document.getElementById('discountRate').value);
+                const coordinatorName = document.getElementById('coordinatorName').value.trim();
+
+                let defaultPrices = { WAEC: 27000, NECO: 22000, JAMB: 7700 };
+
+                const newPool = {
+                    id: Date.now(),
+                    type: examType,
+                    name: groupName,
+                    target: targetCount,
+                    joined: 1, // Coordinator joins automatically
+                    discount: discountRate,
+                    pricePerExam: defaultPrices[examType] || 20000,
+                    coordinator: coordinatorName,
+                    members: [coordinatorName]
+                };
+
+                state.pools.unshift(newPool);
+                state.revenue += state.isPro ? 0 : 500; // Creation fee if not pro
+                saveState();
+                renderAll();
+                poolForm.reset();
+                showToast(`🚀 Pool "${groupName}" successfully launched on OPay bulk network!`);
+                document.querySelector('[data-target="tabPools"]').click();
+            });
+        }
+
+        // Reset Data Button
+        const btnResetData = document.getElementById('btnResetData');
+        if (btnResetData) {
+            btnResetData.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all pools and state data?')) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    location.reload();
+                }
+            });
+        }
+
+        // Pro Upgrade Button
+        const btnUpgradePro = document.getElementById('btnUpgradePro');
+        if (btnUpgradePro) {
+            btnUpgradePro.addEventListener('click', () => {
+                state.isPro = true;
+                state.revenue += 2500;
+                saveState();
+                renderAll();
+                showToast('⭐ Congratulations! Pro subscription activated successfully.');
+            });
+        }
+
+        // Bot Chat Assistant Logic
+        const botChatLog = document.getElementById('botChatLog');
+        const botInput = document.getElementById('botInput');
+        const btnSendBot = document.getElementById('btnSendBot');
+
+        function appendBotMessage(sender, text) {
+            if (!botChatLog) return;
+            const msgDiv = document.createElement('div');
+            const isUser = sender === 'You';
+            msgDiv.style.cssText = `background:${isUser ? 'var(--primary-light)' : '#fff'}; padding:0.5rem 0.75rem; border-radius:6px; font-size:0.85rem; align-self:${isUser ? 'flex-end' : 'flex-start'}; max-width:85%; border:1px solid var(--border);`;
+            msgDiv.innerHTML = `<b>${sender}:</b> ${text}`;
+            botChatLog.appendChild(msgDiv);
+            botChatLog.scrollTop = botChatLog.scrollHeight;
+        }
+
+        function handleBotCommand(cmd) {
+            const lower = cmd.toLowerCase().trim();
+            appendBotMessage('You', cmd);
+            setTimeout(() => {
+                if (lower.includes('calc') || lower.includes('waec') || lower.includes('jamb')) {
+                    appendBotMessage('Shannon AI', '📊 For a group of 15 students taking WAEC at ₦27,000 each (Total ₦405,000), our OPay bulk partnership secures a 12% rebate, saving the group ₦48,600 total (~₦3,240 savings per student)!');
+                } else if (lower.includes('ussd') || lower.includes('opay')) {
+                    appendBotMessage('Shannon AI', '📲 Quick OPay Bulk USSD code string: `*955*24*EXAMCODE#`. Dial on your registered OPay phone number to instantly approve group disbursements.');
+                } else if (lower.includes('hello') || lower.includes('hi')) {
+                    appendBotMessage('Shannon AI', '👋 Hello Boss! Ready to cut exam registration costs through collective bargaining today?');
+                } else {
+                    appendBotMessage('Shannon AI', `🤖 I received: "${cmd}". Try asking e.g. "Calculate WAEC savings for 20 students" or type "ussd" for payment shortcuts.`);
+                }
+            }, 400);
+        }
+
+        if (btnSendBot && botInput) {
+            btnSendBot.addEventListener('click', () => {
+                const val = botInput.value.trim();
+                if (!val) return;
+                botInput.value = '';
+                handleBotCommand(val);
+            });
+            botInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    btnSendBot.click();
+                }
+            });
+        }
+
+        // Initialise
+        loadState();
+        renderAll();
+    </script>
+</body>
+</html>
