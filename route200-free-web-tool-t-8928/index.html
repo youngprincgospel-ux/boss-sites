@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Route200 – Pre‑Degree Route Finder</title>
+<meta name="description" content="Route200 — free web tool that compares every legitimate pre-degree route into 200 level (IJMB, JUPEB, JUPEB-affiliated centres, NABTEB/Advanced Level, ND‑to‑200).">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🚀%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#fdfdfd;
+  --fg:#111;
+  --accent:#0066cc;
+  --card-bg:#fff;
+  --card-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#111;
+    --fg:#eee;
+    --accent:#66aaff;
+    --card-bg:#222;
+    --card-shadow:0 2px 6px rgba(255,255,255,0.1);
+  }
+}
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:system-ui,sans-serif;
+  line-height:1.5;
+}
+body{
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+header{
+  padding:1rem;
+  text-align:center;
+  background:var(--accent);
+  color:#fff;
+}
+h1{
+  margin:0;
+  font-size:1.5rem;
+}
+main{
+  flex:1;
+  padding:1rem;
+  padding-bottom:calc(3rem + env(safe-area-inset-bottom));
+}
+label{
+  display:block;
+  margin-bottom:0.5rem;
+  font-weight:600;
+}
+input,select,button{
+  width:100%;
+  padding:0.75rem;
+  font-size:1rem;
+  border:1px solid #ccc;
+  border-radius:4px;
+  box-sizing:border-box;
+}
+button{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  margin-top:0.5rem;
+  cursor:pointer;
+}
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
+.card{
+  background:var(--card-bg);
+  box-shadow:var(--card-shadow);
+  border-radius:8px;
+  padding:1rem;
+  margin-bottom:1rem;
+}
+.card h2{
+  margin:0 0 0.5rem 0;
+  font-size:1.2rem;
+}
+.card p{
+  margin:0.25rem 0;
+}
+footer{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:var(--accent);
+  color:#fff;
+  text-align:center;
+  padding:0.5rem;
+  font-size:0.9rem;
+}
+@media (min-width:600px){
+  main{
+    max-width:600px;
+    margin:auto;
+  }
+}
+</style>
+</head>
+<body>
+<header>
+<h1>🚀 Route200</h1>
+<p>Find the cheapest path to 200‑level</p>
+</header>
+<main>
+<form id="searchForm" aria-label="Route search form">
+  <label for="qualSelect">Your qualification</label>
+  <select id="qualSelect" required>
+    <option value="">Select qualification</option>
+    <option value="ss3">SS3 (WAEC/NECO)</option>
+    <option value="nd">ND (National Diploma)</option>
+  </select>
+
+  <label for="budgetInput">Maximum budget (₦)</label>
+  <input type="number" id="budgetInput" min="0" placeholder="e.g., 150000" required>
+
+  <button type="submit" id="findBtn">Find routes</button>
+</form>
+
+<section id="results" aria-live="polite" style="margin-top:1rem;"></section>
+</main>
+
+<footer id="footerBar">⏰ <span id="timeDisplay"></span></footer>
+
+<script>
+(function(){
+  // Utility
+  function $(id){ return document.getElementById(id); }
+
+  // Elements
+  const form = $('searchForm');
+  const qualSelect = $('qualSelect');
+  const budgetInput = $('budgetInput');
+  const findBtn = $('findBtn');
+  const resultsSec = $('results');
+  const timeSpan = $('timeDisplay');
+
+  // Data
+  const routes = [
+    {
+      name:'IJMB (Institute of Joint Matriculation Board)',
+      cost:120000,
+      duration:'6 months',
+      eligibility:['ss3'],
+      description:'Intensive program preparing you for direct entry into 200‑level.'
+    },
+    {
+      name:'JUPEB (Joint Universities Preliminary Examinations Board)',
+      cost:130000,
+      duration:'9 months',
+      eligibility:['ss3'],
+      description:'Widely recognized, leads straight to 200‑level.'
+    },
+    {
+      name:'JUPEB‑affiliated centre',
+      cost:100000,
+      duration:'9 months',
+      eligibility:['ss3'],
+      description:'Accredited centres may offer lower fees.'
+    },
+    {
+      name:'NABTEB/Advanced Level',
+      cost:80000,
+      duration:'12 months',
+      eligibility:['ss3'],
+      description:'Traditional A‑Level route, accepted by many universities.'
+    },
+    {
+      name:'ND to 200‑level direct entry',
+      cost:140000,
+      duration:'6 months',
+      eligibility:['nd'],
+      description:'For ND holders, fast‑track to 200‑level.'
+    }
+  ];
+
+  // State persistence
+  const storageKey='route200Purchases';
+  let purchases=[];
+  try{
+    const stored=localStorage.getItem(storageKey);
+    if(stored){ purchases=JSON.parse(stored); }
+  }catch(e){ console.warn('LocalStorage not available',e); }
+
+  function savePurchases(){
+    try{ localStorage.setItem(storageKey,JSON.stringify(purchases)); }catch(e){}
+  }
+
+  // Time display
+  function updateTime(){
+    const now=new Date();
+    const h=now.getHours().toString().padStart(2,'0');
+    const m=now.getMinutes().toString().padStart(2,'0');
+    const s=now.getSeconds().toString().padStart(2,'0');
+    timeSpan.textContent=`${h}:${m}:${s}`;
+  }
+  setInterval(updateTime,1000);
+  updateTime();
+
+  // Render results
+  function renderRoutes(filtered){
+    resultsSec.innerHTML='';
+    if(filtered.length===0){
+      const p=document.createElement('p');
+      p.textContent='No routes match your criteria.';
+      resultsSec.appendChild(p);
+      return;
+    }
+    filtered.forEach(r=>{
+      const card=document.createElement('div');
+      card.className='card';
+      const h2=document.createElement('h2');
+      h2.textContent=r.name;
+      const desc=document.createElement('p');
+      desc.textContent=r.description;
+      const cost=document.createElement('p');
+      cost.textContent=`Cost: ₦${r.cost.toLocaleString()}`;
+      const dur=document.createElement('p');
+      dur.textContent=`Duration: ${r.duration}`;
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.textContent='Buy Application Pack (₦1,500)';
+      btn.setAttribute('aria-label',`Buy application pack for ${r.name}`);
+      btn.addEventListener('click',()=>handlePurchase(r.name));
+      card.appendChild(h2);
+      card.appendChild(desc);
+      card.appendChild(cost);
+      card.appendChild(dur);
+      card.appendChild(btn);
+      resultsSec.appendChild(card);
+    });
+  }
+
+  function handlePurchase(routeName){
+    if(purchases.includes(routeName)){
+      alert('You have already purchased the pack for this route.');
+      return;
+    }
+    purchases.push(routeName);
+    savePurchases();
+    alert(`✅ Pack purchased for ${routeName}. Thank you!`);
+  }
+
+  // Form handler
+  if(form && qualSelect && budgetInput && findBtn && resultsSec){
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const qual=qualSelect.value;
+      const budget=parseInt(budgetInput.value,10);
+      if(!qual||isNaN(budget)){
+        alert('Please fill in all fields.');
+        return;
+      }
+      const filtered=routes.filter(r=>r.eligibility.includes(qual) && r.cost<=budget);
+      renderRoutes(filtered);
+    });
+  }
+})();
+</script>
+</body>
+</html>
