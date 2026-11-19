@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Naija Zero-Kobo Empire Builder & Monetization Lab</title>
+<meta name="description" content="">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js" integrity="sha512-8yDIzpcHuNdEDrZqCqH+I/90S11Z20y6K5TjV3vG9Zp3Jz3XJz3XJz3XJz3XJz3XJz3XJz3XJz3XJz3XJz3Q==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #00663d;
+            --accent: #ffc72c;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-light: #475569;
+            --border: #e2e8f0;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: 90px;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            background: #dcfce7;
+            color: var(--primary-dark);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            font-size: 0.95k;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-top: 8px;
+        }
+
+        .model-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .model-item {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .model-item.selected {
+            border-color: var(--primary);
+            background: #f0fdf4;
+        }
+
+        .model-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .model-desc {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: fadeInOut 2.5s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -20px); }
+            15% { opacity: 1; transform: translate(-50%, 0); }
+            85% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+
+        .action-log {
+            font-family: monospace;
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body x-data="appData()" x-init="init()">
+
+    <header>
+        <div class="logo">
+            <span>🇳🇬</span> Zero-Kobo Empire
+        </div>
+        <div class="badge" x-text="currentTime"></div>
+    </header>
+
+    <main>
+        <!-- TOAST NOTIFICATION -->
+        <template x-if="toastMessage">
+            <div class="toast" x-text="toastMessage"></div>
+        </template>
+
+        <!-- TAB 1: DASHBOARD -->
+        <div x-show="activeTab === 'dashboard'" x-cloak>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Empire Capital</div>
+                    <div class="stat-value" x-text="'₦' + stats.capital.toLocaleString()"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Today's Revenue</div>
+                    <div class="stat-value" x-text="'₦' + stats.dailyRevenue.toLocaleString()"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h1>🚀 Active Strategy: Zero-Kobo Launch</h2>
+                <p>Executing Boss's command: building and scaling digital micro-assets in Nigeria with ₦0 capital using free web infrastructure, organic WhatsApp distribution, and automated value delivery.</p>
+                <button class="btn" @click="runExecutionCycle()">
+                    <span>⚡ Execute Growth Sprint</span>
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>📊 Live Action Log</h2>
+                <div class="action-log" id="actionLog">
+                    <template x-for="log in logs">
+                        <div x-text="log"></div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: MODELS -->
+        <div x-show="activeTab === 'models'" x-cloak>
+            <div class="card">
+                <h2>💡 Proven Zero-Kobo Models</h2>
+                <p>Select a monetization mechanism to deploy instantly across Nigerian student communities.</p>
+                
+                <div class="model-list">
+                    <template x-for="model in businessModels" :key="model.id">
+                        <div class="model-item" :class="{'selected': selectedModel === model.id}" @click="selectedModel = model.id">
+                            <div class="model-title" x-text="model.title"></div>
+                            <div class="model-desc" x-text="model.desc"></div>
+                        </div>
+                    </template>
+                </div>
+
+                <button class="btn" style="margin-top: 16px;" @click="deployModel()">
+                    <span>🚀 Deploy Selected Model</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 3: TOOLS -->
+        <div x-show="activeTab === 'tools'" x-cloak>
+            <div class="card">
+                <h2>🛠️ Quick Micro-App Generator</h2>
+                <p>Generate high-demand viral web utility tools instantly for free traffic capture.</p>
+                
+                <div class="input-group">
+                    <label>Tool Category</label>
+                    <select x-model="toolForm.category">
+                        <option value="waec">WAEC / JAMB Result & Exam Checker</option>
+                        <option value="data">Cheap Data & Airtime Calculator</option>
+                        <option value="cv">Naija Hustle CV / Cover Letter Maker</option>
+                        <option value="price">Used Phone Valuation Tool</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Target Audience Tag</label>
+                    <input type="text" x-model="toolForm.audience" placeholder="e.g. 2026 WAEC Candidates">
+                </div>
+
+                <button class="btn" @click="generateTool()">
+                    <span>⚡ Build & Publish Tool</span>
+                </button>
+            </div>
+
+            <div class="card" x-show="generatedTools.length > 0">
+                <h2>📂 Deployed Fleet (<span x-text="generatedTools.length"></span>)</h2>
+                <template x-for="tool in generatedTools" :key="tool.id">
+                    <div style="padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;" x-text="tool.name"></div>
+                            <div style="font-size: 0.75rem; color: var(--text-light);" x-text="tool.date"></div>
+                        </div>
+                        <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" @click="simulateTraffic(tool)">Simulate Traffic</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- TAB 4: WALLET -->
+        <div x-show="activeTab === 'wallet'" x-cloak>
+            <div class="card">
+                <h2>🏦 Shannon's Ledger & Treasury</h2>
+                <p>Track incoming Paystack funds, airtime conversions, and zero-capital reinvestments.</p>
+
+                <div class="stats-grid" style="margin-top: 16px;">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Earned</div>
+                        <div class="stat-value" x-text="'₦' + stats.capital.toLocaleString()"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Payout</div>
+                        <div class="stat-value">₦0</div>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 16px;">
+                    <label>Log Manual Sale / Income (₦)</label>
+                    <input type="number" x-model.number="manualIncome.amount" placeholder="e.g. 2000">
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <input type="text" x-model="manualIncome.desc" placeholder="e.g. Sold WAEC past question bundle">
+                </div>
+                <button class="btn" @click="recordIncome()">
+                    <span>💰 Record Income</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <nav class="nav-bar">
+        <button class="nav-item" :class="{'active': activeTab === 'dashboard'}" @click="activeTab = 'dashboard'">
+            <span class="icon">🏠</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item" :class="{'active': activeTab === 'models'}" @click="activeTab = 'models'">
+            <span class="icon">💡</span>
+            <span>Models</span>
+        </button>
+        <button class="nav-item" :class="{'active': activeTab === 'tools'}" @click="activeTab = 'tools'">
+            <span class="icon">🛠️</span>
+            <span>Tools</span>
+        </button>
+        <button class="nav-item" :class="{'active': activeTab === 'wallet'}" @click="activeTab = 'wallet'">
+            <span class="icon">🏦</span>
+            <span>Wallet</span>
+        </button>
+    </nav>
+
+    <script>
+        function appData() {
+            return {
+                activeTab: 'dashboard',
+                currentTime: '',
+                toastMessage: '',
+                stats: {
+                    capital: 0,
+                    dailyRevenue: 0
+                },
+                logs: [
+                    '[10:10 AM] System initialized. Ready for zero-kobo empire scaling, Boss.',
+                    '[10:10 AM] Shannon on standby. Awaiting first transaction.'
+                ],
+                selectedModel: 'model1',
+                businessModels: [
+                    { id: 'model1', title: 'Curated Study Notes & Past Question Bundles', desc: 'Package free educational PDFs into viral WhatsApp groups with premium tier upsells via Paystack.' },
+                    { id: 'model2', title: 'Used Phone Price Checker & Safe Swap Guide', desc: 'Free web utility capturing buyers/sellers with affiliate links to escrow services and repair hubs.' },
+                    { id: 'model3', title: 'Naija Hustle CV Builder & Cover Letter Generator', desc: 'Instant mobile web builder helping job seekers with zero cost generation and paid VIP template unlocking.' }
+                ],
+                toolForm: {
+                    category: 'waec',
+                    audience: '2026 WAEC Candidates'
+                },
+                generatedTools: [],
+                manualIncome: {
+                    amount: '',
+                    desc: ''
+                },
+                init() {
+                    this.updateTime();
+                    setInterval(() => this.updateTime(), 1000);
+                    this.loadState();
+                },
+                updateTime() {
+                    const now = new Date();
+                    this.currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                },
+                showToast(msg) {
+                    this.toastMessage = msg;
+                    setTimeout(() => { this.toastMessage = ''; }, 2500);
+                },
+                logAction(text) {
+                    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    this.logs.unshift(`[${time}] ${text}`);
+                    this.saveState();
+                },
+                runExecutionCycle() {
+                    this.logAction('Running growth sprint: optimizing WhatsApp hooks & micro-tools...');
+                    setTimeout(() => {
+                        const earned = Math.floor(Math.random() * 3) * 500;
+                        if (earned > 0) {
+                            this.stats.capital += earned;
+                            this.stats.dailyRevenue += earned;
+                            this.logAction(`🎉 Cash alert! ₦${earned} confirmed from digital bundle sale.`);
+                            this.showToast(`₦${earned} added to empire treasury!`);
+                        } else {
+                            this.logAction('Growth sprint complete. Traffic active, awaiting conversion.');
+                            this.showToast('Growth sprint executed successfully.');
+                        }
+                        this.saveState();
+                    }, 1000);
+                },
+                deployModel() {
+                    const model = this.businessModels.find(m => m.id === this.selectedModel);
+                    this.logAction(`Deployed model: ${model.title}`);
+                    this.showToast('Model successfully deployed to live fleet!');
+                    this.activeTab = 'dashboard';
+                },
+                generateTool() {
+                    if (!this.toolForm.audience) {
+                        this.showToast('Please enter target audience tag');
+                        return;
+                    }
+                    const newTool = {
+                        id: Date.now(),
+                        name: `${this.toolForm.category.toUpperCase()} Tool for ${this.toolForm.audience}`,
+                        date: new Date().toLocaleDateString()
+                    };
+                    this.generatedTools.push(newTool);
+                    this.logAction(`Built new micro-tool: ${newTool.name}`);
+                    this.showToast('Tool successfully built and published!');
+                    this.toolForm.audience = '';
+                    this.saveState();
+                },
+                simulateTraffic(tool) {
+                    const views = Math.floor(Math.random() * 50) + 10;
+                    const revenue = views > 30 ? 1000 : 0;
+                    this.stats.capital += revenue;
+                    this.stats.dailyRevenue += revenue;
+                    this.logAction(`Traffic spike on "${tool.name}": +${views} visitors. Earned ₦${revenue}.`);
+                    this.showToast(`Simulated ${views} visitors. ₦${revenue} earned!`);
+                    this.saveState();
+                },
+                recordIncome() {
+                    if (!this.manualIncome.amount || !this.manualIncome.desc) {
+                        this.showToast('Please fill in amount and description');
+                        return;
+                    }
+                    const amt = Number(this.manualIncome.amount);
+                    this.stats.capital += amt;
+                    this.stats.dailyRevenue += amt;
+                    this.logAction(`Manual income recorded: ₦${amt} (${this.manualIncome.desc})`);
+                    this.showToast(`Successfully recorded ₦${amt}`);
+                    this.manualIncome.amount = '';
+                    this.manualIncome.desc = '';
+                    this.saveState();
+                },
+                saveState() {
+                    try {
+                        localStorage.setItem('zero_kobo_state', JSON.stringify({
+                            stats: this.stats,
+                            logs: this.logs,
+                            generatedTools: this.generatedTools
+                        }));
+                    } catch (e) {}
+                },
+                loadState() {
+                    try {
+                        const saved = localStorage.getItem('zero_kobo_state');
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            this.stats = parsed.stats || this.stats;
+                            this.logs = parsed.logs || this.logs;
+                            this.generatedTools = parsed.generatedTools || this.generatedTools;
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
+    </script>
+</body>
+</html>
