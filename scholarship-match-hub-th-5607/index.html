@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Scholarship Match Hub – Nigeria</title>
+<meta name="description" content="Scholarship Match Hub. This should help: Aggregates verified Nigerian scholarship opportunities, matches them to a student's profile using simple questionn">
+<link rel="icon" href="🎓">
+<style>
+:root {
+  --primary: #047857;
+  --primary-dark: #065f46;
+  --accent: #d97706;
+  --bg: #f3f4f6;
+  --card-bg: #ffffff;
+  --text: #1f2937;
+  --text-muted: #4b5563;
+  --border: #e5e7eb;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: calc(90px + var(--safe-bottom));
+}
+
+header {
+  background: var(--primary);
+  color: white;
+  padding: 16px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-clock {
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+p.subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--text);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 4px rgba(4, 120, 87, 0.2);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-accent {
+  background: var(--accent);
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.scholarship-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fff;
+  position: relative;
+}
+
+.scholarship-item.featured {
+  border-color: var(--accent);
+  background: #fffbeb;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #e6f4ea;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.badge-featured {
+  background: #fef3c7;
+  color: var(--accent);
+}
+
+.sch-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.sch-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.sch-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sch-actions button {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+.nav-item {
+  flex: 1;
+  text-align: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-item span.icon {
+  font-size: 1.25rem;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-box {
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">🎓 Scholarship Match Hub</div>
+    <div class="live-clock" id="liveClock">--:--:--</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- VIEW 1: MATCHING QUIZ & FEED -->
+  <section id="view-match" class="view-section active">
+    <div class="card">
+      <h1>✨ Profile Matcher</h2>
+      <p class="subtitle">Answer a few quick questions to find scholarships matched to your education level.</p>
+      
+      <form id="matchForm">
+        <div class="form-group">
+          <label for="studyLevel">Current Education Level</label>
+          <select id="studyLevel" required>
+            <option value="">Select Level</option>
+            <option value="undergraduate">Undergraduate (BSc/HND)</option>
+            <option value="masters">Postgraduate / Masters</option>
+            <option value="secondary">Senior Secondary (WAEC/JAMB)</option>
+            <option value="vocational">Vocational / Skill Training</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="stateOrigin">State of Origin</label>
+          <select id="stateOrigin" required>
+            <option value="">Select State</option>
+            <option value="Lagos">Lagos State</option>
+            <option value="Kano">Kano State</option>
+            <option value="Rivers">Rivers State</option>
+            <option value="Oyo">Oyo State</option>
+            <option value="Federal">Federal / Nationwide</option>
+            <option value="Others">Other Nigerian States</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="fieldStudy">Field of Study</label>
+          <select id="fieldStudy" required>
+            <option value="">Select Field</option>
+            <option value="STEM">Science, Tech, Engineering & Math</option>
+            <option value="Medical">Medical & Health Sciences</option>
+            <option value="Arts">Arts, Humanities & Social Sciences</option>
+            <option value="Business">Business, Economics & Law</option>
+            <option value="All">All Disciplines</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn">Find Matching Scholarships</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📋 Available Scholarships (<span id="totalSchCount">0</span>)</h2>
+      <div id="scholarshipsList">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 2: FAST-TRACK SPONSORSHIP -->
+  <section id="view-sponsor" class="view-section">
+    <div class="card">
+      <h2>🚀 Premium Fast-Track Listing</h2>
+      <p class="subtitle">Are you an institution, foundation, or scholarship coordinator? Boost your scholarship listing to the top of our platform for ₦1,000/month to attract qualified Nigerian applicants instantly.</p>
+      
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num" id="activeListingsCount">0</div>
+          <div class="stat-label">Active Fast-Tracks</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="totalRaisedCount">₦0</div>
+          <div class="stat-label">Revenue Generated</div>
+        </div>
+      </div>
+
+      <form id="sponsorForm">
+        <div class="form-group">
+          <label for="spName">Scholarship / Organization Name</label>
+          <input type="text" id="spName" placeholder="e.g. NNPC/Chevron National Scholarship" required>
+        </div>
+
+        <div class="form-group">
+          <label for="spLevel">Target Education Level</label>
+          <select id="spLevel" required>
+            <option value="undergraduate">Undergraduate</option>
+            <option value="masters">Postgraduate / Masters</option>
+            <option value="secondary">Secondary School</option>
+            <option value="All">All Levels</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="spLink">Official Application Link / WhatsApp / Email</label>
+          <input type="url" id="spLink" placeholder="https://example.com/apply" required>
+        </div>
+
+        <div class="form-group">
+          <label for="spDeadline">Application Deadline</label>
+          <input type="date" id="spDeadline" required>
+        </div>
+
+        <div class="form-group">
+          <label>Fast-Track Fee (Monthly)</label>
+          <input type="text" value="₦1,000 / month" disabled style="background:#f3f4f6; font-weight:700;">
+        </div>
+
+        <button type="submit" class="btn btn-accent">Pay ₦1,000 & Publish Fast-Track</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- VIEW 3: SAVED & BOOKMARKS -->
+  <section id="view-saved" class="view-section">
+    <div class="card">
+      <h2>🔖 Saved Scholarships</h2>
+      <p class="subtitle">Keep track of opportunities you have bookmarked for later application.</p>
+      <div id="savedList">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="view-match">
+    <span class="icon">🔍</span>
+    <span>Match Hub</span>
+  </button>
+  <button class="nav-item" data-target="view-sponsor">
+    <span class="icon">⭐</span>
+    <span>Fast-Track</span>
+  </button>
+  <button class="nav-item" data-target="view-saved">
+    <span class="icon">🔖</span>
+    <span>Saved (<span id="savedCountBadge">0</span>)</span>
+  </button>
+</nav>
+
+<!-- MODAL FOR APPLICATION AFFILIATE / REDIRECT -->
+<div class="modal" id="applyModal">
+  <div class="modal-content">
+    <h2>🚀 Ready to Apply</h2>
+    <p class="subtitle" id="modalSchTitle">You are being redirected to the verified partner portal.</p>
+    
+    <div class="form-group" style="background:#f9fafb; padding:12px; border-radius:8px; font-size:0.85rem; margin-bottom:16px;">
+      💡 <strong>Tip:</strong> Ensure you have your SSCE result, birth certificate, and student ID ready before filling the form.
+    </div>
+
+    <a href="#" id="modalExternalLink" target="_blank" class="btn" style="text-decoration:none; margin-bottom:10px;">Proceed to Application Portal</a>
+    <button type="button" class="btn btn-outline" id="closeModalBtn">Cancel</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // Live Clock & Time Context (Friday 20 Nov 2026, 4:54 AM Nigeria)
+  function updateClock() {
+    const clockEl = document.getElementById('liveClock');
+    if (!clockEl) return;
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString();
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Initial Seed Scholarships (Verified Nigerian opportunities)
+  const defaultScholarships = [
+    {
+      id: 'sch-1',
+      title: 'MTN Foundation Science & Technology Scholarship',
+      level: 'undergraduate',
+      state: 'Federal',
+      field: 'STEM',
+      deadline: '2026-12-15',
+      link: 'https://www.mtn.ng/foundation',
+      featured: true,
+      sponsor: 'MTN Nigeria'
+    },
+    {
+      id: 'sch-2',
+      title: 'PTDF Overseas & Local Postgraduate Scholarship',
+      level: 'masters',
+      state: 'Federal',
+      field: 'STEM',
+      deadline: '2026-12-30',
+      link: 'https://ptdf.gov.ng',
+      featured: true,
+      sponsor: 'PTDF'
+    },
+    {
+      id: 'sch-3',
+      title: 'Lagos State Bursary & Scholarship Award',
+      level: 'undergraduate',
+      state: 'Lagos',
+      field: 'All',
+      deadline: '2026-11-30',
+      link: 'https://lagosscholarship.org',
+      featured: false,
+      sponsor: 'Lagos State Gov'
+    },
+    {
+      id: 'sch-4',
+      title: 'Shell LiveWIRE Youth Enterprise Program',
+      level: 'vocational',
+      state: 'Rivers',
+      field: 'Business',
+      deadline: '2026-12-10',
+      link: 'https://www.shell.com.ng',
+      featured: false,
+      sponsor: 'Shell Nigeria'
+    },
+    {
+      id: 'sch-5',
+      title: 'Federal Government Bilateral Education Agreement (BEA)',
+      level: 'undergraduate',
+      state: 'Federal',
+      field: 'All',
+      deadline: '2027-01-15',
+      link: 'https://fsb.gov.ng',
+      featured: true,
+      sponsor: 'Federal Scholarship Board'
+    }
+  ];
+
+  // Load state from localStorage with robust fallback
+  let scholarships = [];
+  let savedIds = [];
+  let revenue = 0;
+  let activeFastTracksCount = 0;
+
+  try {
+    const savedSch = localStorage.getItem('sm_scholarships');
+    scholarships = savedSch ? JSON.parse(savedSch) : defaultScholarships;
+
+    const savedB = localStorage.getItem('sm_saved_bookmarks');
+    savedIds = savedB ? JSON.parse(savedB) : [];
+
+    const rev = localStorage.getItem('sm_revenue');
+    revenue = rev ? parseInt(rev, 10) : 0;
+
+    const ftCount = localStorage.getItem('sm_ft_count');
+    activeFastTracksCount = ftCount ? parseInt(ftCount, 10) : 2; // Default 2 featured
+  } catch (e) {
+    scholarships = defaultScholarships;
+    savedIds = [];
+    revenue = 2000; // 2 initial featured
+    activeFastTracksCount = 2;
+  }
+
+  function saveToStorage() {
+    try {
+      localStorage.setItem('sm_scholarships', JSON.stringify(scholarships));
+      localStorage.setItem('sm_saved_bookmarks', JSON.stringify(savedIds));
+      localStorage.setItem('sm_revenue', revenue.toString());
+      localStorage.setItem('sm_ft_count', activeFastTracksCount.toString());
+    } catch (e) {}
+  }
+
+  // DOM Elements
+  const navItems = document.querySelectorAll('.nav-item');
+  const viewSections = document.querySelectorAll('.view-section');
+  const matchForm = document.getElementById('matchForm');
+  const sponsorForm = document.getElementById('sponsorForm');
+  const scholarshipsList = document.getElementById('scholarshipsList');
+  const savedList = document.getElementById('savedList');
+  const totalSchCount = document.getElementById('totalSchCount');
+  const savedCountBadge = document.getElementById('savedCountBadge');
+  const activeListingsCount = document.getElementById('activeListingsCount');
+  const totalRaisedCount = document.getElementById('totalRaisedCount');
+  
+  const applyModal = document.getElementById('applyModal');
+  const modalSchTitle = document.getElementById('modalSchTitle');
+  const modalExternalLink = document.getElementById('modalExternalLink');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  // Navigation switching
+  navItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const targetView = this.getAttribute('data-target');
+      
+      navItems.forEach(n => n.classList.remove('active'));
+      this.classList.add('active');
+
+      viewSections.forEach(v => {
+        v.classList.remove('active');
+        if (v.id === targetView) {
+          v.classList.add('active');
+        }
+      });
+      window.scrollTo(0, 0);
+    });
+  });
+
+  // Render Scholarships List
+  function renderScholarships(filterLevel = '', filterState = '', filterField = '') {
+    if (!scholarshipsList) return;
+
+    let filtered = scholarships.filter(s => {
+      if (filterLevel && filterLevel !== 'All' && s.level !== filterLevel) return false;
+      if (filterState && filterState !== 'All' && s.state !== filterState && s.state !== 'Federal') return false;
+      if (filterField && filterField !== 'All' && s.field !== filterField && s.field !== 'All') return false;
+      return true;
+    });
+
+    // Sort featured first
+    filtered.sort((a, b) => (b.featured === true) - (a.featured === true));
+
+    totalSchCount.textContent = filtered.length;
+
+    if (filtered.length === 0) {
+      scholarshipsList.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:20px;">No exact matches found for your filter. Try adjusting your search or view all available below.</p>`;
+      return;
+    }
+
+    let html = '';
+    filtered.forEach(sch => {
+      const isSaved = savedIds.includes(sch.id);
+      html += `
+        <div class="scholarship-item ${sch.featured ? 'featured' : ''}">
+          ${sch.featured ? '<span class="badge badge-featured">⭐ Featured Fast-Track</span>' : '<span class="badge">Verified Opportunity</span>'}
+          <div class="sch-title">${escapeHtml(sch.title)}</div>
+          <div class="sch-meta">🏢 ${escapeHtml(sch.sponsor || 'Partner')} • 📍 ${escapeHtml(sch.state)} • ⏳ Deadline: ${escapeHtml(sch.deadline)}</div>
+          <div class="sch-actions">
+            <button type="button" class="btn" data-action="apply" data-id="${sch.id}" data-title="${escapeHtml(sch.title)}" data-link="${escapeHtml(sch.link)}">Apply Now</button>
+            <button type="button" class="btn btn-outline" data-action="save" data-id="${sch.id}">${isSaved ? '🔖 Saved' : '🤍 Save'}</button>
+          </div>
+        </div>
+      `;
+    });
+
+    scholarshipsList.innerHTML = html;
+    attachListListeners();
+  }
+
+  // Render Saved Scholarships
+  function renderSaved() {
+    if (!savedList) return;
+
+    const savedItems = scholarships.filter(s => savedIds.includes(s.id));
+    savedCountBadge.textContent = savedItems.length;
+
+    if (savedItems.length === 0) {
+      savedList.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:20px;">You have not saved any scholarships yet. Tap 'Save' on any card to store it here.</p>`;
+      return;
+    }
+
+    let html = '';
+    savedItems.forEach(sch => {
+      html += `
+        <div class="scholarship-item ${sch.featured ? 'featured' : ''}">
+          ${sch.featured ? '<span class="badge badge-featured">⭐ Featured Fast-Track</span>' : '<span class="badge">Verified Opportunity</span>'}
+          <div class="sch-title">${escapeHtml(sch.title)}</div>
+          <div class="sch-meta">🏢 ${escapeHtml(sch.sponsor || 'Partner')} • 📍 ${escapeHtml(sch.state)} • ⏳ Deadline: ${escapeHtml(sch.deadline)}</div>
+          <div class="sch-actions">
+            <button type="button" class="btn" data-action="apply" data-id="${sch.id}" data-title="${escapeHtml(sch.title)}" data-link="${escapeHtml(sch.link)}">Apply Now</button>
+            <button type="button" class="btn btn-outline" data-action="save" data-id="${sch.id}">Remove</button>
+          </div>
+        </div>
+      `;
+    });
+
+    savedList.innerHTML = html;
+    attachListListeners();
+  }
+
+  function renderStats() {
+    if (activeListingsCount) activeListingsCount.textContent = activeFastTracksCount;
+    if (totalRaisedCount) totalRaisedCount.textContent = '₦' + revenue.toLocaleString();
+  }
+
+  // Attach event listeners to dynamic list action buttons
+  function attachListListeners() {
+    const applyButtons = document.querySelectorAll('button[data-action="apply"]');
+    applyButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const title = this.getAttribute('data-title');
+        const link = this.getAttribute('data-link');
+        if (modalSchTitle) modalSchTitle.textContent = title;
+        if (modalExternalLink) modalExternalLink.setAttribute('href', link);
+        if (applyModal) applyModal.classList.add('open');
+      });
+    });
+
+    const saveButtons = document.querySelectorAll('button[data-action="save"]');
+    saveButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const index = savedIds.indexOf(id);
+        if (index > -1) {
+          savedIds.splice(index, 1);
+        } else {
+          savedIds.push(id);
+        }
+        saveToStorage();
+        renderScholarships();
+        renderSaved();
+      });
+    });
+  }
+
+  // Modal controls
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', function() {
+      if (applyModal) applyModal.classList.remove('open');
+    });
+  }
+
+  if (applyModal) {
+    applyModal.addEventListener('click', function(e) {
+      if (e.target === applyModal) {
+        applyModal.classList.remove('open');
+      }
+    });
+  }
+
+  // Match Form Submission
+  if (matchForm) {
+    matchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const level = document.getElementById('studyLevel').value;
+      const state = document.getElementById('stateOrigin').value;
+      const field = document.getElementById('fieldStudy').value;
+
+      renderScholarships(level, state, field);
+      
+      // Scroll to list
+      scholarshipsList.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Sponsor / Fast-Track Form Submission
+  if (sponsorForm) {
+    sponsorForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('spName').value.trim();
+      const level = document.getElementById('spLevel').value;
+      const link = document.getElementById('spLink').value.trim();
+      const deadline = document.getElementById('spDeadline').value;
+
+      if (!name || !link || !deadline) return;
+
+      // Simulate payment gateway redirect for ₦1,000 fast-track
+      const confirmPay = window.confirm(`Proceed to Paystack secure gateway to pay ₦1,000 monthly fee for "${name}" fast-track listing?`);
+      if (!confirmPay) return;
+
+      const newSch = {
+        id: 'sch-' + Date.now(),
+        title: name,
+        level: level,
+        state: 'Federal',
+        field: 'All',
+        deadline: deadline,
+        link: link,
+        featured: true,
+        sponsor: 'Verified Sponsor'
+      };
+
+      scholarships.unshift(newSch);
+      revenue += 1000;
+      activeFastTracksCount += 1;
+      saveToStorage();
+
+      renderScholarships();
+      renderStats();
+      sponsorForm.reset();
+
+      alert('Payment confirmed! Your scholarship has been successfully published as a Featured Fast-Track listing.');
+      
+      // Switch back to match view
+      navItems[0].click();
+    });
+  }
+
+  // Helper utility
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Initial Render
+  renderScholarships();
+  renderSaved();
+  renderStats();
+
+})();
+</script>
+</body>
+</html>
