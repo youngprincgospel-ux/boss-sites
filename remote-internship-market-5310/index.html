@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remote Internship Marketplace 🇳🇬</title>
+<meta name="description" content="Remote Internship Marketplace for Nigerian Students. This should help: Aggregates verified remote internship opportunities from startups, NGOs, and global ">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>">
+<style>
+:root{
+  --bg:#f9fafb;
+  --text:#111;
+  --primary:#0066cc;
+  --accent:#ff9800;
+  --danger:#d32f2f;
+}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+header{
+  padding: env(safe-area-inset-top) 1rem 0.5rem;
+  text-align:center;
+}
+main{
+  padding:1rem;
+  padding-bottom:calc(4rem + env(safe-area-inset-bottom));
+}
+section{
+  display:none;
+}
+section.active{
+  display:block;
+}
+h1{
+  font-size:1.5rem;
+  margin:0;
+}
+.list{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.list li{
+  background:#fff;
+  margin-bottom:0.75rem;
+  padding:0.75rem;
+  border-radius:0.5rem;
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}
+button, input, select, textarea{
+  font:inherit;
+}
+button{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  border-radius:0.5rem;
+  padding:0.75rem 1rem;
+  min-height:44px;
+  min-width:44px;
+}
+button:hover{
+  background:var(--accent);
+}
+nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#fff;
+  border-top:1px solid #ddd;
+  display:flex;
+  justify-content:space-around;
+  padding:env(safe-area-inset-bottom) 0 0.5rem;
+}
+nav button{
+  flex:1;
+  margin:0 0.25rem;
+  background:none;
+  color:var(--primary);
+}
+nav button.active{
+  color:var(--accent);
+}
+form{
+  display:flex;
+  flex-direction:column;
+  gap:0.75rem;
+}
+label{
+  font-weight:600;
+}
+input, textarea, select{
+  padding:0.5rem;
+  border:1px solid #ccc;
+  border-radius:0.4rem;
+}
+small{
+  font-size:0.8rem;
+  color:#555;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>Remote Internship Marketplace</h1>
+<div id="clock" aria-live="polite"></div>
+</header>
+<main>
+<section id="internships" class="active" aria-label="Internship listings">
+<ul class="list" id="internshipList"></ul>
+</section>
+<section id="add" aria-label="Add internship listing">
+<form id="addForm">
+<label for="title">Title</label>
+<input type="text" id="title" required>
+<label for="company">Company</label>
+<input type="text" id="company" required>
+<label for="location">Location (Remote/City)</label>
+<input type="text" id="location" required>
+<label for="description">Description</label>
+<textarea id="description" rows="3" required></textarea>
+<label for="fee">Employer fee (₦)</label>
+<input type="number" id="fee" min="0" required>
+<button type="submit">Post Listing</button>
+</form>
+</section>
+<section id="applications" aria-label="My applications">
+<ul class="list" id="appList"></ul>
+</section>
+<section id="settings" aria-label="Settings">
+<button id="resetBtn">Reset All Data</button>
+</section>
+</main>
+<nav aria-label="Main navigation">
+<button data-target="internships" class="active" aria-label="Internships">🏢</button>
+<button data-target="add" aria-label="Add Listing">➕</button>
+<button data-target="applications" aria-label="Applications">📄</button>
+<button data-target="settings" aria-label="Settings">⚙️</button>
+</nav>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  const sections = document.querySelectorAll('section');
+  const navButtons = document.querySelectorAll('nav button');
+  navButtons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const target = btn.getAttribute('data-target');
+      sections.forEach(sec=> {
+        if(sec.id===target) sec.classList.add('active');
+        else sec.classList.remove('active');
+      });
+      navButtons.forEach(b=>b.classList.toggle('active',b===btn));
+    });
+  });
+  const clockEl = $('clock');
+  function updateClock(){
+    if(clockEl){
+      const now = new Date();
+      clockEl.textContent = now.toLocaleString('en-NG',{hour:'numeric',minute:'numeric',second:'numeric',hour12:true});
+    }
+  }
+  setInterval(updateClock,1000);
+  updateClock();
+  const STORAGE_KEY='internships';
+  const APP_KEY='applications';
+  let internships=[];
+  let applications=[];
+  function loadData(){
+    try{
+      const i = localStorage.getItem(STORAGE_KEY);
+      if(i) internships=JSON.parse(i);
+    }catch(e){}
+    try{
+      const a = localStorage.getItem(APP_KEY);
+      if(a) applications=JSON.parse(a);
+    }catch(e){}
+  }
+  function saveData(){
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(internships));
+    }catch(e){}
+    try{
+      localStorage.setItem(APP_KEY,JSON.stringify(applications));
+    }catch(e){}
+  }
+  const listEl = $('internshipList');
+  function renderInternships(){
+    if(!listEl) return;
+    listEl.innerHTML='';
+    if(internships.length===0){
+      const li=document.createElement('li');
+      li.textContent='No internships posted yet.';
+      listEl.appendChild(li);
+      return;
+    }
+    internships.forEach((item,index)=>{
+      const li=document.createElement('li');
+      const title=document.createElement('h3');
+      title.textContent=item.title;
+      const comp=document.createElement('p');
+      comp.textContent=`Company: ${item.company}`;
+      const loc=document.createElement('p');
+      loc.textContent=`Location: ${item.location}`;
+      const desc=document.createElement('p');
+      desc.textContent=item.description;
+      const fee=document.createElement('p');
+      fee.textContent=`Employer fee: ₦${item.fee}`;
+      const applyBtn=document.createElement('button');
+      applyBtn.textContent='Apply';
+      applyBtn.addEventListener('click',()=> applyFor(index));
+      li.appendChild(title);
+      li.appendChild(comp);
+      li.appendChild(loc);
+      li.appendChild(desc);
+      li.appendChild(fee);
+      li.appendChild(applyBtn);
+      listEl.appendChild(li);
+    });
+  }
+  function applyFor(idx){
+    const intern=internships[idx];
+    if(!intern) return;
+    const already=applications.find(a=>a.id===intern.id);
+    if(already){
+      alert('You have already applied to this internship.');
+      return;
+    }
+    const app={id:intern.id, title:intern.title, date:new Date().toISOString()};
+    applications.push(app);
+    saveData();
+    renderApplications();
+    alert('Application recorded. Good luck!');
+  }
+  const appListEl=$('appList');
+  function renderApplications(){
+    if(!appListEl) return;
+    appListEl.innerHTML='';
+    if(applications.length===0){
+      const li=document.createElement('li');
+      li.textContent='No applications yet.';
+      appListEl.appendChild(li);
+      return;
+    }
+    applications.forEach(app=>{
+      const li=document.createElement('li');
+      const title=document.createElement('h3');
+      title.textContent=app.title;
+      const date=document.createElement('p');
+      const d=new Date(app.date);
+      date.textContent=`Applied on: ${d.toLocaleDateString('en-NG')} ${d.toLocaleTimeString('en-NG')}`;
+      li.appendChild(title);
+      li.appendChild(date);
+      appListEl.appendChild(li);
+    });
+  }
+  const addForm=$('addForm');
+  if(addForm){
+    addForm.addEventListener('submit',e=>{
+      e.preventDefault();
+      const title=$('title').value.trim();
+      const company=$('company').value.trim();
+      const location=$('location').value.trim();
+      const description=$('description').value.trim();
+      const fee=parseInt($('fee').value,10);
+      if(!title||!company||!location||!description||isNaN(fee)){
+        alert('Please fill all fields correctly.');
+        return;
+      }
+      const id=Date.now().toString()+Math.random().toString(36).substr(2,5);
+      const newItem={id,title,company,location,description,fee};
+      internships.unshift(newItem);
+      saveData();
+      renderInternships();
+      addForm.reset();
+      document.querySelector('nav button[data-target="internships"]').click();
+    });
+  }
+  const resetBtn=$('resetBtn');
+  if(resetBtn){
+    resetBtn.addEventListener('click',()=>{
+      if(confirm('Delete all data? This cannot be undone.')){
+        try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+        try{localStorage.removeItem(APP_KEY);}catch(e){}
+        internships=[];
+        applications=[];
+        renderInternships();
+        renderApplications();
+      }
+    });
+  }
+  loadData();
+  renderInternships();
+  renderApplications();
+})();
+</script>
+</body>
+</html>
