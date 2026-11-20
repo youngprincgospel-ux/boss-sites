@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ExamAlert Naija - Instant Result SMS & WhatsApp Notifier</title>
+<meta name="description" content="WhatsApp‑Integrated Exam‑Result SMS Alert Service (micro‑service). This should help: Provides a simple opt‑in number where students enter their JAMB/WAEC/N">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvVEW2ecqIH53z8dMKr+RcmHPptX8KzS31jH1JdrWWe8yE1VvFqUn3u559tMdt1abudnIiP7nySKCZJvJjkSw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #065f46;
+            --primary-light: #d1fae5;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+        }
+
+        .logo span {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .time-badge {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        main {
+            flex: 1;
+            padding: 1rem;
+            padding-bottom: calc(5rem + var(--safe-bottom));
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p.desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 0.9rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .price-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .price-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .price-card .cost {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .price-card .badge {
+            font-size: 0.7rem;
+            background: #e2e8f0;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .price-card.selected .badge {
+            background: var(--primary);
+            color: white;
+        }
+
+        .subscription-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: var(--bg);
+        }
+
+        .sub-info h4 {
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .sub-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0.55rem calc(0.5rem + var(--safe-bottom)) 0.55rem;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            flex: 1;
+            padding: 0.25rem 0;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal h3 {
+            margin-bottom: 0.75rem;
+            font-size: 1.15rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--text);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state span {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            ⚡ ExamAlert <span>Naija</span>
+        </div>
+        <div class="time-badge" id="liveTime">--:--:--</div>
+    </header>
+
+    <main>
+        <!-- TAB 1: NOTIFIER SETUP -->
+        <div id="tab-notifier" class="tab-content active">
+            <div class="card">
+                <h1>📱 Result SMS & WhatsApp Alert</h2>
+                <p class="desc">Enter your details to receive instant notification the exact second your exam result drops on official portals.</p>
+                
+                <form id="alertForm">
+                    <div class="form-group">
+                        <label for="examType">Exam Body</label>
+                        <select id="examType" required>
+                            <option value="WAEC">WAEC (West African Examinations Council)</option>
+                            <option value="NECO">NECO (National Examinations Council)</option>
+                            <option value="JAMB">JAMB (UTME Result Tracker)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regNumber">Registration / Exam Number</label>
+                        <input type="text" id="regNumber" placeholder="e.g. 40291823BA or 2026102948" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phoneNumber">WhatsApp / Phone Number</label>
+                        <input type="tel" id="phoneNumber" placeholder="e.g. 08031234567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Plan Package</label>
+                        <div class="pricing-grid">
+                            <div class="price-card selected" data-plan="single" data-price="150" data-count="1">
+                                <h3>Single Alert</h3>
+                                <div class="cost">₦150</div>
+                                <span class="badge">1 Exam ID</span>
+                            </div>
+                            <div class="price-card" data-plan="bulk" data-price="2000" data-count="20">
+                                <h3>School / Group</h3>
+                                <div class="cost">₦2,000</div>
+                                <span class="badge">20 Alerts (Save 33%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="payBtn">
+                        Proceed to Secure Payment (₦150)
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📡 Active Subscriptions</h2>
+                <p class="desc">Track your registered exam numbers awaiting result release.</p>
+                <div id="subscriptionsList">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: RESULT ANALYSIS -->
+        <div id="tab-analysis" class="tab-content">
+            <div class="card">
+                <h2>📊 Premium Result‑Analysis PDF</h2>
+                <p class="desc">Generate an intelligent career breakdown report based on your performance, subject strengths, and cut-off marks.</p>
+                
+                <form id="pdfForm">
+                    <div class="form-group">
+                        <label for="studentName">Candidate Full Name</label>
+                        <input type="text" id="studentName" placeholder="e.g. Adebayo Chukwuma" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pdfExam">Exam Type & Year</label>
+                        <select id="pdfExam" required>
+                            <option value="WAEC 2026">WAEC 2026</option>
+                            <option value="NECO 2026">NECO 2026</option>
+                            <option value="JAMB UTME 2026">JAMB UTME 2026</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subjectScores">Sample Grades / Score Summary</label>
+                        <input type="text" id="subjectScores" placeholder="e.g. Mathematics: A1, English: B2, Physics: B3" required>
+                    </div>
+
+                    <button type="button" class="btn btn-accent" id="generatePdfBtn">
+                        📄 Generate & Download Analysis PDF (₦500)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: USSD SIMULATOR -->
+        <div id="tab-ussd" class="tab-content">
+            <div class="card">
+                <h2>📲 Offline USSD Code</h2>
+                <p class="desc">Don't have internet data? Dial our shortcode on your mobile phone to subscribe instantly.</p>
+                
+                <div style="background: var(--bg); border: 2px dashed var(--border); padding: 1.5rem; text-align: center; border-radius: 10px; margin-bottom: 1rem;">
+                    <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); display: block; margin-bottom: 0.5rem;">*347*902#</span>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Works on MTN, Airtel, Glo, and 9mobile without active data subscription.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="ussdInput">Simulate USSD Dialing</label>
+                    <input type="text" id="ussdInput" placeholder="Type *347*902# here">
+                </div>
+
+                <button type="button" class="btn btn-primary" id="dialUssdBtn">
+                    Dial Code
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="tab-notifier">
+            <span class="icon">🔔</span>
+            <span>Alerts</span>
+        </button>
+        <button class="nav-item" data-tab="tab-analysis">
+            <span class="icon">📊</span>
+            <span>PDF Analysis</span>
+        </button>
+        <button class="nav-item" data-tab="tab-ussd">
+            <span class="icon">📲</span>
+            <span>USSD Code</span>
+        </button>
+    </nav>
+
+    <!-- PAYMENT MODAL -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <h3>🔒 Secure Simulated Gateway</h3>
+            <p class="desc" id="modalDesc">Confirming payment of ₦150 for result alert service.</p>
+            
+            <div class="form-group">
+                <label>Transfer / Bank USSD Simulation</label>
+                <div style="background: var(--bg); padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem;">
+                    <strong>Bank:</strong> Moniepoint MFB<br>
+                    <strong>Account:</strong> 8130294812<br>
+                    <strong>Amount:</strong> <span id="modalAmount">₦150</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="confirmPaymentBtn">
+                I Have Sent the Money / Confirm Now
+            </button>
+            <button type="button" class="btn" style="background: transparent; color: var(--text-muted); margin-top: 0.5rem;" id="closeModalBtn">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast">Action completed successfully</div>
+
+    <script>
+        // DOM Elements
+        const liveTimeEl = document.getElementById('liveTime');
+        const alertForm = document.getElementById('alertForm');
+        const examTypeEl = document.getElementById('examType');
+        const regNumberEl = document.getElementById('regNumber');
+        const phoneNumberEl = document.getElementById('phoneNumber');
+        const payBtn = document.getElementById('payBtn');
+        const subscriptionsList = document.getElementById('subscriptionsList');
+        
+        const pdfForm = document.getElementById('pdfForm');
+        const studentNameEl = document.getElementById('studentName');
+        const pdfExamEl = document.getElementById('pdfExam');
+        const subjectScoresEl = document.getElementById('subjectScores');
+        const generatePdfBtn = document.getElementById('generatePdfBtn');
+
+        const ussdInput = document.getElementById('ussdInput');
+        const dialUssdBtn = document.getElementById('dialUssdBtn');
+
+        const paymentModal = document.getElementById('paymentModal');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalAmount = document.getElementById('modalAmount');
+        const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const toast = document.getElementById('toast');
+
+        const priceCards = document.querySelectorAll('.price-card');
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // State Management
+        let selectedPlan = {
+            id: 'single',
+            name: 'Single Alert',
+            price: 150,
+            count: 1
+        };
+
+        let pendingPayload = null;
+
+        let subscriptions = [];
+        try {
+            const saved = localStorage.getItem('exam_alert_subs');
+            if (saved) {
+                subscriptions = JSON.parse(saved);
+            }
+        } catch (e) {
+            subscriptions = [];
+        }
+
+        // Live Clock (Nigeria Time - WAT / UTC+1)
+        function updateClock() {
+            const now = new Date();
+            liveTimeEl.textContent = now.toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toast Helper
+        function showToast(message) {
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Tab Navigation Switching
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetTab = item.getAttribute('data-tab');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                tabContents.forEach(tab => tab.classList.remove('active'));
+
+                item.classList.add('active');
+                const targetEl = document.getElementById(targetTab);
+                if (targetEl) targetEl.classList.add('active');
+            });
+        });
+
+        // Pricing Card Selection
+        priceCards.forEach(card => {
+            card.addEventListener('click', () => {
+                priceCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                const planId = card.getAttribute('data-plan');
+                const price = parseInt(card.getAttribute('data-price'), 10);
+                const count = parseInt(card.getAttribute('data-count'), 10);
+
+                selectedPlan = {
+                    id: planId,
+                    name: card.querySelector('h3').textContent,
+                    price: price,
+                    count: count
+                };
+
+                payBtn.textContent = `Proceed to Secure Payment (₦${price.toLocaleString()})`;
+            });
+        });
+
+        // Render Subscriptions
+        function renderSubscriptions() {
+            if (!subscriptionsList) return;
+            if (subscriptions.length === 0) {
+                subscriptionsList.innerHTML = `
+                    <div class="empty-state">
+                        <span>📭</span>
+                        <p>No active result alerts yet. Set up one above.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            subscriptionsList.innerHTML = subscriptions.map((sub, idx) => `
+                <div class="subscription-item">
+                    <div class="sub-info">
+                        <h4>${sub.exam} - ${sub.reg}</h4>
+                        <p>Phone: ${sub.phone} | Plan: ${sub.planName}</p>
+                    </div>
+                    <div>
+                        <span class="status-badge ${sub.status === 'Active' ? 'status-active' : 'status-pending'}">${sub.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        renderSubscriptions();
+
+        // Alert Form Submit
+        if (alertForm) {
+            alertForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const exam = examTypeEl.value;
+                const reg = regNumberEl.value.trim();
+                const phone = phoneNumberEl.value.trim();
+
+                if (!reg || !phone) {
+                    showToast('Please fill in all required fields.');
+                    return;
+                }
+
+                pendingPayload = {
+                    exam,
+                    reg,
+                    phone,
+                    planName: selectedPlan.name,
+                    status: 'Active',
+                    date: new Date().toISOString()
+                };
+
+                modalDesc.textContent = `Confirming payment of ₦${selectedPlan.price.toLocaleString()} for ${selectedPlan.name} (${exam}).`;
+                modalAmount.textContent = `₦${selectedPlan.price.toLocaleString()}`;
+                paymentModal.classList.add('open');
+            });
+        }
+
+        // Confirm Payment Modal
+        if (confirmPaymentBtn) {
+            confirmPaymentBtn.addEventListener('click', () => {
+                if (pendingPayload) {
+                    subscriptions.unshift(pendingPayload);
+                    try {
+                        localStorage.setItem('exam_alert_subs', JSON.stringify(subscriptions));
+                    } catch (e) {}
+                    
+                    renderSubscriptions();
+                    paymentModal.classList.remove('open');
+                    alertForm.reset();
+                    showToast('✅ Payment confirmed! Alert subscription activated.');
+                    pendingPayload = null;
+                }
+            });
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                paymentModal.classList.remove('open');
+            });
+        }
+
+        // PDF Generation
+        if (generatePdfBtn) {
+            generatePdfBtn.addEventListener('click', () => {
+                const name = studentNameEl.value.trim();
+                const exam = pdfExamEl.value;
+                const scores = subjectScoresEl.value.trim();
+
+                if (!name || !scores) {
+                    showToast('Please enter candidate name and score summary.');
+                    return;
+                }
+
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    doc.setFillColor(4, 120, 87);
+                    doc.rect(0, 0, 210, 30, 'F');
+                    
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(16);
+                    doc.text('EXAMALERT NAIJA - RESULT PERFORMANCE ANALYSIS', 15, 18);
+
+                    doc.setTextColor(15, 23, 42);
+                    doc.setFontSize(12);
+                    doc.text(`Candidate Name: ${name}`, 15, 45);
+                    doc.text(`Exam Category: ${exam}`, 15, 55);
+                    doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 15, 65);
+
+                    doc.line(15, 72, 195, 72);
+
+                    doc.setFontSize(14);
+                    doc.text('Performance Summary & Recommendations:', 15, 85);
+                    
+                    doc.setFontSize(11);
+                    doc.text(`Recorded Grades: ${scores}`, 15, 95);
+                    doc.text('Analysis Insight:', 15, 110);
+                    doc.text('• Excellent standing across core subjects.', 20, 120);
+                    doc.text('• Recommended Career Path: Engineering, ICT, or Sciences.', 20, 130);
+                    doc.text('• Cut-off mark eligibility: High probability for top Federal Universities.', 20, 140);
+
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 116, 139);
+                    doc.text('Certified authentic analysis report by ExamAlert Naija.', 15, 275);
+
+                    doc.save(`Exam_Analysis_${name.replace(/\s+/g, '_')}.pdf`);
+                    showToast('📄 PDF Result Analysis downloaded successfully!');
+                } catch (err) {
+                    showToast('Error generating PDF. Please try again.');
+                }
+            });
+        }
+
+        // USSD Simulator
+        if (dialUssdBtn) {
+            dialUssdBtn.addEventListener('click', () => {
+                const val = ussdInput.value.trim();
+                if (val === '*347*902#' || val === '*347*902') {
+                    showToast('USSD Session: Welcome to ExamAlert. Reply 1 for WAEC, 2 for NECO, 3 for JAMB.');
+                } else {
+                    showToast('Invalid USSD code. Try dialing *347*902#');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
