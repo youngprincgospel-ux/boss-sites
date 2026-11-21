@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI‑Driven Study Planner</title>
+<meta name="description" content="AI‑Driven Personalized Study Planner Web App. This should help: Generates a low‑data, customized study schedule for Nigerian students based on exam dates, ">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+<style>
+:root{
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
+  --primary:#0066cc;
+  --bg:#f9f9f9;
+  --text:#222;
+  --contrast:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:calc(var(--safe-top) + 1rem) calc(var(--safe-right) + 1rem) calc(var(--safe-bottom) + 5rem) calc(var(--safe-left) + 1rem);
+  line-height:1.5;
+}
+h1{
+  font-size:1.5rem;
+  margin-bottom:.5rem;
+  text-align:center;
+}
+section{margin-bottom:1.5rem}
+label{
+  display:block;
+  margin-bottom:.25rem;
+  font-weight:bold;
+}
+input, select, button{
+  width:100%;
+  padding:.75rem;
+  margin-bottom:.75rem;
+  font-size:1rem;
+  border:1px solid #ccc;
+  border-radius:4px;
+}
+button{
+  background:var(--primary);
+  color:var(--contrast);
+  border:none;
+  cursor:pointer;
+}
+button:active{opacity:.9}
+.ad{
+  background:#e0e0e0;
+  color:#555;
+  text-align:center;
+  padding:1rem;
+  margin-bottom:1rem;
+}
+.schedule{
+  list-style:none;
+  padding:0;
+}
+.schedule li{
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:4px;
+  margin-bottom:.5rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:.5rem;
+}
+.schedule li.completed{
+  background:#e6ffe6;
+  text-decoration:line-through;
+}
+.schedule button{
+  background:transparent;
+  color:var(--primary);
+  border:none;
+  font-size:1.2rem;
+}
+footer{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:var(--primary);
+  color:var(--contrast);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:3rem;
+  padding-bottom:calc(var(--safe-bottom));
+}
+footer button{
+  background:transparent;
+  color:var(--contrast);
+  border:none;
+  font-size:1rem;
+}
+</style>
+</head>
+<body>
+<h1>📚 Study Planner</h1>
+
+<section id="time-section">
+  <p id="current-time" aria-live="polite"></p>
+</section>
+
+<section id="exam-input-section">
+  <h2>Exam Details</h2>
+  <label for="exam-date">Exam Date</label>
+  <input type="date" id="exam-date" required>
+
+  <label for="subjects">Subjects (comma‑separated)</label>
+  <input type="text" id="subjects" placeholder="e.g. Math, English, Physics" required>
+
+  <label for="strengths">Strengths (comma‑separated, same order, 1‑5)</label>
+  <input type="text" id="strengths" placeholder="e.g. 3,5,2" required>
+
+  <label for="daily-hours">Daily Study Hours</label>
+  <input type="number" id="daily-hours" min="1" max="12" placeholder="e.g. 4" required>
+
+  <button id="generate-btn">Generate Schedule</button>
+</section>
+
+<section id="ad-section" class="ad" role="region" aria-label="Advertisement">
+  <p>Upgrade to Premium for an ad‑free experience and detailed analytics!</p>
+  <button id="upgrade-btn">Upgrade to Premium (₦1,500/month)</button>
+</section>
+
+<section id="schedule-section" hidden>
+  <h2>Your Schedule</h2>
+  <ul id="schedule-list" class="schedule" aria-label="Study schedule"></ul>
+</section>
+
+<footer>
+  <button id="reset-btn">Reset Planner</button>
+</footer>
+
+<script>
+(function(){
+  // Utility
+  function qs(id){ return document.getElementById(id); }
+  function safeQuery(selector){ return document.querySelector(selector); }
+
+  // State
+  let state = {
+    premium:false,
+    schedule:[],
+    completed:{}
+  };
+
+  // Load from localStorage
+  try{
+    const saved = JSON.parse(localStorage.getItem('studyPlanner'));
+    if(saved){
+      state = saved;
+    }
+  }catch(e){/* ignore */ }
+
+  // Elements
+  const examDateEl = qs('exam-date');
+  const subjectsEl = qs('subjects');
+  const strengthsEl = qs('strengths');
+  const dailyHoursEl = qs('daily-hours');
+  const generateBtn = qs('generate-btn');
+  const scheduleSection = qs('schedule-section');
+  const scheduleList = qs('schedule-list');
+  const upgradeBtn = qs('upgrade-btn');
+  const adSection = qs('ad-section');
+  const resetBtn = qs('reset-btn');
+  const timeEl = qs('current-time');
+
+  // Time display
+  function updateTime(){
+    const now = new Date();
+    timeEl.textContent = now.toLocaleString('en-NG', {hour:'numeric',minute:'numeric',second:'numeric',hour12:true,weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  }
+  setInterval(updateTime,1000);
+  updateTime();
+
+  // Premium handling
+  function applyPremium(){
+    if(state.premium){
+      adSection.style.display='none';
+    }else{
+      adSection.style.display='block';
+    }
+  }
+  applyPremium();
+
+  // Schedule generation
+  function generateSchedule(){
+    if(!examDateEl||!subjectsEl||!strengthsEl||!dailyHoursEl) return;
+    const examDate = new Date(examDateEl.value);
+    if(isNaN(examDate)) return alert('Please enter a valid exam date.');
+    const subjects = subjectsEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+    const strengths = strengthsEl.value.split(',').map(s=>parseInt(s.trim(),10));
+    if(subjects.length===0||strengths.length!==subjects.length) return alert('Subjects and strengths must match in count.');
+    const dailyHours = parseInt(dailyHoursEl.value,10);
+    if(isNaN(dailyHours)||dailyHours<=0) return alert('Enter a valid daily study hour count.');
+
+    // Simple algorithm: allocate more time to weaker subjects
+    const totalStrength = strengths.reduce((a,b)=>a+b,0);
+    const today = new Date();
+    const days = Math.max(1, Math.ceil((examDate - today)/(1000*60*60*24)));
+    const schedule = [];
+
+    for(let d=0; d<days; d++){
+      const date = new Date(today);
+      date.setDate(today.getDate()+d);
+      const dayEntry = {date:date.toISOString().split('T')[0], tasks:[]};
+
+      // Distribute dailyHours proportionally
+      let remainingHours = dailyHours;
+      const weightSum = subjects.reduce((sum,_,i)=>sum + (5 - strengths[i]),0);
+      subjects.forEach((sub,i)=>{
+        const weight = 5 - strengths[i];
+        const hrs = Math.min(remainingHours, Math.round((weight/weightSum)*dailyHours));
+        if(hrs>0){
+          dayEntry.tasks.push({subject:sub, hours:hrs});
+          remainingHours -= hrs;
+        }
+      });
+      schedule.push(dayEntry);
+    }
+    state.schedule = schedule;
+    renderSchedule();
+    saveState();
+  }
+
+  // Render schedule
+  function renderSchedule(){
+    if(!scheduleList) return;
+    scheduleList.innerHTML='';
+    state.schedule.forEach(day=>{
+      const li = document.createElement('li');
+      const dateSpan = document.createElement('span');
+      dateSpan.textContent = day.date;
+      li.appendChild(dateSpan);
+
+      const tasksBtn = document.createElement('button');
+      tasksBtn.setAttribute('aria-label','View tasks for '+day.date);
+      tasksBtn.textContent='📋';
+      tasksBtn.addEventListener('click',()=>showTasks(day));
+      li.appendChild(tasksBtn);
+      scheduleList.appendChild(li);
+    });
+    scheduleSection.hidden = false;
+  }
+
+  // Show tasks modal (simple alert for brevity)
+  function showTasks(day){
+    const completed = state.completed[day.date]||{};
+    const lines = day.tasks.map(t=>{
+      const key = day.date+'_'+t.subject;
+      const isDone = completed[key];
+      return `${isDone?'✅':'⬜'} ${t.subject} – ${t.hours}h`;
+    });
+    const msg = `Tasks for ${day.date}:\n\n${lines.join('\n')}\n\nClick OK to toggle completion of all.`;
+    if(confirm(msg)){
+      // toggle all
+      day.tasks.forEach(t=>{
+        const key = day.date+'_'+t.subject;
+        state.completed[key]=!state.completed[key];
+      });
+      saveState();
+    }
+  }
+
+  // Save state
+  function saveState(){
+    try{
+      localStorage.setItem('studyPlanner',JSON.stringify(state));
+    }catch(e){/* ignore */ }
+  }
+
+  // Reset
+  function resetPlanner(){
+    if(confirm('Reset all data?')){
+      state = {premium:false,schedule:[],completed:{}};
+      saveState();
+      scheduleSection.hidden = true;
+      applyPremium();
+    }
+  }
+
+  // Event listeners
+  if(generateBtn){
+    generateBtn.addEventListener('click',e=>{
+      e.preventDefault();
+      generateSchedule();
+    });
+  }
+  if(upgradeBtn){
+    upgradeBtn.addEventListener('click',()=>{
+      state.premium = true;
+      applyPremium();
+      saveState();
+      alert('Premium activated! Ads removed.');
+    });
+  }
+  if(resetBtn){
+    resetBtn.addEventListener('click',resetPlanner);
+  }
+
+  // Initial render if schedule exists
+  if(state.schedule && state.schedule.length){
+    renderSchedule();
+  }
+
+})();
+</script>
+</body>
+</html>
