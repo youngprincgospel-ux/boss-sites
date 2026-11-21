@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Scholarship Radar NG</title>
+    <meta name="description" content="Scholarship Radar NG aggregates Nigerian and international scholarship deadlines, sends low‑data push notifications, and lets users track opportunities.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #065f46;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+            background: #ecfdf5;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .badge-pro {
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+            min-height: 36px;
+            min-width: 36px;
+        }
+
+        main {
+            padding: 16px;
+            flex: 1;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .stats-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-info h3 {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats-info p {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .stats-action {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 40px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 500;
+            min-height: 40px;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card-bg);
+            font-size: 14px;
+            margin-bottom: 16px;
+            color: var(--text);
+            min-height: 46px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .scholarship-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .card-tag {
+            font-size: 11px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .card-meta {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        .deadline {
+            font-size: 12px;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            min-height: 40px;
+            min-width: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-apply {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .promo-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .promo-card h4 {
+            color: #92400e;
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .promo-card p {
+            color: #b45309;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .promo-btn {
+            background: #d97706;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            min-height: 40px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            min-height: 40px;
+            min-width: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 46px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 8px;
+            min-height: 48px;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 50;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-light);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 25%;
+            min-height: 44px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span.icon {
+            font-size: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span class="logo-icon" aria-hidden="true">🎓</span>
+            <div class="logo-text">
+                <h1>Scholarship Radar</h1>
+                <p id="liveClock">Nigeria & Global Opportunities</p>
+            </div>
+        </div>
+        <button class="badge-pro" id="openProModal">⭐ Go Pro</button>
+    </header>
+
+    <main id="mainContent">
+        <!-- Dynamic Content injected here -->
+    </main>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <button class="nav-item active" data-tab="all">
+            <span class="icon" aria-hidden="true">🔍</span>
+            <span>Explore</span>
+        </button>
+        <button class="nav-item" data-tab="bookmarks">
+            <span class="icon" aria-hidden="true">🔖</span>
+            <span>Saved</span>
+        </button>
+        <button class="nav-item" data-tab="cv">
+            <span class="icon" aria-hidden="true">📄</span>
+            <span>AI Review</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+            <span class="icon" aria-hidden="true">⚙️</span>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="proModalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Upgrade to Radar Pro 🚀</h3>
+                <button class="close-btn" id="closeProModal" aria-label="Close modal">&times;</button>
+            </div>
+            <p style="font-size: 14px; color: var(--text-light); margin-bottom: 16px;">
+                Unlock custom deadline SMS/Push alerts, AI CV optimization tools, and zero-ad experience for just ₦1,500/month.
+            </p>
+            <div class="form-group">
+                <label for="proPhone">Your WhatsApp / Phone Number</label>
+                <input type="text" class="form-input" id="proPhone" placeholder="e.g. 08012345678">
+            </div>
+            <button class="btn-submit" id="payProBtn">Pay ₦1,500 via Transfer / Card</button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'scholarship_radar_ng_state_v1';
+        
+        let state = {
+            currentTab: 'all',
+            searchQuery: '',
+            filterCategory: 'All',
+            bookmarks: [],
+            isPro: false,
+            notificationsEnabled: true
+        };
+
+        const scholarships = [
+            {
+                id: 1,
+                title: "PTDF Overseas & Local Scholarship",
+                category: "Local/Intl",
+                level: "Masters / Ph.D",
+                deadline: "2026-04-15",
+                url: "https://ptdf.gov.ng",
+                amount: "Fully Funded",
+                description: "Petroleum Technology Development Fund scholarship for Nigerian graduates in relevant disciplines."
+            },
+            {
+                id: 2,
+                title: "MTN Foundation Science & Tech Scholarship",
+                category: "Undergraduate",
+                level: "200 Level Students",
+                deadline: "2026-05-30",
+                url: "https://mtn.ng/foundation",
+                amount: "₦200,000 / yr",
+                description: "Annual award for high-performing science and technology students in Nigerian public tertiary institutions."
+            },
+            {
+                id: 3,
+                title: "Chevening Scholarships UK",
+                category: "International",
+                level: "Masters Degree",
+                deadline: "2026-11-02",
+                url: "https://www.chevening.org",
+                amount: "Fully Funded",
+                description: "The UK government's global scholarship programme, funded by the Foreign, Commonwealth and Development Office."
+            },
+            {
+                id: 4,
+                title: "DAAD Masters Scholarship Germany",
+                category: "International",
+                level: "Masters Degree",
+                deadline: "2026-06-15",
+                url: "https://www.daad.de",
+                amount: "Monthly Stipend",
+                description: "Offers graduates from developing countries the chance to take a postgraduate course in a professional field."
+            },
+            {
+                id: 5,
+                title: "Shell LiveWIRE & University Grant",
+                category: "Undergraduate",
+                level: "Undergraduate",
+                deadline: "2026-07-10",
+                url: "https://www.shell.com.ng",
+                amount: "₦150,000",
+                description: "Merit-based scholarship scheme for Nigerian students studying in accredited universities."
+            }
+        ];
+
+        // Load State safely
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state = { ...state, ...parsed };
+            }
+        } catch (e) {
+            console.error("Storage error", e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error("Storage save error", e);
+            }
+        }
+
+        // Live clock updater
+        function updateLiveClock() {
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const dateString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                clockEl.textContent = `${dateString} | ${timeString} WAT`;
+            }
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+
+        // DOM Elements
+        const mainContent = document.getElementById('mainContent');
+        const navItems = document.querySelectorAll('.nav-item');
+        const proModalOverlay = document.getElementById('proModalOverlay');
+        const openProModalBtn = document.getElementById('openProModal');
+        const closeProModalBtn = document.getElementById('closeProModal');
+        const payProBtn = document.getElementById('payProBtn');
+
+        // Render functions
+        function render() {
+            if (!mainContent) return;
+            mainContent.innerHTML = '';
+
+            if (state.currentTab === 'all') {
+                renderExploreTab();
+            } else if (state.currentTab === 'bookmarks') {
+                renderBookmarksTab();
+            } else if (state.currentTab === 'cv') {
+                renderCvTab();
+            } else if (state.currentTab === 'settings') {
+                renderSettingsTab();
+            }
+
+            updateNavActive();
+        }
+
+        function updateNavActive() {
+            navItems.forEach(item => {
+                if (item.dataset.tab === state.currentTab) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function renderExploreTab() {
+            // Stats Banner
+            const banner = document.createElement('div');
+            banner.className = 'stats-banner';
+            banner.innerHTML = `
+                <div class="stats-info">
+                    <h3>Active Opportunities</h3>
+                    <p>${scholarships.length} Verified Deadlines</p>
+                </div>
+                <button class="stats-action" id="triggerSync">⚡ Low-Data Mode</button>
+            `;
+            mainContent.appendChild(banner);
+
+            // Search input
+            const search = document.createElement('input');
+            search.type = 'text';
+            search.className = 'search-box';
+            search.placeholder = 'Search by title, level, or keyword...';
+            search.value = state.searchQuery;
+            search.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value;
+                renderList();
+            });
+            mainContent.appendChild(search);
+
+            // Filters
+            const categories = ['All', 'Undergraduate', 'International', 'Local/Intl'];
+            const filterContainer = document.createElement('div');
+            filterContainer.className = 'filters';
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `filter-btn ${state.filterCategory === cat ? 'active' : ''}`;
+                btn.textContent = cat;
+                btn.addEventListener('click', () => {
+                    state.filterCategory = cat;
+                    render();
+                });
+                filterContainer.appendChild(btn);
+            });
+            mainContent.appendChild(filterContainer);
+
+            // List container (Created and added to mainContent BEFORE calling renderList)
+            const listContainer = document.createElement('div');
+            listContainer.className = 'scholarship-list';
+            listContainer.id = 'scholarshipListContainer';
+            mainContent.appendChild(listContainer);
+
+            // Promo banner
+            const promo = document.createElement('div');
+            promo.className = 'promo-card';
+            promo.innerHTML = `
+                <h4>Need Admission Guidance Abroad? ✈️</h4>
+                <p>Get expert SOP reviews and admission placement assistance through our trusted partner.</p>
+                <button class="promo-btn" id="affiliateBtn">Explore Partner Services</button>
+            `;
+            mainContent.appendChild(promo);
+
+            renderList();
+
+            const triggerSync = document.getElementById('triggerSync');
+            if (triggerSync) {
+                triggerSync.addEventListener('click', () => {
+                    alert("Low-data sync complete! All deadlines updated locally.");
+                });
+            }
+
+            const affiliateBtn = document.getElementById('affiliateBtn');
+            if (affiliateBtn) {
+                affiliateBtn.addEventListener('click', () => {
+                    window.open('https://wa.me/2348000000000?text=Hello,%20I%20need%20study%20abroad%20guidance', '_blank');
+                });
+            }
+        }
+
+        function renderList() {
+            const container = document.getElementById('scholarshipListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const filtered = scholarships.filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                                      item.description.toLowerCase().includes(state.searchQuery.toLowerCase());
+                const matchesCat = state.filterCategory === 'All' || item.category === state.filterCategory;
+                return matchesSearch && matchesCat;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span style="font-size: 32px;" aria-hidden="true">📭</span>
+                        <p>No scholarships match your search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isBookmarked = state.bookmarks.includes(item.id);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-tag">${item.category}</span>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--primary);">${item.amount}</span>
+                    </div>
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-meta">
+                        <span>🎓 ${item.level}</span>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-light); margin-bottom: 12px;">${item.description}</p>
+                    <div class="card-footer">
+                        <span class="deadline">⏳ Deadline: ${item.deadline}</span>
+                        <div class="card-actions">
+                            <button class="btn-icon bookmark-btn" data-id="${item.id}" aria-label="Bookmark scholarship">${isBookmarked ? '🔖' : '📑'}</button>
+                            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn-apply">Apply</a>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            container.querySelectorAll('.bookmark-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    if (state.bookmarks.includes(id)) {
+                        state.bookmarks = state.bookmarks.filter(bId => bId !== id);
+                    } else {
+                        state.bookmarks.push(id);
+                    }
+                    saveState();
+                    renderList();
+                });
+            });
+        }
+
+        function renderBookmarksTab() {
+            const headerTitle = document.createElement('h2');
+            headerTitle.style.fontSize = '18px';
+            headerTitle.style.marginBottom = '16px';
+            headerTitle.textContent = 'Saved Opportunities';
+            mainContent.appendChild(headerTitle);
+
+            const container = document.createElement('div');
+            container.className = 'scholarship-list';
+            mainContent.appendChild(container);
+
+            const savedItems = scholarships.filter(item => state.bookmarks.includes(item.id));
+
+            if (savedItems.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span style="font-size: 32px;" aria-hidden="true">📑</span>
+                        <p>You haven't bookmarked any scholarships yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            savedItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-tag">${item.category}</span>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--primary);">${item.amount}</span>
+                    </div>
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-meta">
+                        <span>🎓 ${item.level}</span>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-light); margin-bottom: 12px;">${item.description}</p>
+                    <div class="card-footer">
+                        <span class="deadline">⏳ Deadline: ${item.deadline}</span>
+                        <div class="card-actions">
+                            <button class="btn-icon remove-bookmark" data-id="${item.id}" aria-label="Remove bookmark">❌</button>
+                            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn-apply">Apply</a>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            container.querySelectorAll('.remove-bookmark').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    state.bookmarks = state.bookmarks.filter(bId => bId !== id);
+                    saveState();
+                    render();
+                });
+            });
+        }
+
+        function renderCvTab() {
+            mainContent.innerHTML = `
+                <h2 style="font-size: 18px; margin-bottom: 8px;">AI Scholarship CV Reviewer 📄</h2>
+                <p style="font-size: 13px; color: var(--text-light); margin-bottom: 16px;">Paste your CV summary or personal statement below to get instant AI scoring for scholarship criteria.</p>
+                <div class="form-group">
+                    <label for="cvText">CV / Personal Statement Summary</label>
+                    <textarea class="form-input" id="cvText" rows="6" placeholder="Paste your academic background, achievements, and career goals here..."></textarea>
+                </div>
+                <button class="btn-submit" id="analyzeCvBtn">Run AI Analysis</button>
+                <div id="cvResult" style="margin-top: 16px;"></div>
+            `;
+
+            const analyzeCvBtn = document.getElementById('analyzeCvBtn');
+            if (analyzeCvBtn) {
+                analyzeCvBtn.addEventListener('click', () => {
+                    const cvInput = document.getElementById('cvText');
+                    const resultDiv = document.getElementById('cvResult');
+                    if (!cvInput || !cvInput.value.trim()) {
+                        alert("Please paste your text first.");
+                        return;
+                    }
+                    if (!state.isPro) {
+                        resultDiv.innerHTML = `
+                            <div class="card" style="background: #ecfdf5; border-color: var(--primary);">
+                                <h4 style="color: var(--primary-dark); margin-bottom: 4px;">Free Scan Result: 68 / 100</h4>
+                                <p style="font-size: 13px; color: var(--text);">Your profile is solid! Upgrade to Pro to unlock deep AI sentence-by-sentence rewriting and formatting.</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="card" style="background: #ecfdf5; border-color: var(--primary);">
+                                <h4 style="color: var(--primary-dark); margin-bottom: 4px;">Pro AI Score: 92 / 100 ⭐</h4>
+                                <p style="font-size: 13px; color: var(--text);">Excellent structure. Recommendation: Highlight leadership roles more prominently in paragraph 2.</p>
+                            </div>
+                        `;
+                    }
+                });
+            }
+        }
+
+        function renderSettingsTab() {
+            mainContent.innerHTML = `
+                <h2 style="font-size: 18px; margin-bottom: 16px;">Preferences & Settings</h2>
+                <div class="card" style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">Push Notifications</div>
+                            <div style="font-size: 12px; color: var(--text-light);">Receive alerts for closing deadlines</div>
+                        </div>
+                        <input type="checkbox" id="notifToggle" ${state.notificationsEnabled ? 'checked' : ''} style="width: 24px; height: 24px; accent-color: var(--primary); cursor: pointer;" aria-label="Toggle push notifications">
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom: 12px;">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Account Status</div>
+                    <div style="font-size: 13px; color: var(--text-light); margin-bottom: 12px;">${state.isPro ? '🌟 Radar Pro Active' : '👤 Free Tier Member'}</div>
+                    ${!state.isPro ? '<button class="promo-btn" id="settingsProBtn">Upgrade Now</button>' : ''}
+                </div>
+                <div class="card">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Data Management</div>
+                    <div style="font-size: 13px; color: var(--text-light); margin-bottom: 12px;">Clear all local bookmarks and settings cache.</div>
+                    <button class="btn-icon" id="clearDataBtn" style="color: #dc2626; border-color: #fca5a5;">Clear Cache</button>
+                </div>
+            `;
+
+            const notifToggle = document.getElementById('notifToggle');
+            if (notifToggle) {
+                notifToggle.addEventListener('change', (e) => {
+                    state.notificationsEnabled = e.target.checked;
+                    saveState();
+                });
+            }
+
+            const settingsProBtn = document.getElementById('settingsProBtn');
+            if (settingsProBtn) {
+                settingsProBtn.addEventListener('click', () => {
+                    if (proModalOverlay) proModalOverlay.classList.add('active');
+                });
+            }
+
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            if (clearDataBtn) {
+                clearDataBtn.addEventListener('click', () => {
+                    if (confirm("Are you sure you want to clear saved data?")) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+        // Navigation Click Events
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                state.currentTab = item.dataset.tab;
+                render();
+            });
+        });
+
+        // Modal Controls
+        if (openProModalBtn && proModalOverlay) {
+            openProModalBtn.addEventListener('click', () => {
+                proModalOverlay.classList.add('active');
+            });
+        }
+
+        if (closeProModalBtn && proModalOverlay) {
+            closeProModalBtn.addEventListener('click', () => {
+                proModalOverlay.classList.remove('active');
+            });
+        }
+
+        if (payProBtn && proModalOverlay) {
+            payProBtn.addEventListener('click', () => {
+                const phoneInput = document.getElementById('proPhone');
+                if (!phoneInput) return;
+                const phone = phoneInput.value.trim();
+                if (phone.length < 10) {
+                    alert("Please enter a valid phone number.");
+                    return;
+                }
+                state.isPro = true;
+                saveState();
+                proModalOverlay.classList.remove('active');
+                alert("Payment simulated successfully! Welcome to Radar Pro.");
+                render();
+            });
+        }
+
+        // Initial Render
+        render();
+    </script>
+</body>
+</html>
