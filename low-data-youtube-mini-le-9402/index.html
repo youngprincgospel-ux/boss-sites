@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DataWise NG – Low-Data Mini-Lesson Hub</title>
+<meta name="description" content="Low‑Data YouTube Mini‑Lesson Hub – a curated channel of 2‑minute, data‑light video lessons for each major UTME, WAEC, and NECO topic, optimized for the fre">
+    <link rel="icon" href="📱">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #10b981;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .badge-data {
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .promo-banner h2 {
+            font-size: 1.25rem;
+            margin-bottom: 6px;
+        }
+
+        .promo-banner p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 14px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Tabs & Filters */
+        .filter-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+
+        .filter-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Search */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card-bg);
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+        }
+
+        .search-box span {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* Lesson Cards */
+        .lesson-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .lesson-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .lesson-card:active {
+            transform: scale(0.98);
+        }
+
+        .thumb-box {
+            width: 90px;
+            height: 65px;
+            background: #cbd5e1;
+            border-radius: 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .duration-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            font-size: 0.65rem;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .lesson-info {
+            flex-grow: 1;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .lesson-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .data-saving {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Modal Player */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Newsletter View */
+        .newsletter-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .newsletter-box h3 {
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .newsletter-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>DataWise NG</h1>
+            <span class="badge-data">⚡ 2-Min Ultra-Low Data</span>
+        </div>
+        <div id="live-clock" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);"></div>
+    </header>
+
+    <div class="container">
+        <!-- HOME VIEW -->
+        <div id="view-home" class="view-section active">
+            <div class="promo-banner">
+                <h2>Pass UTME & WAEC on Low Data</h2>
+                <p>Bite-size 2-minute revision clips optimized for free-data windows and limited bandwidth.</p>
+                <button class="btn btn-secondary" id="btn-explore-top">Start Revision Now</button>
+            </div>
+
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="search-input" placeholder="Search topic e.g. Organic Chemistry, Calculus...">
+            </div>
+
+            <div class="filter-scroll" id="exam-filters">
+                <button class="chip active" data-exam="all">All Exams</button>
+                <button class="chip" data-exam="UTME">UTME (JAMB)</button>
+                <button class="chip" data-exam="WAEC">WAEC</button>
+                <button class="chip" data-exam="NECO">NECO</button>
+            </div>
+
+            <div class="lesson-list" id="lesson-container">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- NEWSLETTER VIEW -->
+        <div id="view-newsletter" class="view-section">
+            <div class="newsletter-box">
+                <h3>📖 Premium Study Newsletter</h3>
+                <p>Get full-length breakdown videos, offline PDF practice sets, and likely exam questions sent directly to your email or WhatsApp weekly.</p>
+                
+                <form id="newsletter-form">
+                    <div class="form-group">
+                        <label for="sub-name">Your Full Name</label>
+                        <input type="text" id="sub-name" placeholder="Amina Bello" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sub-contact">Email or WhatsApp Number</label>
+                        <input type="text" id="sub-contact" placeholder="08031234567 or email@domain.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sub-exam">Target Exam</label>
+                        <select id="sub-exam" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: white;">
+                            <option value="UTME">UTME 2026</option>
+                            <option value="WAEC">WAEC 2026</option>
+                            <option value="NECO">NECO 2026</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; justify-content: center; margin-top: 8px;">Subscribe (₦500 / Month)</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SAVED VIEW -->
+        <div id="view-saved" class="view-section">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px;">Bookmarked Lessons</h2>
+            <div class="lesson-list" id="saved-container">
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">No bookmarked lessons yet. Tap the bookmark icon on any lesson to save it for offline revision.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal Player -->
+    <div class="modal-overlay" id="video-modal">
+        <div class="modal-content">
+            <div class="video-container" id="player-wrapper">
+                <button class="modal-close" id="modal-close-btn">✕</button>
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 8px;">▶️</div>
+                    <div id="modal-video-title" style="font-weight: 600; font-size: 0.95rem;">Loading Lesson...</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 4px;">Ultra-Low Data Stream (Compressed 144p)</div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="modal-exam-badge" class="badge-data" style="display: inline-block; margin-bottom: 8px;">UTME</div>
+                <h3 id="modal-full-title" style="font-size: 1.05rem; margin-bottom: 8px;"></h3>
+                <p id="modal-desc" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;"></p>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" id="btn-bookmark" style="flex: 1; justify-content: center;">Bookmark Lesson</button>
+                    <button class="btn btn-secondary" id="btn-share" style="border: 1px solid var(--border);">Share via WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast-notification">Action successful</div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-home">
+            <span class="icon">📺</span>
+            <span>Hub</span>
+        </button>
+        <button class="nav-item" data-target="view-newsletter">
+            <span class="icon">📬</span>
+            <span>Newsletter</span>
+        </button>
+        <button class="nav-item" data-target="view-saved">
+            <span class="icon">🔖</span>
+            <span>Saved</span>
+        </button>
+    </nav>
+
+    <script>
+        const lessons = [
+            {
+                id: 1,
+                title: "Calculus: Differentiation First Principles Made Easy",
+                exam: "UTME",
+                duration: "2:15",
+                saving: "Saves ~12MB data",
+                emoji: "📈",
+                desc: "Master the fundamental rule of differentiation without stress. Quick shortcut formulas for JAMB objective questions."
+            },
+            {
+                id: 2,
+                title: "English Language: Concord and Agreement Rules",
+                exam: "WAEC",
+                duration: "1:55",
+                saving: "Saves ~10MB data",
+                emoji: "✍️",
+                desc: "Avoid common traps with collective nouns and indefinite pronouns in WAEC objective and essay sections."
+            },
+            {
+                id: 3,
+                title: "Organic Chemistry: IUPAC Nomenclature Masterclass",
+                exam: "UTME",
+                duration: "2:30",
+                saving: "Saves ~14MB data",
+                emoji: "🧪",
+                desc: "Learn how to name alkanes, alkenes, alkanols, and alkanoic acids effortlessly in under 3 minutes."
+            },
+            {
+                id: 4,
+                title: "Physics: Simple Harmonic Motion & Pendulums",
+                exam: "NECO",
+                duration: "2:05",
+                saving: "Saves ~11MB data",
+                emoji: "⚡",
+                desc: "Core formulas and graphical interpretations for period, frequency, and acceleration in SHM."
+            },
+            {
+                id: 5,
+                title: "Biology: Genetics & Mendel's Crosses Shortcut",
+                exam: "WAEC",
+                duration: "2:20",
+                saving: "Saves ~13MB data",
+                emoji: "🧬",
+                desc: "Quick Punnett square calculation methods to solve monohybrid and dihybrid cross questions instantly."
+            },
+            {
+                id: 6,
+                title: "Government: Features of Nigerian Federalism",
+                exam: "UTME",
+                duration: "1:50",
+                saving: "Saves ~9MB data",
+                emoji: "🏛️",
+                desc: "Key historical milestones, constitutional provisions, and operational challenges of Nigerian federal structure."
+            }
+        ];
+
+        let state = {
+            currentExam: 'all',
+            searchQuery: '',
+            activeLesson: null,
+            savedIds: JSON.parse(localStorage.getItem('datawise_saved') || '[]')
+        };
+
+        // DOM Elements
+        const clockEl = document.getElementById('live-clock');
+        const lessonContainer = document.getElementById('lesson-container');
+        const savedContainer = document.getElementById('saved-container');
+        const searchInput = document.getElementById('search-input');
+        const examFilters = document.getElementById('exam-filters');
+        const videoModal = document.getElementById('video-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalVideoTitle = document.getElementById('modal-video-title');
+        const modalFullTitle = document.getElementById('modal-full-title');
+        const modalExamBadge = document.getElementById('modal-exam-badge');
+        const modalDesc = document.getElementById('modal-desc');
+        const btnBookmark = document.getElementById('btn-bookmark');
+        const btnShare = document.getElementById('btn-share');
+        const toast = document.getElementById('toast-notification');
+        const newsletterForm = document.getElementById('newsletter-form');
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+        const btnExploreTop = document.getElementById('btn-explore-top');
+
+        // Live Clock
+        function updateClock() {
+            if (!clockEl) return;
+            const now = new Date();
+            clockEl.textContent = now.toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + now.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Render Lessons
+        function renderLessons() {
+            if (!lessonContainer) return;
+
+            const filtered = lessons.filter(l => {
+                const matchesExam = state.currentExam === 'all' || l.exam === state.currentExam;
+                const matchesSearch = l.title.toLowerCase().includes(state.searchQuery.toLowerCase()) || l.desc.toLowerCase().includes(state.searchQuery.toLowerCase());
+                return matchesExam && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                lessonContainer.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:24px; font-size:0.9rem;">No lessons found matching your criteria.</p>`;
+                return;
+            }
+
+            lessonContainer.innerHTML = filtered.map(l => `
+                <div class="lesson-card" data-id="${l.id}">
+                    <div class="thumb-box">
+                        ${l.emoji}
+                        <div class="duration-badge">${l.duration}</div>
+                    </div>
+                    <div class="lesson-info">
+                        <div class="lesson-meta">
+                            <span>${l.exam}</span> • <span>Low Data Stream</span>
+                        </div>
+                        <div class="lesson-title">${l.title}</div>
+                        <div class="data-saving">${l.saving}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Attach click event to cards
+            document.querySelectorAll('.lesson-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = parseInt(card.getAttribute('data-id'));
+                    openLessonModal(id);
+                });
+            });
+        }
+
+        // Render Saved
+        function renderSaved() {
+            if (!savedContainer) return;
+            const savedLessons = lessons.filter(l => state.savedIds.includes(l.id));
+
+            if (savedLessons.length === 0) {
+                savedContainer.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.9rem;">No bookmarked lessons yet. Tap the bookmark icon on any lesson to save it for offline revision.</p>`;
+                return;
+            }
+
+            savedContainer.innerHTML = savedLessons.map(l => `
+                <div class="lesson-card" data-id="${l.id}">
+                    <div class="thumb-box">
+                        ${l.emoji}
+                        <div class="duration-badge">${l.duration}</div>
+                    </div>
+                    <div class="lesson-info">
+                        <div class="lesson-meta">
+                            <span>${l.exam}</span> • <span>Bookmarked</span>
+                        </div>
+                        <div class="lesson-title">${l.title}</div>
+                        <div class="data-saving">${l.saving}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            savedContainer.querySelectorAll('.lesson-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = parseInt(card.getAttribute('data-id'));
+                    openLessonModal(id);
+                });
+            });
+        }
+
+        function openLessonModal(id) {
+            const lesson = lessons.find(l => l.id === id);
+            if (!lesson) return;
+            state.activeLesson = lesson;
+
+            modalVideoTitle.textContent = lesson.title;
+            modalFullTitle.textContent = lesson.title;
+            modalExamBadge.textContent = lesson.exam;
+            modalDesc.textContent = lesson.desc;
+
+            updateBookmarkButton();
+            videoModal.classList.add('open');
+        }
+
+        function closeLessonModal() {
+            videoModal.classList.remove('open');
+            state.activeLesson = null;
+        }
+
+        function updateBookmarkButton() {
+            if (!state.activeLesson || !btnBookmark) return;
+            const isSaved = state.savedIds.includes(state.activeLesson.id);
+            btnBookmark.textContent = isSaved ? 'Remove Bookmark' : 'Bookmark Lesson';
+            btnBookmark.style.background = isSaved ? 'var(--danger)' : 'var(--primary)';
+        }
+
+        function showToast(msg) {
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Event Listeners
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.trim();
+                renderLessons();
+            });
+        }
+
+        if (examFilters) {
+            examFilters.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    examFilters.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    state.currentExam = chip.getAttribute('data-exam');
+                    renderLessons();
+                });
+            });
+        }
+
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', closeLessonModal);
+        }
+
+        if (videoModal) {
+            videoModal.addEventListener('click', (e) => {
+                if (e.target === videoModal) closeLessonModal();
+            });
+        }
+
+        if (btnBookmark) {
+            btnBookmark.addEventListener('click', () => {
+                if (!state.activeLesson) return;
+                const idx = state.savedIds.indexOf(state.activeLesson.id);
+                if (idx > -1) {
+                    state.savedIds.splice(idx, 1);
+                    showToast('Lesson removed from saved');
+                } else {
+                    state.savedIds.push(state.activeLesson.id);
+                    showToast('Lesson bookmarked successfully');
+                }
+                try {
+                    localStorage.setItem('datawise_saved', JSON.stringify(state.savedIds));
+                } catch (err) {}
+                updateBookmarkButton();
+                renderSaved();
+            });
+        }
+
+        if (btnShare) {
+            btnShare.addEventListener('click', () => {
+                if (!state.activeLesson) return;
+                const text = `Check out this 2-min revision lesson: *${state.activeLesson.title}* on DataWise NG.`;
+                const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            });
+        }
+
+        if (newsletterForm) {
+            newsletterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('sub-name').value;
+                const contact = document.getElementById('sub-contact').value;
+                if (!name || !contact) return;
+                showToast('Redirecting to secure payment...');
+                setTimeout(() => {
+                    alert(`Thank you, ${name}! Your subscription request for ₦500/month has been received. In production, this securely launches Paystack or bank transfer integration.`);
+                    newsletterForm.reset();
+                }, 1000);
+            });
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                
+                const targetId = item.getAttribute('data-target');
+                viewSections.forEach(sec => {
+                    if (sec.id === targetId) {
+                        sec.classList.add('active');
+                    } else {
+                        sec.classList.remove('active');
+                    }
+                });
+
+                if (targetId === 'view-saved') {
+                    renderSaved();
+                }
+            });
+        });
+
+        if (btnExploreTop) {
+            btnExploreTop.addEventListener('click', () => {
+                if (searchInput) searchInput.focus();
+            });
+        }
+
+        // Initial Render
+        renderLessons();
+    </script>
+</body>
+</html>
