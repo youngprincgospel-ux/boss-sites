@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ExamCountdown Pro NG</title>
+<meta name="description" content="AI‑Powered Exam‑Date Countdown Chrome Extension with Integrated Payment Button. This should help: A lightweight browser extension that shows a countdown to">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏳</text></svg>">
+<style>
+  :root {
+    --primary: #10B981;
+    --primary-dark: #059669;
+    --primary-light: #D1FAE5;
+    --accent: #F59E0B;
+    --bg: #F3F4F6;
+    --surface: #FFFFFF;
+    --text: #1F2937;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --danger: #EF4444;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  [data-theme="dark"] {
+    --bg: #111827;
+    --surface: #1F2937;
+    --text: #F9FAFB;
+    --text-muted: #9CA3AF;
+    --border: #374151;
+    --primary-light: #064E3B;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: calc(80px + var(--safe-bottom));
+    transition: background 0.3s, color 0.3s;
+  }
+
+  header {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .brand span {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .icon-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  main {
+    flex: 1;
+    padding: 16px;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  /* Hero Countdown */
+  .hero-card {
+    background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    color: white;
+    border: none;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-card h2 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+  }
+
+  .hero-exam-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .time-box {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    padding: 10px 4px;
+    border-radius: 10px;
+  }
+
+  .time-box .num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .time-box .label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .btn {
+    background: white;
+    color: var(--primary-dark);
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.6);
+    color: white;
+  }
+
+  /* Section Titles */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .section-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  /* Exam List */
+  .exam-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .exam-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .exam-item.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .exam-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .exam-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .exam-badge {
+    text-align: right;
+  }
+
+  .exam-badge .days {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+  }
+
+  .exam-badge .date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* Pro Banner / Card */
+  .pro-card {
+    background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    color: white;
+    border: 1px solid #374151;
+  }
+
+  .pro-card h3 {
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pro-card p {
+    font-size: 0.9rem;
+    color: #9CA3AF;
+    margin-bottom: 16px;
+  }
+
+  .pro-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+  }
+
+  .pro-features div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Fixed Bottom Bar */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    padding-bottom: calc(10px + var(--safe-bottom));
+    z-index: 100;
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .nav-item.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .nav-item span.icon {
+    font-size: 1.2rem;
+  }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: flex-end;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-content {
+    background: var(--surface);
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.1, 1, 0.1, 1);
+    padding-bottom: calc(24px + var(--safe-bottom));
+  }
+
+  .modal-overlay.open .modal-content {
+    transform: translateY(0);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .close-modal {
+    background: var(--bg);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  /* Forms */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .btn-primary:active {
+    opacity: 0.9;
+  }
+
+  /* Views Management */
+  .view-section {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .view-section.active {
+    display: flex;
+  }
+
+  /* Analytics & Study Hub */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--bg);
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .stat-card .val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 4px;
+  }
+
+  .subject-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .subject-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .badge-free {
+    background: var(--border);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .badge-pro {
+    background: #FEE2E2;
+    color: #DC2626;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: #1F2937;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    z-index: 2000;
+    transition: transform 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      ⏳ ExamCountdown <span>NG</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">🌙</button>
+      <button class="icon-btn" id="proBadgeBtn" aria-label="Pro Status" title="Pro Status">⭐</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- VIEW 1: HOME / COUNTDOWN -->
+    <div id="view-home" class="view-section active">
+      <!-- HERO COUNTDOWN -->
+      <div class="card hero-card">
+        <h1 id="heroSubTitle">Next Target Exam</h2>
+        <div class="hero-exam-name" id="heroExamName">UTME 2026 (JAMB)</div>
+        <div class="countdown-grid">
+          <div class="time-box">
+            <div class="num" id="cdDays">00</div>
+            <div class="label">Days</div>
+          </div>
+          <div class="time-box">
+            <div class="num" id="cdHours">00</div>
+            <div class="label">Hours</div>
+          </div>
+          <div class="time-box">
+            <div class="num" id="cdMins">00</div>
+            <div class="label">Mins</div>
+          </div>
+          <div class="time-box">
+            <div class="num" id="cdSecs">00</div>
+            <div class="label">Secs</div>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-accent" id="heroUpgradeBtn">⚡ Upgrade Study Plan (₦500)</button>
+        </div>
+      </div>
+
+      <!-- EXAMS LIST -->
+      <div class="card" style="padding: 16px;">
+        <div class="section-header">
+          <h3>Nigerian Exams</h3>
+          <button class="btn btn-outline" style="color: var(--primary); border-color: var(--primary); padding: 6px 12px; font-size: 0.8rem;" id="addCustomExamBtn">+ Add Exam</button>
+        </div>
+        <div class="exam-list" id="examListContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- PRO UPGRADE CARD -->
+      <div class="card pro-card" id="proPromoCard">
+        <h3>⭐ Unlock Pro Upgrade (₦500)</h3>
+        <p>Get advanced analytics, subject-specific simulations, and offline sync.</p>
+        <div class="pro-features">
+          <div>✔️ CBT Past Questions</div>
+          <div>✔️ AI Readiness Score</div>
+          <div>✔️ Offline Study Mode</div>
+          <div>✔️ Priority SMS Alerts</div>
+        </div>
+        <button class="btn btn-accent" style="width: 100%; justify-content: center;" id="buyProCardBtn">Pay ₦500 via Paystack / OPay</button>
+      </div>
+    </div>
+
+    <!-- VIEW 2: STUDY / SIMULATOR -->
+    <div id="view-study" class="view-section">
+      <div class="card">
+        <div class="section-header">
+          <h3>Subject Practice Hub</h3>
+          <span class="badge-free" id="userPlanBadge">Free Tier</span>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">Select a subject to test your CBT readiness for your target exam.</p>
+        <div class="subject-list" id="subjectListContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: ANALYTICS -->
+    <div id="view-analytics" class="view-section">
+      <div class="card">
+        <div class="section-header">
+          <h3>Readiness Analytics</h3>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Exam Readiness</div>
+            <div class="val" id="statReadiness">42%</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Days Left</div>
+            <div class="val" id="statDaysLeft">--</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Mock Tests Taken</div>
+            <div class="val" id="statMocks">3</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Account Type</div>
+            <div class="val" id="statAccountType" style="font-size: 1.1rem; padding-top: 4px;">Free</div>
+          </div>
+        </div>
+        <div style="margin-top: 10px;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 8px;">Tips to Boost Score</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;" id="readinessTip">Practice at least 40 CBT past questions daily to improve time management for JAMB UTME.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FIXED BOTTOM BAR -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-target="view-home">
+      <span class="icon">⏳</span>
+      <span>Countdown</span>
+    </button>
+    <button class="nav-item" data-target="view-study">
+      <span class="icon">📚</span>
+      <span>Study Hub</span>
+    </button>
+    <button class="nav-item" data-target="view-analytics">
+      <span class="icon">📊</span>
+      <span>Analytics</span>
+    </button>
+  </nav>
+
+  <!-- MODAL: PAYMENT GATEWAY (OPay/Paystack simulated with 2% commission tracker) -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Secure Checkout (₦500)</h3>
+        <button class="close-modal" id="closePaymentModal">✕</button>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">Instant Pro Upgrade for ExamCountdown NG. Includes ₦10 platform processing fee (2%).</p>
+      
+      <div class="form-group">
+        <label>Student Email / Phone</label>
+        <input type="text" class="form-control" id="payerInfo" placeholder="student@gmail.com or 08012345678">
+      </div>
+
+      <div class="form-group">
+        <label>Select Payment Method</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;">
+          <button type="button" class="btn btn-outline" id="payMethodPaystack" style="color: var(--text); border-color: var(--border); background: var(--bg);">Paystack</button>
+          <button type="button" class="btn btn-outline" id="payMethodOpay" style="color: var(--text); border-color: var(--border); background: var(--bg);">OPay</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="confirmPaymentBtn">Authorize ₦510 Payment</button>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD EXAM -->
+  <div class="modal-overlay" id="addExamModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Custom Exam</h3>
+        <button class="close-modal" id="closeAddExamModal">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Exam Title</label>
+        <input type="text" class="form-control" id="newExamTitle" placeholder="e.g., Post-UTME UNILAG">
+      </div>
+      <div class="form-group">
+        <label>Exam Date</label>
+        <input type="date" class="form-control" id="newExamDate">
+      </div>
+      <button class="btn-primary" id="saveNewExamBtn">Save Exam Countdown</button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toastNotification">Action successful!</div>
+
+  <script>
+    // Null-checked State & Storage
+    const STORAGE_KEY = 'EXAM_COUNTDOWN_NG_STATE_V1';
+    
+    const defaultState = {
+      isPro: false,
+      theme: 'light',
+      selectedExamId: 'utme2026',
+      exams: [
+        { id: 'utme2026', title: 'UTME 2026 (JAMB)', date: '2026-04-18T08:00:00', type: 'National' },
+        { id: 'waec2026', title: 'WAEC SSCE 2026', date: '2026-05-04T09:00:00', type: 'National' },
+        { id: 'neco2026', title: 'NECO SSCE 2026', date: '2026-06-15T09:00:00', type: 'National' }
+      ],
+      transactions: [],
+      commissionEarned: 0
+    };
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        console.error('Storage load error', e);
+      }
+      return defaultState;
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Storage save error', e);
+      }
+    }
+
+    let state = loadState();
+
+    // DOM Elements
+    const bodyEl = document.body;
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const proBadgeBtn = document.getElementById('proBadgeBtn');
+    const heroUpgradeBtn = document.getElementById('heroUpgradeBtn');
+    const buyProCardBtn = document.getElementById('buyProCardBtn');
+    const addCustomExamBtn = document.getElementById('addCustomExamBtn');
+    const examListContainer = document.getElementById('examListContainer');
+    const subjectListContainer = document.getElementById('subjectListContainer');
+    const userPlanBadge = document.getElementById('userPlanBadge');
+    const statAccountType = document.getElementById('statAccountType');
+    const statDaysLeft = document.getElementById('statDaysLeft');
+    const statReadiness = document.getElementById('statReadiness');
+    const readinessTip = document.getElementById('readinessTip');
+    
+    // Countdown elements
+    const heroExamName = document.getElementById('heroExamName');
+    const cdDays = document.getElementById('cdDays');
+    const cdHours = document.getElementById('cdHours');
+    const cdMins = document.getElementById('cdMins');
+    const cdSecs = document.getElementById('cdSecs');
+
+    // Modals
+    const paymentModal = document.getElementById('paymentModal');
+    const closePaymentModal = document.getElementById('closePaymentModal');
+    const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+    const addExamModal = document.getElementById('addExamModal');
+    const closeAddExamModal = document.getElementById('closeAddExamModal');
+    const saveNewExamBtn = document.getElementById('saveNewExamBtn');
+    const newExamTitle = document.getElementById('newExamTitle');
+    const newExamDate = document.getElementById('newExamDate');
+    const toastNotification = document.getElementById('toastNotification');
+
+    // Navigation buttons
+    const navItems = document.querySelectorAll('.nav-item');
+    const viewSections = document.querySelectorAll('.view-section');
+
+    // Initialize Theme
+    if (state.theme === 'dark') {
+      bodyEl.setAttribute('data-theme', 'dark');
+      if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+    }
+
+    // Toast Helper
+    function showToast(msg) {
+      if (!toastNotification) return;
+      toastNotification.textContent = msg;
+      toastNotification.classList.add('show');
+      setTimeout(() => {
+        toastNotification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Navigation Handler
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const targetId = item.getAttribute('data-target');
+        navItems.forEach(nav => nav.classList.remove('active'));
+        viewSections.forEach(sec => sec.classList.remove('active'));
+        item.classList.add('active');
+        const targetView = document.getElementById(targetId);
+        if (targetView) targetView.classList.add('active');
+      });
+    });
+
+    // Theme Toggle
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = bodyEl.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+          bodyEl.removeAttribute('data-theme');
+          state.theme = 'light';
+          themeToggleBtn.textContent = '🌙';
+        } else {
+          bodyEl.setAttribute('data-theme', 'dark');
+          state.theme = 'dark';
+          themeToggleBtn.textContent = '☀️';
+        }
+        saveState();
+      });
+    }
+
+    // Render Exams List
+    function renderExams() {
+      if (!examListContainer) return;
+      examListContainer.innerHTML = '';
+      
+      state.exams.forEach(exam => {
+        const examDate = new Date(exam.date);
+        const now = new Date();
+        const diffTime = examDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        const isSelected = exam.id === state.selectedExamId;
+
+        const div = document.createElement('div');
+        div.className = `exam-item ${isSelected ? 'active' : ''}`;
+        div.innerHTML = `
+          <div class="exam-info">
+            <h4>${escapeHtml(exam.title)}</h4>
+            <p>${examDate.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          </div>
+          <div class="exam-badge">
+            <div class="days">${diffDays > 0 ? diffDays + ' days' : 'Passed'}</div>
+            <div class="date">${escapeHtml(exam.type)}</div>
+          </div>
+        `;
+        div.addEventListener('click', () => {
+          state.selectedExamId = exam.id;
+          saveState();
+          renderExams();
+          updateCountdown();
+        });
+        examListContainer.appendChild(div);
+      });
+    }
+
+    // Render Subjects & Study Hub
+    function renderSubjects() {
+      if (!subjectListContainer) return;
+      subjectListContainer.innerHTML = '';
+
+      const subjects = [
+        { name: 'Use of English (JAMB)', isPro: false, questions: 60 },
+        { name: 'Mathematics (Core CBT)', isPro: false, questions: 50 },
+        { name: 'Physics Simulations', isPro: true, questions: 40 },
+        { name: 'Chemistry Past Questions', isPro: true, questions: 45 },
+        { name: 'Biology Practice Test', isPro: true, questions: 50 },
+        { name: 'Economics & Commerce', isPro: true, questions: 40 }
+      ];
+
+      subjects.forEach(sub => {
+        const div = document.createElement('div');
+        div.className = 'subject-item';
+        div.innerHTML = `
+          <div>
+            <h4 style="font-size: 0.95rem; margin-bottom: 2px;">${escapeHtml(sub.name)}</h4>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">${sub.questions} CBT Questions</span>
+          </div>
+          <div>
+            ${sub.isPro && !state.isPro ? '<span class="badge-pro">PRO ONLY</span>' : '<span class="badge-free" style="background: var(--primary-light); color: var(--primary-dark);">Available</span>'}
+          </div>
+        `;
+        div.addEventListener('click', () => {
+          if (sub.isPro && !state.isPro) {
+            openPaymentModal();
+          } else {
+            showToast(`Opening ${sub.name} test simulator...`);
+          }
+        });
+        subjectListContainer.appendChild(div);
+      });
+
+      // Update User Plan Badges
+      if (userPlanBadge) {
+        userPlanBadge.textContent = state.isPro ? 'PRO ACTIVE (₦500)' : 'Free Tier';
+        userPlanBadge.className = state.isPro ? 'badge-pro' : 'badge-free';
+      }
+      if (statAccountType) {
+        statAccountType.textContent = state.isPro ? 'Pro Member ⭐' : 'Free Student';
+        statAccountType.style.color = state.isPro ? 'var(--accent)' : 'var(--text)';
+      }
+    }
+
+    // Countdown Timer Loop
+    function updateCountdown() {
+      const activeExam = state.exams.find(e => e.id === state.selectedExamId) || state.exams[0];
+      if (!activeExam) return;
+
+      if (heroExamName) heroExamName.textContent = activeExam.title;
+
+      const targetTime = new Date(activeExam.date).getTime();
+      const now = new Date().getTime();
+      const distance = targetTime - now;
+
+      if (distance < 0) {
+        if (cdDays) cdDays.textContent = '00';
+        if (cdHours) cdHours.textContent = '00';
+        if (cdMins) cdMins.textContent = '00';
+        if (cdSecs) cdSecs.textContent = '00';
+        if (statDaysLeft) statDaysLeft.textContent = '0';
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      if (cdDays) cdDays.textContent = String(days).padStart(2, '0');
+      if (cdHours) cdHours.textContent = String(hours).padStart(2, '0');
+      if (cdMins) cdMins.textContent = String(minutes).padStart(2, '0');
+      if (cdSecs) cdSecs.textContent = String(seconds).padStart(2, '0');
+      if (statDaysLeft) statDaysLeft.textContent = days;
+      if (statReadiness) statReadiness.textContent = state.isPro ? '89%' : '42%';
+      if (readinessTip && state.isPro) {
+        readinessTip.textContent = 'Pro Mode enabled: Your AI diagnostic engine is active with timed CBT simulations across all 4 subjects.';
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+
+    // Payment Modal Triggers
+    function openPaymentModal() {
+      if (paymentModal) paymentModal.classList.add('open');
+    }
+
+    function closePaymentModalFn() {
+      if (paymentModal) paymentModal.classList.remove('open');
+    }
+
+    if (heroUpgradeBtn) heroUpgradeBtn.addEventListener('click', openPaymentModal);
+    if (buyProCardBtn) buyProCardBtn.addEventListener('click', openPaymentModal);
+    if (proBadgeBtn) proBadgeBtn.addEventListener('click', () => {
+      if (state.isPro) {
+        showToast('You are an active Pro Member! ⭐');
+      } else {
+        openPaymentModal();
+      }
+    });
+    if (closePaymentModal) closePaymentModal.addEventListener('click', closePaymentModalFn);
+
+    // Confirm Payment & Commission Deduction (2% commission logic)
+    if (confirmPaymentBtn) {
+      confirmPaymentBtn.addEventListener('click', () => {
+        const itemAmount = 500;
+        const commission = itemAmount * 0.02; // 2% commission = ₦10
+        state.isPro = true;
+        state.transactions.push({
+          date: new Date().toISOString(),
+          amount: 510,
+          commission: commission
+        });
+        state.commissionEarned += commission;
+        saveState();
+        closePaymentModalFn();
+        renderSubjects();
+        updateCountdown();
+        showToast('Payment successful! Pro Upgrade unlocked. 🎉');
+      });
+    }
+
+    // Add Exam Modal
+    if (addCustomExamBtn) {
+      addCustomExamBtn.addEventListener('click', () => {
+        if (addExamModal) addExamModal.classList.add('open');
+      });
+    }
+    if (closeAddExamModal) {
+      closeAddExamModal.addEventListener('click', () => {
+        if (addExamModal) addExamModal.classList.remove('open');
+      });
+    }
+
+    if (saveNewExamBtn) {
+      saveNewExamBtn.addEventListener('click', () => {
+        const title = newExamTitle ? newExamTitle.value.trim() : '';
+        const dateVal = newExamDate ? newExamDate.value : '';
+
+        if (!title || !dateVal) {
+          showToast('Please enter both exam title and date.');
+          return;
+        }
+
+        const newId = 'exam_' + Date.now();
+        state.exams.push({
+          id: newId,
+          title: title,
+          date: dateVal + 'T09:00:00',
+          type: 'Custom'
+        });
+        state.selectedExamId = newId;
+        saveState();
+        renderExams();
+        updateCountdown();
+
+        if (addExamModal) addExamModal.classList.remove('open');
+        if (newExamTitle) newExamTitle.value = '';
+        if (newExamDate) newExamDate.value = '';
+        showToast('New exam countdown added successfully!');
+      });
+    }
+
+    // Utility escape
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // Initial render
+    renderExams();
+    renderSubjects();
+    updateCountdown();
+  </script>
+</body>
+</html>
