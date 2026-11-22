@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Scholarship Pulse NG 🇳🇬</title>
+<meta name="description" content="Scholarship Pulse Web App. This should help: Aggregates all Nigerian and international scholarship opportunities, filters by field and eligibility, and sen">
+    <link rel="icon" href="🎓">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #065f46;
+            --primary-light: #d1fae5;
+            --accent: #d97706;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --danger: #dc2626;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-area p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .badge-pro {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .banner {
+            background: var(--primary-light);
+            border: 1px solid #10b981;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .banner-text {
+            font-size: 0.85rem;
+            color: #064e3b;
+        }
+
+        .banner-text strong {
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .search-filter-box {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scholarship-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .provider {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .badge-tag {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-exclusive {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .card-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+            font-size: 0.85rem;
+            background: var(--bg);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .detail-item span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .detail-item strong {
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            color: white;
+        }
+
+        /* Fixed Bottom Nav */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 1000;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        /* Views */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Modals & Forms */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-sheet {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 20px calc(24px + var(--safe-bottom)) 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.1, 1, 0.1, 1);
+        }
+
+        .modal-overlay.open .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: var(--bg);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .pro-card-box {
+            background: linear-gradient(135deg, #065f46, #047857);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .pro-card-box h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .pro-card-box p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 14px;
+        }
+
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state span {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="logo-area">
+                <h1>🎓 Scholarship Pulse</h1>
+                <p id="live-time-display">Loading time...</p>
+            </div>
+            <button class="badge-pro" id="header-pro-btn">⭐ PRO ACCESS</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- HOME VIEW -->
+        <div id="view-home" class="view active">
+            <div class="banner">
+                <div class="banner-text">
+                    <strong>📱 Free-Data SMS Window Active</strong>
+                    Get low-data text alerts during your network's midnight & study hours.
+                </div>
+                <button class="btn btn-primary" style="flex: unset; padding: 6px 12px; font-size: 0.75rem;" id="banner-sms-btn">Set SMS</button>
+            </div>
+
+            <div class="search-filter-box">
+                <input type="text" id="search-input" class="search-input" placeholder="Search by title, school, or keyword...">
+                <div class="filters" id="filter-container">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="Nigerian">Nigerian</button>
+                    <button class="filter-btn" data-filter="International">International</button>
+                    <button class="filter-btn" data-filter="STEM">STEM</button>
+                    <button class="filter-btn" data-filter="Undergraduate">Undergraduate</button>
+                    <button class="filter-btn" data-filter="Masters">Masters</button>
+                </div>
+            </div>
+
+            <div class="section-title">
+                Verified Opportunities <span id="count-display" style="font-size: 0.8rem; color: var(--text-muted);">0 available</span>
+            </div>
+
+            <div class="scholarship-list" id="scholarship-container">
+                <!-- Dynamic cards populated here -->
+            </div>
+        </div>
+
+        <!-- SAVED VIEW -->
+        <div id="view-saved" class="view">
+            <div class="section-title">Saved Scholarships</div>
+            <div class="scholarship-list" id="saved-container">
+                <!-- Saved items here -->
+            </div>
+        </div>
+
+        <!-- PRO / SMS VIEW -->
+        <div id="view-pro" class="view">
+            <div class="pro-card-box">
+                <h3>Scholarship Pulse PRO</h3>
+                <p>Unlock early-access SMS alerts, AI-matching algorithm, and downloadable application kits for Nigerian students.</p>
+                <div class="price-tag">₦300 <span style="font-size: 0.9rem; font-weight: normal; color: white;">/ month</span></div>
+                <button class="btn btn-whatsapp" id="pro-subscribe-btn" style="background: white; color: var(--primary);">Activate PRO via WhatsApp</button>
+            </div>
+
+            <div class="search-filter-box">
+                <h3 style="font-size: 1rem; margin-bottom: 8px;">SMS / WhatsApp Alert Receiver</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Register your Nigerian phone number to receive zero-rated SMS updates during free data windows.</p>
+                <form id="sms-signup-form">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="sms-name" class="form-control" placeholder="E.g. Emeka Okafor" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nigerian Phone Number</label>
+                        <input type="tel" id="sms-phone" class="form-control" placeholder="E.g. 08031234567" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Save Alert Profile</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- FIXED BOTTOM NAV -->
+    <nav class="nav-bar">
+        <button class="nav-item active" data-target="view-home">
+            <span class="icon">🏠</span>
+            Explore
+        </button>
+        <button class="nav-item" data-target="view-saved">
+            <span class="icon">🔖</span>
+            Saved (<span id="saved-badge-count">0</span>)
+        </button>
+        <button class="nav-item" data-target="view-pro">
+            <span class="icon">⭐</span>
+            PRO & Alerts
+        </button>
+    </nav>
+
+    <!-- APPLICATION KIT MODAL -->
+    <div class="modal-overlay" id="modal-kit">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-kit-title">Application Kit</div>
+                <button class="close-btn" id="modal-close-btn">&times;</button>
+            </div>
+            <div id="modal-kit-content">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Store
+        const scholarships = [
+            {
+                id: 1,
+                title: "PTDF Undergraduate & Postgraduate Scholarship",
+                provider: "Petroleum Technology Development Fund",
+                category: "Nigerian",
+                level: "Undergraduate",
+                field: "STEM",
+                amount: "₦1,000,000 / yr",
+                deadline: "2026-12-15",
+                exclusive: true,
+                link: "https://ptdf.gov.ng",
+                kit: {
+                    essayPrompt: "Why do you deserve the PTDF scholarship to advance the Nigerian energy sector?",
+                    requirements: ["WAEC/NECO O'Level result", "University admission letter", "Local Government Certificate", "Statement of Purpose"],
+                    tips: "Emphasize your commitment to national development and clearly articulate your academic goals."
+                }
+            },
+            {
+                id: 2,
+                title: "MTN Foundation Science & Technology Scholarship",
+                provider: "MTN Nigeria",
+                category: "Nigerian",
+                level: "Undergraduate",
+                field: "STEM",
+                amount: "₦300,000 / yr",
+                deadline: "2026-12-30",
+                exclusive: false,
+                link: "https://mtn.ng/foundation",
+                kit: {
+                    essayPrompt: "Describe a technological innovation you would build to solve a local community problem.",
+                    requirements: ["CGPA 3.5 and above", "Valid student ID card", "Passport photograph"],
+                    tips: "Ensure your CGPA proof is properly stamped and signed by your department head."
+                }
+            },
+            {
+                id: 3,
+                title: "Chevening Scholarship for Masters",
+                provider: "UK Government",
+                category: "International",
+                level: "Masters",
+                field: "All Fields",
+                amount: "Fully Funded (UK)",
+                deadline: "2027-01-10",
+                exclusive: true,
+                link: "https://chevening.org",
+                kit: {
+                    essayPrompt: "Leadership and influence essay: Give specific examples of how you have influenced others.",
+                    requirements: ["2 years work experience", "Unconditional UK university offer", "Two reference letters"],
+                    tips: "Use the STAR method (Situation, Task, Action, Result) for all Chevening essay prompts."
+                }
+            },
+            {
+                id: 4,
+                title: "Jim Ovia Foundation Leaders Scholarship",
+                provider: "Zenith Bank / Mastercard",
+                category: "Nigerian",
+                level: "Undergraduate",
+                field: "All Fields",
+                amount: "Tuition & Stipends",
+                deadline: "2026-11-28",
+                exclusive: false,
+                link: "https://jimoviafoundation.org",
+                kit: {
+                    essayPrompt: "How do you plan to give back to society after completing your education?",
+                    requirements: ["Demonstrated financial need", "High academic standing", "Extracurricular record"],
+                    tips: "Be authentic in describing your financial background and leadership potential."
+                }
+            },
+            {
+                id: 5,
+                title: "DAAD Masters Scholarship in Germany",
+                provider: "German Academic Exchange Service",
+                category: "International",
+                level: "Masters",
+                field: "STEM",
+                amount: "€934 / month + Tuition",
+                deadline: "2026-12-20",
+                exclusive: false,
+                link: "https://daad.de",
+                kit: {
+                    essayPrompt: "Academic motivation letter detailing why you chose Germany and your specific master's program.",
+                    requirements: ["Bachelor degree certificate", "IELTS or TOEFL", "CV in Europass format"],
+                    tips: "Make sure your Europass CV strictly follows the 2-page European template format."
+                }
+            }
+        ];
+
+        let savedIds = JSON.parse(localStorage.getItem('scholarship_saved') || '[]');
+        let currentFilter = 'all';
+        let currentSearchQuery = '';
+
+        // DOM Elements
+        const liveTimeDisplay = document.getElementById('live-time-display');
+        const scholarshipContainer = document.getElementById('scholarship-container');
+        const savedContainer = document.getElementById('saved-container');
+        const countDisplay = document.getElementById('count-display');
+        const searchInput = document.getElementById('search-input');
+        const filterContainer = document.getElementById('filter-container');
+        const savedBadgeCount = document.getElementById('saved-badge-count');
+        const navItems = document.querySelectorAll('.nav-item');
+        const views = document.querySelectorAll('.view');
+        const headerProBtn = document.getElementById('header-pro-btn');
+        const bannerSmsBtn = document.getElementById('banner-sms-btn');
+        const proSubscribeBtn = document.getElementById('pro-subscribe-btn');
+        const smsSignupForm = document.getElementById('sms-signup-form');
+        
+        // Modal Elements
+        const modalKit = document.getElementById('modal-kit');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalKitTitle = document.getElementById('modal-kit-title');
+        const modalKitContent = document.getElementById('modal-kit-content');
+
+        // Live Clock (Sunday 22 November 2026, 8:54 AM)
+        function updateLiveClock() {
+            const now = new Date(2026, 10, 22, 8, 54, 0); // Starting reference or real system clock if preferred. Let's use real time with fallback.
+            const currentDate = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            if (liveTimeDisplay) {
+                liveTimeDisplay.textContent = currentDate.toLocaleDateString('en-NG', options);
+            }
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+
+        // Render Scholarships
+        function renderScholarships() {
+            if (!scholarshipContainer) return;
+
+            let filtered = scholarships.filter(item => {
+                const matchesFilter = currentFilter === 'all' || 
+                    item.category.toLowerCase() === currentFilter.toLowerCase() ||
+                    item.level.toLowerCase() === currentFilter.toLowerCase() ||
+                    item.field.toLowerCase() === currentFilter.toLowerCase();
+
+                const matchesSearch = item.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                    item.provider.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                    item.field.toLowerCase().includes(currentSearchQuery.toLowerCase());
+
+                return matchesFilter && matchesSearch;
+            });
+
+            countDisplay.textContent = `${filtered.length} available`;
+
+            if (filtered.length === 0) {
+                scholarshipContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔍</span>
+                        <p>No scholarships match your search or filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            scholarshipContainer.innerHTML = filtered.map(item => {
+                const isSaved = savedIds.includes(item.id);
+                return `
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge-tag ${item.exclusive ? 'badge-exclusive' : ''}">${item.category}</span>
+                                <span class="badge-tag">${item.level}</span>
+                                <span class="badge-tag">${item.field}</span>
+                            </div>
+                            <button class="btn-outline" style="border:none; background:none; font-size: 1.2rem; cursor:pointer;" data-action="save" data-id="${item.id}">
+                                ${isSaved ? '❤️' : '🤍'}
+                            </button>
+                        </div>
+                        <div class="card-title">${item.title}</div>
+                        <div class="provider">${item.provider}</div>
+                        
+                        <div class="card-details">
+                            <div class="detail-item">
+                                <span>VALUE</span>
+                                <strong>${item.amount}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>DEADLINE</span>
+                                <strong>${item.deadline}</strong>
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <button class="btn btn-outline" data-action="kit" data-id="${item.id}">📄 App Kit</button>
+                            <button class="btn btn-whatsapp" data-action="share" data-title="${item.title}" data-link="${item.link}">Share 📱</button>
+                            <a href="${item.link}" target="_blank" rel="noopener" class="btn btn-primary">Apply ↗</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Saved Scholarships
+        function renderSaved() {
+            if (!savedContainer) return;
+            const savedItems = scholarships.filter(item => savedIds.includes(item.id));
+            savedBadgeCount.textContent = savedItems.length;
+
+            if (savedItems.length === 0) {
+                savedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔖</span>
+                        <p>You have not saved any scholarships yet. Tap the heart icon on any card to save it here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            savedContainer.innerHTML = savedItems.map(item => `
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <span class="badge-tag">${item.category}</span>
+                            <span class="badge-tag">${item.level}</span>
+                        </div>
+                        <button class="btn-outline" style="border:none; background:none; font-size: 1.2rem; cursor:pointer;" data-action="save" data-id="${item.id}">❤️</button>
+                    </div>
+                    <div class="card-title">${item.title}</div>
+                    <div class="provider">${item.provider}</div>
+                    <div class="card-actions">
+                        <button class="btn btn-outline" data-action="kit" data-id="${item.id}">📄 App Kit</button>
+                        <a href="${item.link}" target="_blank" rel="noopener" class="btn btn-primary">Apply ↗</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Event Listeners for Filters & Search
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                currentSearchQuery = e.target.value;
+                renderScholarships();
+            });
+        }
+
+        if (filterContainer) {
+            filterContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-btn')) {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.getAttribute('data-filter');
+                    renderScholarships();
+                }
+            });
+        }
+
+        // Navigation Tabs
+        navItems.forEach(nav => {
+            nav.addEventListener('click', () => {
+                navItems.forEach(n => n.classList.remove('active'));
+                views.forEach(v => v.classList.remove('active'));
+
+                nav.classList.add('active');
+                const targetView = document.getElementById(nav.getAttribute('data-target'));
+                if (targetView) targetView.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Global Delegated Card Actions
+        document.addEventListener('click', (e) => {
+            const actionBtn = e.target.closest('[data-action]');
+            if (!actionBtn) return;
+
+            const action = actionBtn.getAttribute('data-action');
+            const id = parseInt(actionBtn.getAttribute('data-id'));
+
+            if (action === 'save') {
+                if (savedIds.includes(id)) {
+                    savedIds = savedIds.filter(item => item !== id);
+                } else {
+                    savedIds.push(id);
+                }
+                try {
+                    localStorage.setItem('scholarship_saved', JSON.stringify(savedIds));
+                } catch(err) {}
+                renderScholarships();
+                renderSaved();
+            }
+
+            if (action === 'kit') {
+                const item = scholarships.find(s => s.id === id);
+                if (item && item.kit) {
+                    modalKitTitle.textContent = item.title;
+                    modalKitContent.innerHTML = `
+                        <div style="margin-bottom: 16px;">
+                            <strong style="font-size: 0.9rem; color: var(--primary);">📝 Essay Prompt / Statement of Purpose:</strong>
+                            <p style="background: var(--bg); padding: 12px; border-radius: 8px; margin-top: 6px; font-size: 0.9rem;">${item.kit.essayPrompt}</p>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong style="font-size: 0.9rem; color: var(--primary);">📋 Key Requirements:</strong>
+                            <ul style="padding-left: 20px; margin-top: 6px; font-size: 0.9rem;">
+                                ${item.kit.requirements.map(req => `<li>${req}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <strong style="font-size: 0.9rem; color: var(--primary);">💡 Pro Tip:</strong>
+                            <p style="background: var(--primary-light); padding: 12px; border-radius: 8px; margin-top: 6px; font-size: 0.9rem; color: #064e3b;">${item.kit.tips}</p>
+                        </div>
+                        <a href="${item.link}" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;">Proceed to Official Portal ↗</a>
+                    `;
+                    modalKit.classList.add('open');
+                }
+            }
+
+            if (action === 'share') {
+                const title = actionBtn.getAttribute('data-title');
+                const link = actionBtn.getAttribute('data-link');
+                const shareText = `Check out this verified scholarship: *${title}*. Apply here: ${link} via Scholarship Pulse NG 🇳🇬`;
+                if (navigator.share) {
+                    navigator.share({ title: 'Scholarship Opportunity', text: shareText }).catch(() => {});
+                } else {
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+                }
+            }
+        });
+
+        // Modal Close triggers
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', () => modalKit.classList.remove('open'));
+        }
+        if (modalKit) {
+            modalKit.addEventListener('click', (e) => {
+                if (e.target === modalKit) modalKit.classList.remove('open');
+            });
+        }
+
+        // Pro & SMS form actions
+        if (headerProBtn) {
+            headerProBtn.addEventListener('click', () => {
+                document.querySelector('[data-target="view-pro"]').click();
+            });
+        }
+
+        if (bannerSmsBtn) {
+            bannerSmsBtn.addEventListener('click', () => {
+                document.querySelector('[data-target="view-pro"]').click();
+            });
+        }
+
+        if (proSubscribeBtn) {
+            proSubscribeBtn.addEventListener('click', () => {
+                const message = "Hello, I want to subscribe to Scholarship Pulse PRO (₦300/month) for early access alerts and application kits.";
+                window.open(`https://api.whatsapp.com/send?phone=2348000000000&text=${encodeURIComponent(message)}`, '_blank');
+            });
+        }
+
+        if (smsSignupForm) {
+            smsSignupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('sms-name').value;
+                const phone = document.getElementById('sms-phone').value;
+
+                // Nigerian phone validation regex (070, 080, 081, 090, 091, etc. 11 digits)
+                const phoneRegex = /^(070|080|081|090|091|0701|0912)\d{7}$/;
+                const simpleNigerianPhone = /^0\d{10}$/;
+
+                if (!simpleNigerianPhone.test(phone)) {
+                    alert('Please enter a valid 11-digit Nigerian phone number starting with 0 (e.g., 08031234567).');
+                    return;
+                }
+
+                try {
+                    localStorage.setItem('sms_subscriber', JSON.stringify({ name, phone }));
+                } catch(err) {}
+
+                alert(`Success! ${name}, your number ${phone} has been registered for low-data SMS scholarship alerts during free-data windows.`);
+                smsSignupForm.reset();
+            });
+        }
+
+        // Initial Renders
+        renderScholarships();
+        renderSaved();
+    </script>
+</body>
+</html>
