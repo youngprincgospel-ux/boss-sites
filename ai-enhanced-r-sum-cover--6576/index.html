@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NaijaResumé AI — Professional CV & Cover Letter Builder</title>
+<meta name="description" content="AI‑enhanced résumé & cover‑letter builder for Nigerian graduates, hosted as a low‑data web app that auto‑generates sector‑specific documents using free LLM">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #00663d;
+            --primary-light: #e6f4ed;
+            --secondary: #0056b3;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --gray-light: #e5e7eb;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --success: #16a34a;
+            --gold: #d97706;
+            --gold-light: #fef3c7;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--gray-light);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .badge-premium {
+            background: var(--gold-light);
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            border: 1px solid #fcd34d;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: 90px;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            border: 1px solid var(--gray-light);
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p.section-desc {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-light);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fff;
+            color: var(--dark);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 540px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: var(--dark);
+            border: 1px solid var(--gray-light);
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: white;
+        }
+
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #b45309, #92400e);
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--gray-light);
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--gray);
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .preview-box {
+            background: #ffffff;
+            border: 1px solid var(--gray-light);
+            border-radius: 8px;
+            padding: 24px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000;
+            line-height: 1.6;
+            min-height: 400px;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+        }
+
+        /* Templates styles */
+        .preview-box.template-modern {
+            font-family: var(--font);
+            border-left: 6px solid var(--primary);
+        }
+        .preview-box.template-creative {
+            font-family: var(--font);
+            background: #fdfbf7;
+            border-top: 6px solid var(--gold);
+        }
+
+        .fixed-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 99;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray);
+            font-size: 11px;
+            font-weight: 600;
+            gap: 2px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span.icon {
+            font-size: 20px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #ffffff;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .job-card {
+            background: var(--light);
+            border: 1px solid var(--gray-light);
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .job-info h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .job-info p {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+        .alert-info {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">🇳🇬</div>
+            <div class="logo-text">
+                <h1>NaijaResumé AI</h1>
+                <span>Low-Data CV & Cover Builder</span>
+            </div>
+        </div>
+        <div id="premiumBadge" class="badge-premium">
+            ⭐ <span>Upgrade ₦500</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: BUILDER -->
+        <section id="sectionBuilder" class="app-section">
+            <div class="tabs">
+                <div class="tab active" data-form-tab="cv">📄 Resumé Builder</div>
+                <div class="tab" data-form-tab="cl">✉️ Cover Letter</div>
+            </div>
+
+            <!-- CV Form -->
+            <div id="cvFormContainer" class="card">
+                <h2>👤 Personal Information</h2>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" placeholder="e.g. Oluwaseun Adeleke">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="e.g. seun@gmail.com">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="e.g. 08031234567">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location (State/City)</label>
+                        <input type="text" id="location" placeholder="e.g. Ikeja, Lagos">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sector">Target Sector</label>
+                    <select id="sector">
+                        <option value="tech">Tech & Software Engineering</option>
+                        <option value="fintech">Fintech & Banking</option>
+                        <option value="oilgas">Oil & Gas / Engineering</option>
+                        <option value="fmcg">FMCG & Sales</option>
+                        <option value="customer">Customer Support & Operations</option>
+                    </select>
+                </div>
+
+                <h2>💼 Experience & Education</h2>
+                <div class="form-group">
+                    <label for="experience">Work Experience / Internship Summary</label>
+                    <textarea id="experience" placeholder="e.g. Intern at Zenith Bank - handled customer accounts, reconciled daily ledgers, assisted with data entry."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="education">Education & University</label>
+                    <input type="text" id="education" placeholder="e.g. B.Sc Computer Science, University of Lagos (2023)">
+                </div>
+                <div class="form-group">
+                    <label for="skills">Key Skills (Comma separated)</label>
+                    <input type="text" id="skills" placeholder="e.g. Python, Excel, Customer Service, Teamwork">
+                </div>
+
+                <button id="generateCvBtn" class="btn">
+                    ⚡ Auto-Generate ATS Resumé
+                </button>
+            </div>
+
+            <!-- Cover Letter Form -->
+            <div id="clFormContainer" class="card hidden">
+                <h2>✉️ Cover Letter Details</h2>
+                <div class="form-group">
+                    <label for="clCompanyName">Target Company Name</label>
+                    <input type="text" id="clCompanyName" placeholder="e.g. Paystack / Flutterwave">
+                </div>
+                <div class="form-group">
+                    <label for="clJobTitle">Job Role Applying For</label>
+                    <input type="text" id="clJobTitle" placeholder="e.g. Graduate Trainee / Frontend Developer">
+                </div>
+                <div class="form-group">
+                    <label for="clWhyYou">Why are you a great fit?</label>
+                    <textarea id="clWhyYou" placeholder="Mention your degree, passion for the company, and relevant projects or internships."></textarea>
+                </div>
+
+                <button id="generateClBtn" class="btn">
+                    ⚡ Auto-Generate Cover Letter
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB 2: PREVIEW -->
+        <section id="sectionPreview" class="app-section hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2>👁️ Document Preview</h2>
+                    <select id="templateSelect" style="width: auto; padding: 6px 12px; font-size: 13px;">
+                        <option value="standard">Classic ATS (Free)</option>
+                        <option value="modern">Modern Clean (Premium)</option>
+                        <option value="creative">Executive Gold (Premium)</option>
+                    </select>
+                </div>
+                <p class="section-desc">Optimized for Nigerian employer ATS scanners and recruiters.</p>
+                
+                <div id="documentPreview" class="preview-box">
+Click "Auto-Generate" in the Builder tab to populate your professional document.
+                </div>
+
+                <div class="row">
+                    <button id="copyDocBtn" class="btn btn-secondary">📋 Copy Text</button>
+                    <button id="downloadTxtBtn" class="btn">📥 Download .TXT</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: JOBS & AFFILIATE -->
+        <section id="sectionJobs" class="app-section hidden">
+            <div class="card">
+                <h2>🚀 One-Click Job Board & Partners</h2>
+                <p class="section-desc">Instantly apply or explore vetted Nigerian graduate openings & partnered platforms.</p>
+                
+                <div class="alert alert-info">
+                    💡 Tip: Premium users get direct automated referrals to partnered recruitment agencies in Lagos & Abuja.
+                </div>
+
+                <div id="jobListContainer">
+                    <!-- Dynamic Job items injected via JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAVIGATION -->
+    <nav class="fixed-nav">
+        <button class="nav-item active" data-target="sectionBuilder">
+            <span class="icon">✏️</span>
+            <span>Builder</span>
+        </button>
+        <button class="nav-item" data-target="sectionPreview">
+            <span class="icon">📄</span>
+            <span>Preview</span>
+        </button>
+        <button class="nav-item" data-target="sectionJobs">
+            <span class="icon">💼</span>
+            <span>Job Board</span>
+        </button>
+    </nav>
+
+    <!-- UPGRADE MODAL -->
+    <div id="upgradeModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⭐ Unlock NaijaResumé Pro</h2>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            <p class="section-desc">Get access to premium ATS templates, executive cover letters, and one-click job board posting integration.</p>
+            
+            <div style="background: var(--primary-light); padding: 16px; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                <span style="font-size: 28px; font-weight: 800; color: var(--primary);">₦500</span> <span style="font-size: 13px; color: var(--gray);">/ one-time access</span>
+            </div>
+
+            <ul style="font-size: 13px; margin-bottom: 20px; padding-left: 20px; color: var(--dark); display: flex; flex-direction: column; gap: 8px;">
+                <li>Modern & Executive ATS-Optimized Templates</li>
+                <li>Unlimited AI Sector Enhancements</li>
+                <li>Priority Job Board & Recruitment Agency Referral</li>
+            </ul>
+
+            <button id="payNowBtn" class="btn btn-gold">
+                🚀 Pay ₦500 via Paystack / Transfer
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        const STORAGE_KEY = 'naija_resume_state_v1';
+        let appState = {
+            isPremium: false,
+            activeTab: 'cv',
+            activeNav: 'sectionBuilder',
+            cvData: {
+                fullName: '',
+                email: '',
+                phone: '',
+                location: '',
+                sector: 'tech',
+                experience: '',
+                education: '',
+                skills: ''
+            },
+            clData: {
+                companyName: '',
+                jobTitle: '',
+                whyYou: ''
+            },
+            template: 'standard',
+            generatedContent: ''
+        };
+
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                appState = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('Storage read error', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error('Storage write error', e);
+            }
+        }
+
+        // DOM Elements
+        const premiumBadge = document.getElementById('premiumBadge');
+        const upgradeModal = document.getElementById('upgradeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const payNowBtn = document.getElementById('payNowBtn');
+
+        const navItems = document.querySelectorAll('.nav-item');
+        const appSections = document.querySelectorAll('.app-section');
+        const tabs = document.querySelectorAll('.tab');
+
+        const cvFormContainer = document.getElementById('cvFormContainer');
+        const clFormContainer = document.getElementById('clFormContainer');
+
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const locationInput = document.getElementById('location');
+        const sectorSelect = document.getElementById('sector');
+        const experienceInput = document.getElementById('experience');
+        const educationInput = document.getElementById('education');
+        const skillsInput = document.getElementById('skills');
+
+        const clCompanyNameInput = document.getElementById('clCompanyName');
+        const clJobTitleInput = document.getElementById('clJobTitle');
+        const clWhyYouInput = document.getElementById('clWhyYou');
+
+        const generateCvBtn = document.getElementById('generateCvBtn');
+        const generateClBtn = document.getElementById('generateClBtn');
+        const documentPreview = document.getElementById('documentPreview');
+        const templateSelect = document.getElementById('templateSelect');
+        const copyDocBtn = document.getElementById('copyDocBtn');
+        const downloadTxtBtn = document.getElementById('downloadTxtBtn');
+        const jobListContainer = document.getElementById('jobListContainer');
+
+        // Initialize UI values from state
+        function initUI() {
+            if (fullNameInput) fullNameInput.value = appState.cvData.fullName || '';
+            if (emailInput) emailInput.value = appState.cvData.email || '';
+            if (phoneInput) phoneInput.value = appState.cvData.phone || '';
+            if (locationInput) locationInput.value = appState.cvData.location || '';
+            if (sectorSelect) sectorSelect.value = appState.cvData.sector || 'tech';
+            if (experienceInput) experienceInput.value = appState.cvData.experience || '';
+            if (educationInput) educationInput.value = appState.cvData.education || '';
+            if (skillsInput) skillsInput.value = appState.cvData.skills || '';
+
+            if (clCompanyNameInput) clCompanyNameInput.value = appState.clData.companyName || '';
+            if (clJobTitleInput) clJobTitleInput.value = appState.clData.jobTitle || '';
+            if (clWhyYouInput) clWhyYouInput.value = appState.clData.whyYou || '';
+
+            if (templateSelect) templateSelect.value = appState.template || 'standard';
+            if (appState.generatedContent) {
+                documentPreview.textContent = appState.generatedContent;
+            }
+            updateTemplateStyle();
+            renderJobs();
+            updatePremiumUI();
+        }
+
+        function updatePremiumUI() {
+            if (appState.isPremium) {
+                if (premiumBadge) {
+                    premiumBadge.innerHTML = '👑 <span>PRO ACTIVE</span>';
+                    premiumBadge.style.background = '#dcfce7';
+                    premiumBadge.style.color = '#15803d';
+                    premiumBadge.style.borderColor = '#bbf7d0';
+                }
+            }
+        }
+
+        // Navigation handlers
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                if (!targetId) return;
+
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+
+                appSections.forEach(sec => {
+                    if (sec.id === targetId) {
+                        sec.classList.remove('hidden');
+                    } else {
+                        sec.classList.add('hidden');
+                    }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Tabs handlers inside Builder
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const formType = tab.getAttribute('data-form-tab');
+                appState.activeTab = formType;
+                saveState();
+
+                if (formType === 'cv') {
+                    if (cvFormContainer) cvFormContainer.classList.remove('hidden');
+                    if (clFormContainer) clFormContainer.classList.add('hidden');
+                } else {
+                    if (cvFormContainer) cvFormContainer.classList.add('hidden');
+                    if (clFormContainer) clFormContainer.classList.remove('hidden');
+                }
+            });
+        });
+
+        // Modal triggers
+        if (premiumBadge) {
+            premiumBadge.addEventListener('click', () => {
+                if (upgradeModal) upgradeModal.classList.add('open');
+            });
+        }
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                if (upgradeModal) upgradeModal.classList.remove('open');
+            });
+        }
+        if (upgradeModal) {
+            upgradeModal.addEventListener('click', (e) => {
+                if (e.target === upgradeModal) upgradeModal.classList.remove('open');
+            });
+        }
+
+        if (payNowBtn) {
+            payNowBtn.addEventListener('click', () => {
+                appState.isPremium = true;
+                saveState();
+                updatePremiumUI();
+                if (upgradeModal) upgradeModal.classList.remove('open');
+                alert('🎉 Payment simulated successfully! Pro features unlocked.');
+            });
+        }
+
+        // Sync form inputs to state
+        function syncInputs() {
+            appState.cvData.fullName = fullNameInput ? fullNameInput.value.trim() : '';
+            appState.cvData.email = emailInput ? emailInput.value.trim() : '';
+            appState.cvData.phone = phoneInput ? phoneInput.value.trim() : '';
+            appState.cvData.location = locationInput ? locationInput.value.trim() : '';
+            appState.cvData.sector = sectorSelect ? sectorSelect.value : 'tech';
+            appState.cvData.experience = experienceInput ? experienceInput.value.trim() : '';
+            appState.cvData.education = educationInput ? educationInput.value.trim() : '';
+            appState.cvData.skills = skillsInput ? skillsInput.value.trim() : '';
+
+            appState.clData.companyName = clCompanyNameInput ? clCompanyNameInput.value.trim() : '';
+            appState.clData.jobTitle = clJobTitleInput ? clJobTitleInput.value.trim() : '';
+            appState.clData.whyYou = clWhyYouInput ? clWhyYouInput.value.trim() : '';
+            saveState();
+        }
+
+        // Generator Logic
+        if (generateCvBtn) {
+            generateCvBtn.addEventListener('click', () => {
+                syncInputs();
+                const d = appState.cvData;
+                if (!d.fullName) {
+                    alert('Please enter your full name.');
+                    if (fullNameInput) fullNameInput.focus();
+                    return;
+                }
+
+                let generated = `${d.fullName.toUpperCase()}
+${d.location || 'Lagos, Nigeria'} | ${d.phone || '08000000000'} | ${d.email || 'email@example.com'}
+--------------------------------------------------------------------------------
+PROFESSIONAL SUMMARY
+Results-driven professional specialized in ${d.sector.toUpperCase()} with hands-on experience in executing key operational tasks, problem-solving, and delivering results in fast-paced Nigerian business environments.
+
+CORE COMPETENCIES & SKILLS
+• ${d.skills ? d.skills.split(',').join(' • ') : 'Communication, Microsoft Office, Teamwork, Data Analysis'}
+
+PROFESSIONAL EXPERIENCE
+• ${d.experience || 'Completed internship/work assignments demonstrating reliable performance, attention to detail, and cross-functional collaboration.'}
+
+EDUCATION
+• ${d.education || 'B.Sc / HND / OND - Nigerian Tertiary Institution'}
+`;
+
+                appState.generatedContent = generated;
+                saveState();
+                if (documentPreview) documentPreview.textContent = generated;
+
+                // Switch to preview tab
+                const previewNav = document.querySelector('[data-target="sectionPreview"]');
+                if (previewNav) previewNav.click();
+            });
+        }
+
+        if (generateClBtn) {
+            generateClBtn.addEventListener('click', () => {
+                syncInputs();
+                const cl = appState.clData;
+                const d = appState.cvData;
+                if (!cl.companyName || !cl.jobTitle) {
+                    alert('Please enter the target company and job title.');
+                    return;
+                }
+
+                let generated = `${d.fullName || 'Job Applicant'}
+${d.location || 'Lagos, Nigeria'}
+${d.phone || '08000000000'} | ${d.email || 'email@example.com'}
+
+${new Date().toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'})}
+
+Hiring Manager,
+${cl.companyName},
+Nigeria.
+
+Dear Hiring Manager,
+
+APPLICATION FOR THE POSITION OF ${cl.jobTitle.toUpperCase()}
+
+I am writing to express my strong interest in the ${cl.jobTitle} position at ${cl.companyName}. With my academic background (${d.education || 'Graduate Degree'}) and dedication to excellence, I am confident in my ability to add immediate value to your team.
+
+${cl.whyYou || 'Throughout my previous experiences, I have developed strong problem-solving capabilities, adaptability, and a relentless work ethic suited for dynamic organizations in Nigeria.'}
+
+I look forward to discussing how my skills and enthusiasm align with the goals of ${cl.companyName}. Thank you for your time and consideration.
+
+Yours sincerely,
+${d.fullName || 'Applicant'}
+`;
+
+                appState.generatedContent = generated;
+                saveState();
+                if (documentPreview) documentPreview.textContent = generated;
+
+                // Switch to preview tab
+                const previewNav = document.querySelector('[data-target="sectionPreview"]');
+                if (previewNav) previewNav.click();
+            });
+        }
+
+        // Template selector
+        if (templateSelect) {
+            templateSelect.addEventListener('change', () => {
+                const val = templateSelect.value;
+                if ((val === 'modern' || val === 'creative') && !appState.isPremium) {
+                    alert('This template requires NaijaResumé Pro (₦500). Upgrade to unlock!');
+                    templateSelect.value = appState.template;
+                    if (upgradeModal) upgradeModal.classList.add('open');
+                    return;
+                }
+                appState.template = val;
+                saveState();
+                updateTemplateStyle();
+            });
+        }
+
+        function updateTemplateStyle() {
+            if (!documentPreview) return;
+            documentPreview.className = 'preview-box';
+            if (appState.template === 'modern') {
+                documentPreview.classList.add('template-modern');
+            } else if (appState.template === 'creative') {
+                documentPreview.classList.add('template-creative');
+            }
+        }
+
+        // Copy and Download
+        if (copyDocBtn) {
+            copyDocBtn.addEventListener('click', () => {
+                const text = documentPreview ? documentPreview.textContent : '';
+                if (!text || text.includes('Click "Auto-Generate"')) {
+                    alert('Nothing to copy yet.');
+                    return;
+                }
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Document copied to clipboard!');
+                }).catch(() => {
+                    alert('Failed to copy. Please select text manually.');
+                });
+            });
+        }
+
+        if (downloadTxtBtn) {
+            downloadTxtBtn.addEventListener('click', () => {
+                const text = documentPreview ? documentPreview.textContent : '';
+                if (!text || text.includes('Click "Auto-Generate"')) {
+                    alert('Nothing to download yet.');
+                    return;
+                }
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${(appState.cvData.fullName || 'Resume').replace(/\s+/g, '_')}_NaijaResume.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        // Job Board & Affiliate Listings
+        const jobsData = [
+            { title: "Graduate Trainee Programme", company: "Access Bank Plc", location: "Lagos / Nationwide", stipend: "₦150k - ₦200k / mo", tag: "Banking" },
+            { title: "Junior Frontend Developer", company: "Flutterwave Partner", location: "Remote (Nigeria)", stipend: "₦250k / mo", tag: "Tech" },
+            { title: "Customer Success Associate", company: "Moniepoint", location: "Ikeja, Lagos", stipend: "₦120k / mo", tag: "Fintech" },
+            { title: "Operations & Sales Intern", company: "Jumia Nigeria", location: "Yaba, Lagos", stipend: "₦80k / mo", tag: "FMCG" }
+        ];
+
+        function renderJobs() {
+            if (!jobListContainer) return;
+            jobListContainer.innerHTML = '';
+            jobsData.forEach((job, idx) => {
+                const div = document.createElement('div');
+                div.className = 'job-card';
+                div.innerHTML = `
+                    <div class="job-info">
+                        <h4>${job.title}</h4>
+                        <p>${job.company} • 📍 ${job.location}</p>
+                        <span class="tag">${job.tag} • ${job.stipend}</span>
+                    </div>
+                    <button class="btn apply-job-btn" data-index="${idx}" style="width: auto; padding: 8px 14px; font-size: 12px;">
+                        Apply Now
+                    </button>
+                `;
+                jobListContainer.appendChild(div);
+            });
+
+            // Wire apply buttons
+            const applyBtns = jobListContainer.querySelectorAll('.apply-job-btn');
+            applyBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = e.target.getAttribute('data-index');
+                    const job = jobsData[index];
+                    if (!appState.cvData.fullName) {
+                        alert(`Please fill your Resumé in the Builder tab first before applying to ${job.company}!`);
+                        return;
+                    }
+                    alert(`🚀 One-Click Application Sent to ${job.company} for ${job.title}! Recruiter will review your NaijaResumé.`);
+                });
+            });
+        }
+
+        // Run init on load
+        initUI();
+    </script>
+</body>
+</html>
