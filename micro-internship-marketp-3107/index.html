@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Micro‑Internship Marketplace</title>
+<meta name="description" content="Micro‑Internship Marketplace for Nigerian Students. This should help: Connects university and polytechnic students with short‑term, paid micro‑internship t">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --primary:#0066cc;
+  --bg:#f9f9f9;
+  --text:#111;
+  --accent:#ff9800;
+}
+html{box-sizing:border-box}
+*,*:before,*:after{box-sizing:inherit}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:1rem;
+  text-align:center;
+}
+#datetime{
+  font-size:0.9rem;
+}
+main{
+  padding:1rem;
+  padding-bottom:calc(80px + env(safe-area-inset-bottom));
+}
+section{display:none}
+section.active{display:block}
+.task-card{
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:1rem;
+  margin-bottom:1rem;
+  background:#fff;
+}
+.task-card h3{
+  margin:0 0 .5rem;
+}
+.task-card p{
+  margin:.3rem 0;
+}
+button{
+  min-height:44px;
+  padding:.5rem 1rem;
+  border:none;
+  border-radius:4px;
+  background:var(--primary);
+  color:#fff;
+  font-size:1rem;
+  cursor:pointer;
+}
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
+button.secondary{
+  background:var(--accent);
+}
+nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:60px;
+  background:#fff;
+  border-top:1px solid #ccc;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+nav button{
+  flex:1;
+  margin:0 .5rem;
+  background:var(--primary);
+}
+form{
+  display:flex;
+  flex-direction:column;
+}
+label{
+  margin-top:.5rem;
+  font-weight:bold;
+}
+input,textarea{
+  padding:.5rem;
+  margin-top:.2rem;
+  border:1px solid #ccc;
+  border-radius:4px;
+  font-size:1rem;
+}
+input[type="checkbox"]{
+  width:auto;
+  margin-right:.5rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Micro‑Internship Marketplace</h1>
+  <div id="datetime" aria-live="polite"></div>
+</header>
+<main id="content">
+  <!-- Home / Task List -->
+  <section id="view-home" class="active" aria-label="Task list">
+    <h2>Available Internships</h2>
+    <div id="task-list">Loading tasks…</div>
+  </section>
+
+  <!-- Post Task -->
+  <section id="view-post" aria-label="Post a new task">
+    <h2>Post a New Internship</h2>
+    <form id="post-form" novalidate>
+      <label for="employer-name">Your Name (Employer)</label>
+      <input type="text" id="employer-name" required placeholder="e.g., John Doe">
+
+      <label for="task-title">Title</label>
+      <input type="text" id="task-title" required placeholder="e.g., Social Media Content Creator">
+
+      <label for="task-desc">Description</label>
+      <textarea id="task-desc" rows="4" required placeholder="Describe the task"></textarea>
+
+      <label for="task-price">Price (₦)</label>
+      <input type="number" id="task-price" required min="0" step="0.01" placeholder="e.g., 5000">
+
+      <label>
+        <input type="checkbox" id="task-premium">
+        Premium listing (+₦10, featured)
+      </label>
+
+      <button type="submit" class="secondary" style="margin-top:1rem;">Publish Task</button>
+    </form>
+  </section>
+
+  <!-- My Tasks / Employer Dashboard -->
+  <section id="view-mytasks" aria-label="My posted tasks">
+    <h2>My Dashboard</h2>
+    <div id="employer-setup">
+      <label for="my-employer-name">Enter Your Name (Employer)</label>
+      <input type="text" id="my-employer-name" placeholder="e.g., John Doe">
+      <button id="set-employer-btn">Set Employer</button>
+    </div>
+    <div id="dashboard" style="display:none;">
+      <p>Total Tasks Posted: <span id="total-tasks">0</span></p>
+      <p>Total Commission Earned (15%): ₦<span id="total-commission">0</span></p>
+      <h3>My Tasks</h3>
+      <div id="my-task-list"></div>
+    </div>
+  </section>
+</main>
+
+<nav aria-label="Main navigation">
+  <button data-target="view-home">Home</button>
+  <button data-target="view-post">Post</button>
+  <button data-target="view-mytasks">My Tasks</button>
+</nav>
+
+<script>
+(function(){
+  // Utility
+  function $(id){return document.getElementById(id);}
+  function qs(sel){return document.querySelector(sel);}
+  function qsa(sel){return document.querySelectorAll(sel);}
+  function saveData(key, data){
+    try{localStorage.setItem(key, JSON.stringify(data));}catch(e){}
+  }
+  function loadData(key){
+    try{let d=localStorage.getItem(key);return d?JSON.parse(d):null;}catch(e){return null;}
+  }
+
+  // State
+  const STATE = {
+    tasks: loadData('tasks')||[],
+    currentEmployer: loadData('currentEmployer')||'',
+  };
+
+  // DateTime display
+  function updateDateTime(){
+    const now=new Date();
+    const options={weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:true};
+    $('datetime').textContent=now.toLocaleString('en-NG',options);
+  }
+  setInterval(updateDateTime,1000);
+  updateDateTime();
+
+  // Render task list (home)
+  function renderTaskList(){
+    const container=$('task-list');
+    if(!container) return;
+    container.innerHTML='';
+    if(STATE.tasks.length===0){
+      container.textContent='No internships posted yet.';
+      return;
+    }
+    STATE.tasks.slice().reverse().forEach(task=>{
+      const card=document.createElement('div');
+      card.className='task-card';
+      const title=document.createElement('h3');
+      title.textContent=task.title+(task.premium?' ⭐':'');
+      const employer=document.createElement('p');
+      employer.innerHTML='<strong>Employer:</strong> '+task.employer;
+      const desc=document.createElement('p');
+      desc.textContent=task.description;
+      const price=document.createElement('p');
+      price.innerHTML='<strong>Price:</strong> ₦'+task.price.toFixed(2);
+      const applied=document.createElement('p');
+      applied.innerHTML='<strong>Applicants:</strong> '+task.applicants.length;
+      const btn=document.createElement('button');
+      btn.textContent='Apply';
+      btn.addEventListener('click',()=>handleApply(task.id));
+      card.append(title,employer,desc,price,applied,btn);
+      container.appendChild(card);
+    });
+  }
+
+  // Apply to a task
+  function handleApply(taskId){
+    const task=STATE.tasks.find(t=>t.id===taskId);
+    if(!task) return;
+    const applicant=prompt('Enter your name to apply:');
+    if(!applicant) return;
+    if(task.applicants.includes(applicant)){
+      alert('You have already applied to this task.');
+      return;
+    }
+    task.applicants.push(applicant);
+    saveData('tasks',STATE.tasks);
+    renderTaskList();
+    if(STATE.currentEmployer && STATE.currentEmployer===task.employer){
+      renderMyTasks();
+    }
+    alert('Application submitted.');
+  }
+
+  // Post form handling
+  const postForm=$('post-form');
+  if(postForm){
+    postForm.addEventListener('submit',e=>{
+      e.preventDefault();
+      const employer=$('employer-name').value.trim();
+      const title=$('task-title').value.trim();
+      const desc=$('task-desc').value.trim();
+      const price=parseFloat($('task-price').value);
+      const premium=$('task-premium').checked;
+      if(!employer||!title||!desc||isNaN(price)){
+        alert('Please fill all fields correctly.');
+        return;
+      }
+      const task={
+        id:Date.now(),
+        employer,
+        title,
+        description:desc,
+        price:price + (premium?10:0),
+        premium,
+        postedAt:Date.now(),
+        applicants:[]
+      };
+      STATE.tasks.push(task);
+      saveData('tasks',STATE.tasks);
+      postForm.reset();
+      alert('Task posted successfully.');
+      switchView('view-home');
+      renderTaskList();
+    });
+  }
+
+  // Employer dashboard
+  const setEmployerBtn=$('set-employer-btn');
+  if(setEmployerBtn){
+    setEmployerBtn.addEventListener('click',()=>{
+      const name=$('my-employer-name').value.trim();
+      if(!name){
+        alert('Enter a name.');
+        return;
+      }
+      STATE.currentEmployer=name;
+      saveData('currentEmployer',name);
+      $('dashboard').style.display='block';
+      renderMyTasks();
+    });
+  }
+
+  function renderMyTasks(){
+    const list=$('my-task-list');
+    if(!list) return;
+    const tasks=STATE.tasks.filter(t=>t.employer===STATE.currentEmployer);
+    list.innerHTML='';
+    $('total-tasks').textContent=tasks.length;
+    const totalCommission=tasks.reduce((sum,t)=>sum+ (t.price*0.15),0);
+    $('total-commission').textContent=totalCommission.toFixed(2);
+    if(tasks.length===0){
+      list.textContent='You have not posted any tasks.';
+      return;
+    }
+    tasks.slice().reverse().forEach(task=>{
+      const card=document.createElement('div');
+      card.className='task-card';
+      const title=document.createElement('h3');
+      title.textContent=task.title+(task.premium?' ⭐':'');
+      const desc=document.createElement('p');
+      desc.textContent=task.description;
+      const price=document.createElement('p');
+      price.innerHTML='<strong>Price:</strong> ₦'+task.price.toFixed(2);
+      const applicants=document.createElement('p');
+      applicants.innerHTML='<strong>Applicants ('+task.applicants.length+'):</strong> '+ (task.applicants.length?task.applicants.join(', '):'None');
+      card.append(title,desc,price,applicants);
+      list.appendChild(card);
+    });
+  }
+
+  // Navigation
+  function switchView(viewId){
+    qsa('section').forEach(sec=>{
+      sec.classList.toggle('active',sec.id===viewId);
+    });
+  }
+  qsa('nav button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const target=btn.getAttribute('data-target');
+      if(target) switchView(target);
+    });
+  });
+
+  // Initial render
+  renderTaskList();
+  if(STATE.currentEmployer){
+    $('my-employer-name').value=STATE.currentEmployer;
+    $('dashboard').style.display='block';
+    renderMyTasks();
+  }
+})();
+</script>
+</body>
+</html>
