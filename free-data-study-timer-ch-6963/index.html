@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>StudySync NG - Free-Data Study Timer</title>
+<meta name="description" content="Free‑Data Study Timer Chrome Extension. Provides Nigerian students a low‑data countdown timer synced to exam dates (UTME, NECO, WAEC).">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏳</text></svg>">
+<style>
+  :root {
+    --primary: #059669;
+    --primary-dark: #047857;
+    --accent: #f59e0b;
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --danger: #ef4444;
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  [data-theme="light"] {
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  main {
+    flex: 1;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    /* Generous safe padding-bottom so fixed bottom bar never covers content */
+    padding: 24px 16px calc(180px + var(--safe-bottom)) 16px;
+  }
+
+  .card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+
+  /* Timer Display */
+  .timer-display {
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .exam-select-container {
+    margin-bottom: 15px;
+  }
+
+  select, input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    min-height: 48px;
+  }
+
+  .countdown-clock {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--primary);
+    margin: 15px 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .exam-date-info {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+    min-height: 48px;
+  }
+
+  .btn:active {
+    opacity: 0.8;
+  }
+
+  .btn-primary {
+    background-color: var(--primary);
+    color: white;
+  }
+
+  .btn-danger {
+    background-color: var(--danger);
+    color: white;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-premium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  /* Tabs navigation bar */
+  .nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+    z-index: 100;
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+    gap: 4px;
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  .nav-item.active {
+    color: var(--primary);
+  }
+
+  .nav-item span.icon {
+    font-size: 1.3rem;
+  }
+
+  .view {
+    display: none;
+  }
+
+  .view.active {
+    display: block;
+  }
+
+  /* Ads & Banner */
+  .ad-banner {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .ad-banner span {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* Analytics & Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* Affiliate Links */
+  .affiliate-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .affiliate-item:last-child {
+    border-bottom: none;
+  }
+
+  .affiliate-info h4 {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+
+  .affiliate-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  }
+
+  .modal h3 {
+    margin-bottom: 12px;
+  }
+
+  .modal p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .close-modal {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    float: right;
+    padding: 4px 8px;
+  }
+
+  .badge {
+    background: var(--accent);
+    color: #000;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span>⏳</span> StudySync NG
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">🌓</button>
+      <button class="icon-btn" id="dataModeBtn" aria-label="Data Saver Mode" title="Free-Data Mode Active">📶 Low Data</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Ad Banner (Free version only) -->
+    <div class="ad-banner" id="adBanner">
+      <span>Sponsored Ad</span>
+      Get 10GB Night Browsing Data on MTN & Airtel. <a href="#materialsView" id="adLink" style="color: var(--primary); text-decoration: underline;">Click to check guide</a>
+    </div>
+
+    <!-- TAB 1: TIMER -->
+    <section id="timerView" class="view active">
+      <div class="card">
+        <div class="timer-display">
+          <div class="exam-select-container">
+            <select id="examSelect" aria-label="Select Target Exam">
+              <option value="utme">JAMB UTME 2026 (May 2026)</option>
+              <option value="waec">WAEC SSCE 2026 (April 2026)</option>
+              <option value="neco">NECO SSCE 2026 (June 2026)</option>
+              <option value="custom">Custom Exam Goal</option>
+            </select>
+          </div>
+
+          <div class="countdown-clock" id="clockDisplay">00:00:00</div>
+          <div class="exam-date-info" id="examDateInfo">Loading countdown...</div>
+
+          <div class="timer-controls">
+            <button class="btn btn-primary" id="startStopBtn">Start Session</button>
+            <button class="btn btn-outline" id="resetBtn">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;">Daily Study Goal (2 Hours target)</h3>
+        <div style="background: var(--bg); border-radius: 8px; height: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 8px;">
+          <div id="dailyProgress" style="background: var(--primary); width: 0%; height: 100%; transition: width 0.3s;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+          <span id="studiedTodayText">0 mins studied today</span>
+          <span id="targetTodayText">Target: 120 mins</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: STUDY PLAN -->
+    <section id="planView" class="view">
+      <div class="card">
+        <h3 style="margin-bottom: 8px;">Custom Study Plan Generator <span class="badge" id="planBadge">PREMIUM</span></h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">Generate a tailored daily Nigerian exam syllabus schedule based on your weak subjects.</p>
+        
+        <div style="margin-bottom: 12px;">
+          <input type="text" id="weakSubjectsInput" placeholder="e.g. Mathematics, Physics, Chemistry">
+        </div>
+        <button class="btn btn-primary" id="generatePlanBtn" style="width: 100%;">Generate AI Study Routine</button>
+
+        <div id="planResultContainer" style="margin-top: 16px; font-size: 0.9rem; line-height: 1.5;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ANALYTICS -->
+    <section id="analyticsView" class="view">
+      <div class="card">
+        <h3 style="margin-bottom: 16px;">Study Performance <span class="badge" id="analyticsBadge">PREMIUM</span></h3>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Focused Hours</div>
+            <div class="stat-value" id="totalHoursVal">0.0h</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Consistency Streak</div>
+            <div class="stat-value" id="streakVal">0 Days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Readiness Score</div>
+            <div class="stat-value" id="readinessVal">45%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Saved Offline</div>
+            <div class="stat-value">100%</div>
+          </div>
+        </div>
+
+        <button class="btn btn-premium" id="unlockPremiumBtn">Unlock Full Analytics & Ad-Free (₦500)</button>
+      </div>
+    </section>
+
+    <!-- TAB 4: MATERIALS -->
+    <section id="materialsView" class="view">
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Recommended Study Materials</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Hand-picked offline-compatible resources and past questions.</p>
+
+        <div class="affiliate-item">
+          <div class="affiliate-info">
+            <h4>JAMB CBT past questions & Answers App</h4>
+            <p>Over 60,000 offline questions with detailed explanations.</p>
+          </div>
+          <button class="btn btn-outline material-get-btn" style="flex:0; padding:8px 12px; font-size: 0.85rem;" data-url="https://example.com/jamb-cbt-app">Get</button>
+        </div>
+
+        <div class="affiliate-item">
+          <div class="affiliate-info">
+            <h4>WAEC/NECO Complete Syllabus & Hot Topics</h4>
+            <p>PDF compendium covering all core senior secondary subjects.</p>
+          </div>
+          <button class="btn btn-outline material-get-btn" style="flex:0; padding:8px 12px; font-size: 0.85rem;" data-url="https://example.com/waec-syllabus">Get</button>
+        </div>
+
+        <div class="affiliate-item">
+          <div class="affiliate-info">
+            <h4>Calculus & Physics Made Easy for Nigerians</h4>
+            <p>Step-by-step video summaries optimized for low data streaming.</p>
+          </div>
+          <button class="btn btn-outline material-get-btn" style="flex:0; padding:8px 12px; font-size: 0.85rem;" data-url="https://example.com/physics-guide">Get</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="nav-bar">
+    <button class="nav-item active" data-target="timerView" aria-label="Timer Tab">
+      <span class="icon">⏱️</span>
+      <span>Timer</span>
+    </button>
+    <button class="nav-item" data-target="planView" aria-label="Plan Tab">
+      <span class="icon">📅</span>
+      <span>Plan</span>
+    </button>
+    <button class="nav-item" data-target="analyticsView" aria-label="Analytics Tab">
+      <span class="icon">📊</span>
+      <span>Analytics</span>
+    </button>
+    <button class="nav-item" data-target="materialsView" aria-label="Materials Tab">
+      <span class="icon">📚</span>
+      <span>Materials</span>
+    </button>
+  </nav>
+
+  <!-- Premium Upgrade Modal -->
+  <div class="modal-overlay" id="premiumModal">
+    <div class="modal">
+      <button class="close-modal" id="closeModalBtn" aria-label="Close modal">&times;</button>
+      <h3>Unlock StudySync Pro</h3>
+      <p>Get lifetime access to advanced analytics, AI custom study-plan generator, streak saver, and a completely ad-free low-data experience for just <strong>₦500</strong>.</p>
+      
+      <div style="margin-bottom: 16px;">
+        <input type="email" id="userEmailInput" placeholder="Enter your email address">
+      </div>
+
+      <button class="btn btn-primary" id="payNowBtn" style="width: 100%;">Pay ₦500 with Paystack</button>
+    </div>
+  </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // State & Storage
+    const STORAGE_KEY = "studysync_ng_state_v1";
+    let state = {
+      isPremium: false,
+      theme: "dark",
+      studiedSecondsToday: 0,
+      totalSecondsAllTime: 0,
+      lastActiveDate: new Date().toDateString(),
+      streak: 1,
+      selectedExam: "utme"
+    };
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+      }
+    } catch (e) {
+      console.error("Storage load failed", e);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error("Storage save failed", e);
+      }
+    }
+
+    // Check date reset for daily goal
+    const todayStr = new Date().toDateString();
+    if (state.lastActiveDate !== todayStr) {
+      state.studiedSecondsToday = 0;
+      state.lastActiveDate = todayStr;
+      saveState();
+    }
+
+    // DOM Elements
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    const dataModeBtn = document.getElementById("dataModeBtn");
+    const navItems = document.querySelectorAll(".nav-item");
+    const views = document.querySelectorAll(".view");
+    const examSelect = document.getElementById("examSelect");
+    const clockDisplay = document.getElementById("clockDisplay");
+    const examDateInfo = document.getElementById("examDateInfo");
+    const startStopBtn = document.getElementById("startStopBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const dailyProgress = document.getElementById("dailyProgress");
+    const studiedTodayText = document.getElementById("studiedTodayText");
+    const adBanner = document.getElementById("adBanner");
+    const adLink = document.getElementById("adLink");
+    const totalHoursVal = document.getElementById("totalHoursVal");
+    const streakVal = document.getElementById("streakVal");
+    const readinessVal = document.getElementById("readinessVal");
+    const unlockPremiumBtn = document.getElementById("unlockPremiumBtn");
+    const premiumModal = document.getElementById("premiumModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const payNowBtn = document.getElementById("payNowBtn");
+    const generatePlanBtn = document.getElementById("generatePlanBtn");
+    const weakSubjectsInput = document.getElementById("weakSubjectsInput");
+    const planResultContainer = document.getElementById("planResultContainer");
+    const planBadge = document.getElementById("planBadge");
+    const analyticsBadge = document.getElementById("analyticsBadge");
+    const materialGetBtns = document.querySelectorAll(".material-get-btn");
+
+    // Theme setup
+    if (state.theme === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener("click", () => {
+        state.theme = state.theme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", state.theme === "light" ? "light" : "");
+        saveState();
+      });
+    }
+
+    if (dataModeBtn) {
+      dataModeBtn.addEventListener("click", () => {
+        alert("Free-Data mode is active. Images and heavy assets are suppressed to conserve your mobile data bundle.");
+      });
+    }
+
+    // Navigation logic
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        const targetId = item.getAttribute("data-target");
+        navItems.forEach(nav => nav.classList.remove("active"));
+        views.forEach(v => v.classList.remove("active"));
+        item.classList.add("active");
+        const targetView = document.getElementById(targetId);
+        if (targetView) targetView.classList.add("active");
+      });
+    });
+
+    if (adLink) {
+      adLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        navItems.forEach(nav => {
+          if (nav.getAttribute("data-target") === "materialsView") nav.click();
+        });
+      });
+    }
+
+    materialGetBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const url = btn.getAttribute("data-url");
+        if (url) window.open(url, "_blank");
+      });
+    });
+
+    // Premium UI check
+    function updatePremiumUI() {
+      if (state.isPremium) {
+        if (adBanner) adBanner.style.display = "none";
+        if (planBadge) planBadge.textContent = "UNLOCKED";
+        if (analyticsBadge) analyticsBadge.textContent = "UNLOCKED";
+        if (unlockPremiumBtn) {
+          unlockPremiumBtn.textContent = "Pro Member Active ✅";
+          unlockPremiumBtn.disabled = true;
+          unlockPremiumBtn.style.opacity = "0.7";
+        }
+      }
+    }
+    updatePremiumUI();
+
+    // Timer Logic
+    let timerInterval = null;
+    let isRunning = false;
+    let sessionSeconds = 0;
+
+    const examDates = {
+      utme: new Date("2026-05-02T08:00:00"),
+      waec: new Date("2026-04-15T09:00:00"),
+      neco: new Date("2026-06-10T09:00:00"),
+      custom: new Date("2026-07-01T09:00:00")
+    };
+
+    if (examSelect) {
+      examSelect.value = state.selectedExam;
+    }
+
+    function updateCountdown() {
+      if (!examSelect || !examDateInfo) return;
+      const selectedKey = examSelect.value;
+      const targetDate = examDates[selectedKey] || examDates.utme;
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        examDateInfo.textContent = "Exam date has arrived!";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      examDateInfo.textContent = `${days} days, ${hours}h ${minutes}m ${seconds}s remaining to target exam`;
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    if (examSelect) {
+      examSelect.addEventListener("change", () => {
+        state.selectedExam = examSelect.value;
+        saveState();
+        updateCountdown();
+      });
+    }
+
+    function formatClock(sec) {
+      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function updateProgressUI() {
+      if (clockDisplay) clockDisplay.textContent = formatClock(sessionSeconds);
+      const totalToday = state.studiedSecondsToday + sessionSeconds;
+      const targetSec = 120 * 60; // 2 hours
+      const pct = Math.min(100, (totalToday / targetSec) * 100);
+      if (dailyProgress) dailyProgress.style.width = `${pct}%`;
+
+      const mins = Math.floor(totalToday / 60);
+      if (studiedTodayText) studiedTodayText.textContent = `${mins} mins studied today`;
+
+      // Analytics stats
+      const totalHours = ((state.totalSecondsAllTime + sessionSeconds) / 3600).toFixed(1);
+      if (totalHoursVal) totalHoursVal.textContent = `${totalHours}h`;
+      if (streakVal) streakVal.textContent = `${state.streak} Days`;
+      if (readinessVal) readinessVal.textContent = `${Math.min(95, 45 + Math.floor(totalHours * 2))}%`;
+    }
+
+    updateProgressUI();
+
+    if (startStopBtn) {
+      startStopBtn.addEventListener("click", () => {
+        if (!isRunning) {
+          // Start
+          isRunning = true;
+          startStopBtn.textContent = "Pause Session";
+          startStopBtn.classList.remove("btn-primary");
+          startStopBtn.classList.add("btn-danger");
+
+          timerInterval = setInterval(() => {
+            sessionSeconds++;
+            updateProgressUI();
+          }, 1000);
+        } else {
+          // Pause / Stop
+          clearInterval(timerInterval);
+          isRunning = false;
+          startStopBtn.textContent = "Resume Session";
+          startStopBtn.classList.remove("btn-danger");
+          startStopBtn.classList.add("btn-primary");
+
+          state.studiedSecondsToday += sessionSeconds;
+          state.totalSecondsAllTime += sessionSeconds;
+          sessionSeconds = 0;
+          saveState();
+          updateProgressUI();
+        }
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (confirm("Reset current session timer?")) {
+          clearInterval(timerInterval);
+          isRunning = false;
+          sessionSeconds = 0;
+          if (startStopBtn) {
+            startStopBtn.textContent = "Start Session";
+            startStopBtn.classList.remove("btn-danger");
+            startStopBtn.classList.add("btn-primary");
+          }
+          updateProgressUI();
+        }
+      });
+    }
+
+    // Study Plan Generator
+    if (generatePlanBtn) {
+      generatePlanBtn.addEventListener("click", () => {
+        if (!state.isPremium) {
+          if (premiumModal) premiumModal.classList.add("open");
+          return;
+        }
+        const subjects = weakSubjectsInput && weakSubjectsInput.value.trim() ? weakSubjectsInput.value.trim() : "General Core Subjects";
+        if (planResultContainer) {
+          planResultContainer.innerHTML = `
+            <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+              <strong>📋 Custom Routine for: ${escapeHtml(subjects)}</strong>
+              <ul style="margin-left: 18px; margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                <li>06:00 AM - 07:30 AM: Concept Revision & Formulas</li>
+                <li>04:00 PM - 05:30 PM: Past Questions Practice (Timed)</li>
+                <li>08:00 PM - 09:00 PM: Error Correction & Summary Notes</li>
+              </ul>
+            </div>
+          `;
+        }
+      });
+    }
+
+    // Modal Events
+    if (unlockPremiumBtn && premiumModal) {
+      unlockPremiumBtn.addEventListener("click", () => {
+        premiumModal.classList.add("open");
+      });
+    }
+
+    if (closeModalBtn && premiumModal) {
+      closeModalBtn.addEventListener("click", () => {
+        premiumModal.classList.remove("open");
+      });
+    }
+
+    if (payNowBtn) {
+      payNowBtn.addEventListener("click", () => {
+        const emailInputElem = document.getElementById("userEmailInput");
+        const emailInput = emailInputElem ? emailInputElem.value.trim() : "";
+        if (!emailInput || !emailInput.includes("@")) {
+          alert("Please enter a valid email address for your receipt.");
+          return;
+        }
+
+        // Simulated Paystack transaction success
+        alert("Redirecting to Paystack Secure Gateway...");
+        setTimeout(() => {
+          state.isPremium = true;
+          saveState();
+          updatePremiumUI();
+          if (premiumModal) premiumModal.classList.remove("open");
+          alert("Payment confirmed! Welcome to StudySync Pro.");
+        }, 1000);
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  });
+</script>
+</body>
+</html>
