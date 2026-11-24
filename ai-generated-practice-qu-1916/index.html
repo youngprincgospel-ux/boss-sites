@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NaijaPrep AI - Practice Question Bank</title>
+<meta name="description" content="AI‑Generated Practice Question Bank for students preparing for UTME, NECO, and WAEC.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+<style>
+:root {
+  --primary: #008751;
+  --primary-dark: #00663d;
+  --accent: #ffc72c;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s, color 0.3s;
+}
+
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 24px;
+}
+
+.brand-title h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.brand-title p {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.icon-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+main {
+  flex: 1;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  /* GUARANTEED NO OVERLAP: generous bottom padding including bottom bar height + safe area */
+  padding: 16px 16px calc(110px + var(--safe-bottom)) 16px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+select, input, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: var(--primary);
+}
+
+.btn {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 135, 81, 0.2);
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  background: rgba(0, 135, 81, 0.1);
+  color: var(--primary);
+}
+
+.badge-warning {
+  background: rgba(255, 199, 44, 0.15);
+  color: #b45309;
+}
+
+.usage-meter {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+.meter-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.meter-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+/* Question card styles */
+.q-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.q-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.q-text {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.option-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.option-btn.selected {
+  border-color: var(--primary);
+  background: rgba(0, 135, 81, 0.05);
+}
+
+.option-btn.correct {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+
+.option-btn.incorrect {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+.explanation {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--card);
+  padding: 8px;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary);
+  margin-top: 8px;
+  display: none;
+}
+
+.explanation.show {
+  display: block;
+}
+
+/* Affiliate Market */
+.store-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.store-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.store-info h3 {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.store-info p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.store-action {
+  text-align: right;
+}
+
+.price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Bottom Navigation */
+nav.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+  z-index: 100;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  gap: 4px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.nav-item span.icon {
+  font-size: 20px;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  transform: translateY(20px);
+  transition: transform 0.2s;
+}
+
+.modal-overlay.open .modal {
+  transform: translateY(0);
+}
+
+.modal h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.modal p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.toast {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: #1e293b;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 13px;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media print {
+  body { background: #fff; color: #000; }
+  header, nav.bottom-nav, .no-print { display: none !important; }
+  main { max-width: 100%; padding: 0; }
+  .card { border: none; box-shadow: none; padding: 0; }
+  .q-item { break-inside: avoid; border: 1px solid #ccc; margin-bottom: 16px; }
+  .explanation { display: block !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-icon">🇳🇬</span>
+    <div class="brand-title">
+      <h1>NaijaPrep AI</h1>
+      <p id="live-time-subtitle">Loading time...</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="theme-toggle-btn" aria-label="Toggle Theme">🌙</button>
+  </div>
+</header>
+
+<main>
+  <!-- TAB 1: GENERATOR -->
+  <section id="tab-generator" class="tab-content active">
+    <div class="card">
+      <h2>🤖 AI Question Generator</h2>
+      
+      <div class="usage-meter">
+        <div class="meter-header">
+          <span id="usage-text">Daily Free Usage: 20 / 20 left</span>
+          <span id="premium-badge-status" class="badge">FREE TIER</span>
+        </div>
+        <div class="meter-bar">
+          <div id="meter-fill" class="meter-fill"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="exam-select">Select Exam</label>
+        <select id="exam-select">
+          <option value="UTME">JAMB UTME</option>
+          <option value="WAEC">WAEC (SSCE)</option>
+          <option value="NECO">NECO (SSCE)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="subject-select">Subject</label>
+        <select id="subject-select">
+          <option value="Mathematics">Mathematics</option>
+          <option value="English Language">English Language</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="Government">Government</option>
+          <option value="Economics">Economics</option>
+          <option value="Literature-in-English">Literature-in-English</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="topic-input">Syllabus Topic / Keywords</label>
+        <input type="text" id="topic-input" placeholder="e.g., Quadratic Equations, Photosynthesis, Equilibrium">
+      </div>
+
+      <div class="form-group">
+        <label for="count-select">Number of Questions</label>
+        <select id="count-select">
+          <option value="5">5 Questions</option>
+          <option value="10" selected>10 Questions</option>
+          <option value="20">20 Questions</option>
+        </select>
+      </div>
+
+      <button id="generate-btn" class="btn">
+        <span>✨ Generate Practice Questions</span>
+      </button>
+    </div>
+
+    <div class="card" id="preview-card" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2>📝 Generated Question Bank</h2>
+        <button id="print-pdf-btn" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 13px;">📥 Export PDF / Print</button>
+      </div>
+      <div id="questions-container"></div>
+    </div>
+  </section>
+
+  <!-- TAB 2: SAVED BANKS -->
+  <section id="tab-saved" class="tab-content">
+    <div class="card">
+      <h2>💾 Saved Question Banks</h2>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Access your previously generated question banks offline.</p>
+      <div id="saved-banks-list">
+        <p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No saved question banks yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: BOOKSTORE (Affiliate) -->
+  <section id="tab-store" class="tab-content">
+    <div class="card">
+      <h2>📚 Recommended Textbooks</h2>
+      <p style="font-size:13px; color: var(--text-muted); margin-bottom: 16px;">Top recommended Nigerian syllabus textbooks to ace your exams.</p>
+      
+      <div class="store-grid">
+        <div class="store-card">
+          <div class="store-info">
+            <h3>New School Physics for Senior Secondary Schools</h3>
+            <p>M.W. Anyakoha • Revised Edition</p>
+          </div>
+          <div class="store-action">
+            <span class="price">₦4,500</span>
+            <button class="btn affiliate-btn" data-title="New School Physics" data-url="https://example.com/buy/physics-textbook?ref=naijaprep" style="padding: 6px 12px; font-size: 12px;">Buy Now</button>
+          </div>
+        </div>
+
+        <div class="store-card">
+          <div class="store-info">
+            <h3>Comprehensive Chemistry for Senior Secondary Schools</h3>
+            <p>Calculus & Practical Guide</p>
+          </div>
+          <div class="store-action">
+            <span class="price">₦5,000</span>
+            <button class="btn affiliate-btn" data-title="Comprehensive Chemistry" data-url="https://example.com/buy/chemistry-textbook?ref=naijaprep" style="padding: 6px 12px; font-size: 12px;">Buy Now</button>
+          </div>
+        </div>
+
+        <div class="store-card">
+          <div class="store-info">
+            <h3>Essential Agricultural Science / Biology</h3>
+            <p>O.A. Iwena • WAEC & JAMB Standard</p>
+          </div>
+          <div class="store-action">
+            <span class="price">₦4,200</span>
+            <button class="btn affiliate-btn" data-title="Essential Biology" data-url="https://example.com/buy/biology-textbook?ref=naijaprep" style="padding: 6px 12px; font-size: 12px;">Buy Now</button>
+          </div>
+        </div>
+
+        <div class="store-card">
+          <div class="store-info">
+            <h3>New General Mathematics for SS 1-3</h3>
+            <p>Pearson Educational Nigeria</p>
+          </div>
+          <div class="store-action">
+            <span class="price">₦4,800</span>
+            <button class="btn affiliate-btn" data-title="New General Mathematics" data-url="https://example.com/buy/math-textbook?ref=naijaprep" style="padding: 6px 12px; font-size: 12px;">Buy Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: PREMIUM -->
+  <section id="tab-premium" class="tab-content">
+    <div class="card" style="border: 2px solid var(--accent);">
+      <div style="text-align: center; margin-bottom: 16px;">
+        <span style="font-size: 40px;">👑</span>
+        <h2 style="justify-content: center; margin-top: 8px;">Upgrade to Unlimited</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Get lifetime unlimited question generation, printable PDF packs, and zero limits.</p>
+      </div>
+
+      <div style="background: var(--bg); border-radius: 8px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border);">
+        <ul style="list-style: none; font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+          <li>✅ Unlimited daily question generations</li>
+          <li>✅ Export high-quality printable PDF packs</li>
+          <li>✅ Access past questions database (2010 - 2026)</li>
+          <li>✅ Offline storage for up to 100 question banks</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <span style="font-size: 24px; font-weight: 800; color: var(--primary);">₦500</span>
+        <span style="font-size: 12px; color: var(--text-muted);"> one-time payment</span>
+      </div>
+
+      <button id="upgrade-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+        <span>🚀 Pay ₦500 & Unlock Lifetime Access</span>
+      </button>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="tab-generator">
+    <span class="icon">🤖</span>
+    <span>Generate</span>
+  </button>
+  <button class="nav-item" data-target="tab-saved">
+    <span class="icon">💾</span>
+    <span>Saved</span>
+  </button>
+  <button class="nav-item" data-target="tab-store">
+    <span class="icon">📚</span>
+    <span>Bookstore</span>
+  </button>
+  <button class="nav-item" data-target="tab-premium">
+    <span class="icon">👑</span>
+    <span>Premium</span>
+  </button>
+</nav>
+
+<!-- PAYMENT MODAL -->
+<div id="payment-modal" class="modal-overlay">
+  <div class="modal">
+    <h3>Secure Checkout</h3>
+    <p>Simulating secure Paystack payment gateway for <strong>₦500 Lifetime Upgrade</strong>.</p>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="pay-email" placeholder="student@example.com">
+    </div>
+    <div class="modal-actions">
+      <button id="cancel-payment-btn" class="btn btn-secondary">Cancel</button>
+      <button id="confirm-payment-btn" class="btn">Pay ₦500 Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast">Action completed successfully</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Live Time Clock & Subtitle computed live for 24 Nov 2026 Nigeria WAT
+  const timeSubtitle = document.getElementById("live-time-subtitle");
+  function updateLiveTime() {
+    const now = new Date();
+    const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    if (timeSubtitle) {
+      timeSubtitle.textContent = now.toLocaleDateString('en-NG', options) + " (WAT)";
+    }
+  }
+  updateLiveTime();
+  setInterval(updateLiveTime, 30000);
+
+  // Theme Toggle
+  const themeToggleBtn = document.getElementById("theme-toggle-btn");
+  const savedTheme = localStorage.getItem("naijaprep_theme") || "light";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+  if (themeToggleBtn) {
+    themeToggleBtn.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+    themeToggleBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("naijaprep_theme", next);
+      themeToggleBtn.textContent = next === "dark" ? "☀️" : "🌙";
+    });
+  }
+
+  // Navigation Tabs
+  const navItems = document.querySelectorAll(".nav-item");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  navItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const targetId = item.getAttribute("data-target");
+      navItems.forEach(n => n.classList.remove("active"));
+      tabContents.forEach(t => t.classList.remove("active"));
+      item.classList.add("active");
+      const targetTab = document.getElementById(targetId);
+      if (targetTab) targetTab.classList.add("active");
+      window.scrollTo(0, 0);
+    });
+  });
+
+  // Toast Function
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3000);
+  }
+
+  // State & Usage Management
+  let userState = {
+    isPremium: false,
+    dailyCount: 0,
+    lastDate: new Date().toDateString(),
+    savedBanks: []
+  };
+
+  try {
+    const local = localStorage.getItem("naijaprep_state");
+    if (local) {
+      const parsed = JSON.parse(local);
+      const today = new Date().toDateString();
+      if (parsed.lastDate !== today) {
+        parsed.dailyCount = 0;
+        parsed.lastDate = today;
+      }
+      userState = { ...userState, ...parsed };
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem("naijaprep_state", JSON.stringify(userState));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const usageText = document.getElementById("usage-text");
+  const meterFill = document.getElementById("meter-fill");
+  const premiumBadgeStatus = document.getElementById("premium-badge-status");
+
+  function updateUsageUI() {
+    if (userState.isPremium) {
+      if (usageText) usageText.textContent = "Unlimited Access Active";
+      if (meterFill) meterFill.style.width = "100%";
+      if (premiumBadgeStatus) {
+        premiumBadgeStatus.textContent = "PRO LIFETIME";
+        premiumBadgeStatus.style.background = "rgba(255, 199, 44, 0.2)";
+        premiumBadgeStatus.style.color = "#d97706";
+      }
+    } else {
+      const remaining = Math.max(0, 20 - userState.dailyCount);
+      if (usageText) usageText.textContent = `Daily Free Usage: ${remaining} / 20 left`;
+      const pct = (userState.dailyCount / 20) * 100;
+      if (meterFill) meterFill.style.width = `${pct}%`;
+      if (premiumBadgeStatus) {
+        premiumBadgeStatus.textContent = "FREE TIER";
+        premiumBadgeStatus.style.background = "rgba(0, 135, 81, 0.1)";
+        premiumBadgeStatus.style.color = "var(--primary)";
+      }
+    }
+  }
+  updateUsageUI();
+
+  // Question Bank Generation Logic
+  const generateBtn = document.getElementById("generate-btn");
+  const previewCard = document.getElementById("preview-card");
+  const questionsContainer = document.getElementById("questions-container");
+
+  const questionBankPool = {
+    "Mathematics": [
+      { q: "If 3x - 5 = 16, find the value of x.", options: ["5", "7", "9", "11"], answer: 1, exp: "3x = 16 + 5 => 3x = 21 => x = 7." },
+      { q: "Evaluate log10(2) + log10(5).", options: ["0", "1", "2", "10"], answer: 1, exp: "log10(2 * 5) = log10(10) = 1." },
+      { q: "Calculate the simple interest on ₦50,000 for 2 years at 5% per annum.", options: ["₦2,500", "₦5,000", "₦10,000", "₦25,000"], answer: 1, exp: "SI = (P * R * T) / 100 = (50000 * 5 * 2) / 100 = ₦5,000." },
+      { q: "Find the gradient of the straight line passing through points (2, 3) and (4, 7).", options: ["1", "2", "3", "4"], answer: 1, exp: "Gradient m = (y2 - y1) / (x2 - x1) = (7 - 3) / (4 - 2) = 4 / 2 = 2." }
+    ],
+    "English Language": [
+      { q: "Choose the word nearest in meaning to the capitalized word: His action was DELIBERATE.", options: ["Accidental", "Intentional", "Hasty", "Careless"], answer: 1, exp: "'Deliberate' means done consciously and intentionally." },
+      { q: "Choose the correct option to complete the sentence: Neither the teacher nor the students ___ present.", options: ["was", "were", "is", "has"], answer: 1, exp: "When subjects are connected by 'or'/'nor', the verb agrees with the nearer subject ('students' is plural, so 'were')." },
+      { q: "Identify the figure of speech: 'The classroom was a zoo.'", options: ["Simile", "Metaphor", "Personification", "Alliteration"], answer: 1, exp: "A metaphor directly compares two things without using 'like' or 'as'." }
+    ],
+    "Physics": [
+      { q: "What is the SI unit of electric current?", options: ["Volt", "Ampere", "Ohm", "Watt"], answer: 1, exp: "The Ampere (A) is the base unit of electric current in the SI system." },
+      { q: "Calculate the kinetic energy of a 2kg mass moving with a velocity of 4 m/s.", options: ["8 J", "16 J", "32 J", "64 J"], answer: 1, exp: "KE = 0.5 * m * v^2 = 0.5 * 2 * (4^2) = 16 J." }
+    ],
+    "Chemistry": [
+      { q: "What is the chemical formula for ordinary table salt?", options: ["HCl", "NaOH", "NaCl", "Na2CO3"], answer: 2, exp: "Sodium chloride (NaCl) is table salt." },
+      { q: "Which gas is evolved when dilute hydrochloric acid reacts with zinc granules?", options: ["Oxygen", "Hydrogen", "Carbon dioxide", "Chlorine"], answer: 1, exp: "Zn + 2HCl -> ZnCl2 + H2(g)." }
+    ],
+    "Biology": [
+      { q: "The power house of the cell is the:", options: ["Nucleus", "Ribosome", "Mitochondrion", "Chloroplast"], answer: 2, exp: "Mitochondria generate most of the chemical energy needed to power cellular biochemical reactions." },
+      { q: "Which of the following is NOT an excretory organ in humans?", options: ["Kidney", "Skin", "Lungs", "Pancreas"], answer: 3, exp: "The pancreas is a digestive and endocrine gland, not primarily an excretory organ." }
+    ],
+    "Government": [
+      { q: "A system of government where power is shared between central and regional governments is called:", options: ["Unitary", "Federal", "Confederal", "Monarchy"], answer: 1, exp: "Federalism is characterized by constitutional sharing of powers." }
+    ],
+    "Economics": [
+      { q: "Inflation is best defined as:", options: ["Rise in unemployment", "General and persistent rise in price level", "Fall in exchange rate", "Increase in national output"], answer: 1, exp: "Inflation represents a sustained increase in the general price level of goods and services." }
+    ],
+    "Literature-in-English": [
+      { q: "The main character in a literary work is known as the:", options: ["Antagonist", "Protagonist", "Villain", "Narrator"], answer: 1, exp: "The protagonist is the leading character or one of the major characters in a drama, movie, novel, or other fictional text." }
+    ]
+  };
+
+  if (generateBtn) {
+    generateBtn.addEventListener("click", () => {
+      if (!userState.isPremium && userState.dailyCount >= 20) {
+        showToast("Daily free limit reached! Upgrade to PRO for unlimited generation.");
+        const premiumTabBtn = document.querySelector('[data-target="tab-premium"]');
+        if (premiumTabBtn) premiumTabBtn.click();
+        return;
+      }
+
+      const examSelect = document.getElementById("exam-select");
+      const subjectSelect = document.getElementById("subject-select");
+      const topicInput = document.getElementById("topic-input");
+      const countSelect = document.getElementById("count-select");
+
+      const exam = examSelect ? examSelect.value : "UTME";
+      const subject = subjectSelect ? subjectSelect.value : "Mathematics";
+      const topic = topicInput ? (topicInput.value.trim() || "General Syllabus") : "General Syllabus";
+      const count = countSelect ? parseInt(countSelect.value, 10) : 10;
+
+      // Show loading spinner
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = `<span class="spinner"></span> Generating with AI...`;
+
+      setTimeout(() => {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = `<span>✨ Generate Practice Questions</span>`;
+
+        // Increment usage if not premium
+        if (!userState.isPremium) {
+          userState.dailyCount += count;
+          saveState();
+          updateUsageUI();
+        }
+
+        // Build questions array
+        const pool = questionBankPool[subject] || questionBankPool["Mathematics"];
+        let generatedList = [];
+        for (let i = 0; i < count; i++) {
+          const baseQ = pool[i % pool.length];
+          generatedList.push({
+            id: Date.now() + i,
+            question: `${i + 1}. [${exam}] (${topic}) ${baseQ.q}`,
+            options: baseQ.options,
+            answer: baseQ.answer,
+            explanation: baseQ.exp
+          });
+        }
+
+        // Render questions
+        renderQuestions(generatedList, subject, exam, topic);
+
+        // Save to saved banks history
+        const bankRecord = {
+          id: Date.now(),
+          title: `${exam} - ${subject} (${topic})`,
+          date: new Date().toLocaleDateString(),
+          questions: generatedList
+        };
+        userState.savedBanks.unshift(bankRecord);
+        if (userState.savedBanks.length > 20) userState.savedBanks.pop();
+        saveState();
+        renderSavedBanks();
+
+        if (previewCard) previewCard.style.display = "block";
+        if (questionsContainer) {
+          questionsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        showToast("Question bank generated successfully!");
+      }, 1200);
+    });
+  }
+
+  function renderQuestions(list, subject, exam, topic) {
+    if (!questionsContainer) return;
+    questionsContainer.innerHTML = "";
+    list.forEach((item, index) => {
+      const qDiv = document.createElement("div");
+      qDiv.className = "q-item";
+      
+      let optionsHtml = "";
+      item.options.forEach((opt, oIdx) => {
+        const letter = String.fromCharCode(65 + oIdx);
+        optionsHtml += `<button class="option-btn" data-q="${index}" data-opt="${oIdx}"><b>${letter}.</b> ${opt}</button>`;
+      });
+
+      qDiv.innerHTML = `
+        <div class="q-header">
+          <span>Question ${index + 1} of ${list.length}</span>
+          <span class="badge">${exam}</span>
+        </div>
+        <div class="q-text">${item.question}</div>
+        <div class="options-list">${optionsHtml}</div>
+        <button class="btn btn-secondary reveal-btn" style="padding: 6px; font-size: 12px; width: auto;" data-q="${index}">💡 Show Explanation</button>
+        <div class="explanation" id="exp-${index}"><strong>Explanation:</strong> ${item.explanation}</div>
+      `;
+      questionsContainer.appendChild(qDiv);
+    });
+
+    // Wire option click events
+    const optionBtns = questionsContainer.querySelectorAll(".option-btn");
+    optionBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const qIdx = parseInt(btn.getAttribute("data-q"), 10);
+        const optIdx = parseInt(btn.getAttribute("data-opt"), 10);
+        const parentList = btn.parentElement;
+        const siblings = parentList.querySelectorAll(".option-btn");
+        
+        siblings.forEach(s => s.classList.remove("selected", "correct", "incorrect"));
+        
+        const correctOptIdx = list[qIdx].answer;
+        if (optIdx === correctOptIdx) {
+          btn.classList.add("correct");
+          showToast("Correct answer! 🎉");
+        } else {
+          btn.classList.add("incorrect");
+          if (siblings[correctOptIdx]) {
+            siblings[correctOptIdx].classList.add("correct");
+          }
+          showToast("Incorrect. Check explanation.");
+        }
+      });
+    });
+
+    // Wire explanation buttons
+    const revealBtns = questionsContainer.querySelectorAll(".reveal-btn");
+    revealBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const qIdx = btn.getAttribute("data-q");
+        const expDiv = document.getElementById(`exp-${qIdx}`);
+        if (expDiv) {
+          expDiv.classList.toggle("show");
+          btn.textContent = expDiv.classList.contains("show") ? "💡 Hide Explanation" : "💡 Show Explanation";
+        }
+      });
+    });
+  }
+
+  // Print PDF Button
+  const printPdfBtn = document.getElementById("print-pdf-btn");
+  if (printPdfBtn) {
+    printPdfBtn.addEventListener("click", () => {
+      window.print();
+    });
+  }
+
+  // Saved Banks Rendering
+  const savedBanksList = document.getElementById("saved-banks-list");
+  function renderSavedBanks() {
+    if (!savedBanksList) return;
+    if (userState.savedBanks.length === 0) {
+      savedBanksList.innerHTML = `<p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No saved question banks yet.</p>`;
+      return;
+    }
+
+    savedBanksList.innerHTML = "";
+    userState.savedBanks.forEach((bank) => {
+      const card = document.createElement("div");
+      card.className = "store-card";
+      card.style.marginBottom = "8px";
+      card.innerHTML = `
+        <div class="store-info">
+          <h3>${bank.title}</h3>
+          <p>${bank.questions.length} Questions • Saved on ${bank.date}</p>
+        </div>
+        <div class="store-action">
+          <button class="btn load-bank-btn" data-id="${bank.id}" style="padding: 6px 12px; font-size: 12px;">Load & View</button>
+        </div>
+      `;
+      savedBanksList.appendChild(card);
+    });
+
+    // Wire load buttons
+    const loadBtns = savedBanksList.querySelectorAll(".load-bank-btn");
+    loadBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = parseInt(btn.getAttribute("data-id"), 10);
+        const found = userState.savedBanks.find(b => b.id === id);
+        if (found) {
+          renderQuestions(found.questions, "Custom", "Exam", "Saved");
+          if (previewCard) previewCard.style.display = "block";
+          const genTabBtn = document.querySelector('[data-target="tab-generator"]');
+          if (genTabBtn) genTabBtn.click();
+          showToast(`Loaded: ${found.title}`);
+        }
+      });
+    });
+  }
+  renderSavedBanks();
+
+  // Affiliate Bookstore Links
+  const affiliateBtns = document.querySelectorAll(".affiliate-btn");
+  affiliateBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const title = btn.getAttribute("data-title");
+      const url = btn.getAttribute("data-url");
+      showToast(`Redirecting to bookstore partner for "${title}"...`);
+      setTimeout(() => {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }, 500);
+    });
+  });
+
+  // Premium Payment Modal
+  const upgradeBtn = document.getElementById("upgrade-btn");
+  const paymentModal = document.getElementById("payment-modal");
+  const cancelPaymentBtn = document.getElementById("cancel-payment-btn");
+  const confirmPaymentBtn = document.getElementById("confirm-payment-btn");
+  const payEmail = document.getElementById("pay-email");
+
+  if (upgradeBtn && paymentModal) {
+    upgradeBtn.addEventListener("click", () => {
+      paymentModal.classList.add("open");
+    });
+  }
+
+  if (cancelPaymentBtn && paymentModal) {
+    cancelPaymentBtn.addEventListener("click", () => {
+      paymentModal.classList.remove("open");
+    });
+  }
+
+  if (confirmPaymentBtn && paymentModal) {
+    confirmPaymentBtn.addEventListener("click", () => {
+      confirmPaymentBtn.disabled = true;
+      confirmPaymentBtn.innerHTML = `<span class="spinner"></span> Processing...`;
+
+      setTimeout(() => {
+        confirmPaymentBtn.disabled = false;
+        confirmPaymentBtn.innerHTML = `Pay ₦500 Now`;
+        userState.isPremium = true;
+        saveState();
+        updateUsageUI();
+        paymentModal.classList.remove("open");
+        showToast("Payment confirmed! Lifetime Pro access unlocked 🚀");
+      }, 1500);
+    });
+  }
+});
+</script>
+</body>
+</html>
