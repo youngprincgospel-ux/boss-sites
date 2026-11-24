@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WhatsApp Scholarship Match Bot</title>
+<meta name="description" content="WhatsApp Scholarship Match Bot – an AI‑driven bot that continuously scrapes Nigerian and international scholarship listings, matches them to user profiles ">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --primary:#0066cc;
+  --bg:#f9f9f9;
+  --text:#111;
+  --contrast:#fff;
+}
+html,body{
+  margin:0;
+  padding:0 env(safe-area-inset-left) env(safe-area-inset-right);
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+}
+header{
+  padding:1rem;
+  text-align:center;
+  background:var(--primary);
+  color:var(--contrast);
+}
+h1{
+  margin:0;
+  font-size:1.5rem;
+}
+#time{
+  font-size:0.9rem;
+}
+main{
+  padding:1rem;
+  padding-bottom:calc(80px + env(safe-area-inset-bottom));
+}
+section{
+  margin-bottom:2rem;
+}
+label{
+  display:block;
+  margin-bottom:0.3rem;
+  font-weight:bold;
+}
+input, select{
+  width:100%;
+  padding:0.6rem;
+  margin-bottom:1rem;
+  border:1px solid #ccc;
+  border-radius:4px;
+  font-size:1rem;
+}
+button{
+  min-height:44px;
+  min-width:44px;
+  padding:0.6rem 1rem;
+  background:var(--primary);
+  color:var(--contrast);
+  border:none;
+  border-radius:4px;
+  font-size:1rem;
+  cursor:pointer;
+}
+button:active{
+  background:#004999;
+}
+button.secondary{
+  background:#555;
+}
+button.secondary:active{
+  background:#333;
+}
+.scholarship{
+  border:1px solid #ddd;
+  border-radius:6px;
+  padding:0.8rem;
+  margin-bottom:1rem;
+  background:#fff;
+}
+.scholarship h3{
+  margin:0 0 0.4rem 0;
+  font-size:1.1rem;
+}
+.scholarship p{
+  margin:0.2rem 0;
+}
+footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:60px;
+  background:var(--primary);
+  color:var(--contrast);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
+  box-sizing:border-box;
+}
+footer button{
+  background:var(--contrast);
+  color:var(--primary);
+  margin-left:1rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 Scholarship Match Bot</h1>
+  <div id="time" aria-live="polite"></div>
+</header>
+<main>
+  <section aria-labelledby="profile-heading">
+    <h2 id="profile-heading">Your Profile</h2>
+    <form id="profile-form" novalidate>
+      <label for="course">Course of Study</label>
+      <input type="text" id="course" name="course" placeholder="e.g., Computer Science" required>
+      
+      <label for="gpa">Current GPA (0‑5)</label>
+      <input type="number" id="gpa" name="gpa" step="0.01" min="0" max="5" placeholder="e.g., 4.2" required>
+      
+      <label for="location">Location (State / Country)</label>
+      <input type="text" id="location" name="location" placeholder="e.g., Lagos, Nigeria" required>
+      
+      <button type="submit">Find Scholarships</button>
+    </form>
+  </section>
+  
+  <section aria-labelledby="results-heading" id="results-section" hidden>
+    <h2 id="results-heading">Matching Scholarships</h2>
+    <div id="results"></div>
+  </section>
+</main>
+<footer>
+  <span>© 2026</span>
+  <button id="premium-btn" class="secondary">Go Premium – ₦250/mo</button>
+</footer>
+
+<script>
+(() => {
+  // Utility
+  const qs = (sel) => document.querySelector(sel);
+  const qsa = (sel) => document.querySelectorAll(sel);
+  const now = () => new Date();
+
+  // Live time display
+  const timeEl = qs('#time');
+  if (timeEl) {
+    const updateTime = () => {
+      const d = now();
+      timeEl.textContent = d.toLocaleString(undefined, {
+        weekday:'short', year:'numeric', month:'short', day:'numeric',
+        hour:'2-digit', minute:'2-digit', second:'2-digit'
+      });
+    };
+    updateTime();
+    setInterval(updateTime, 1000);
+  }
+
+  // Mock scholarship data
+  const scholarships = [
+    {
+      title: "TechFuture Nigeria Scholarship",
+      description: "Full tuition for Computer Science students with GPA ≥ 3.5.",
+      course: "computer science",
+      minGPA: 3.5,
+      locations: ["Nigeria", "Lagos", "Abuja"],
+      deadline: "2024-12-31"
+    },
+    {
+      title: "Global Leaders Fellowship",
+      description: "Open to all disciplines, GPA ≥ 4.0, for students from any African country.",
+      course: "",
+      minGPA: 4.0,
+      locations: ["Africa"],
+      deadline: "2025-03-15"
+    },
+    {
+      title: "Health Heroes Grant",
+      description: "For Nursing and Medicine students, GPA ≥ 3.2, based in West Africa.",
+      course: "nursing medicine",
+      minGPA: 3.2,
+      locations: ["Nigeria", "Ghana", "Côte d'Ivoire"],
+      deadline: "2024-11-20"
+    },
+    {
+      title: "Eco Innovators Award",
+      description: "Environmental Science students, GPA ≥ 3.0, open to all locations.",
+      course: "environmental science",
+      minGPA: 3.0,
+      locations: [],
+      deadline: "2025-01-10"
+    }
+  ];
+
+  // Load saved profile
+  const loadProfile = () => {
+    try {
+      const saved = localStorage.getItem('scholarshipProfile');
+      if (saved) {
+        const data = JSON.parse(saved);
+        qs('#course').value = data.course || '';
+        qs('#gpa').value = data.gpa || '';
+        qs('#location').value = data.location || '';
+      }
+    } catch (e) {}
+  };
+
+  // Save profile
+  const saveProfile = (profile) => {
+    try {
+      localStorage.setItem('scholarshipProfile', JSON.stringify(profile));
+    } catch (e) {}
+  };
+
+  // Matching logic
+  const matchScholarships = (profile) => {
+    const course = profile.course.toLowerCase();
+    const location = profile.location.toLowerCase();
+    const gpa = parseFloat(profile.gpa);
+    return scholarships.filter(s => {
+      const courseMatch = !s.course || s.course.split(' ').some(c => course.includes(c));
+      const locationMatch = s.locations.length===0 || s.locations.some(loc => location.includes(loc.toLowerCase()));
+      const gpaMatch = gpa >= s.minGPA;
+      return courseMatch && locationMatch && gpaMatch;
+    });
+  };
+
+  // Render results
+  const renderResults = (matches) => {
+    const resultsSection = qs('#results-section');
+    const resultsDiv = qs('#results');
+    if (!resultsSection || !resultsDiv) return;
+    resultsDiv.innerHTML = '';
+    if (matches.length===0) {
+      resultsDiv.textContent = 'No scholarships match your profile at the moment.';
+    } else {
+      matches.forEach((s, i) => {
+        const card = document.createElement('div');
+        card.className = 'scholarship';
+        card.innerHTML = `
+          <h3>${s.title}</h3>
+          <p>${s.description}</p>
+          <p><strong>Min GPA:</strong> ${s.minGPA}</p>
+          <p><strong>Deadline:</strong> ${new Date(s.deadline).toLocaleDateString()}</p>
+          <button data-index="${i}">Copy Details</button>
+        `;
+        resultsDiv.appendChild(card);
+      });
+    }
+    resultsSection.hidden = false;
+  };
+
+  // Copy to clipboard
+  const copyDetails = (index) => {
+    const s = matchScholarships(currentProfile)[index];
+    if (!s) return;
+    const text = `${s.title}\n${s.description}\nMin GPA: ${s.minGPA}\nDeadline: ${s.deadline}`;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Scholarship details copied to clipboard.');
+    }).catch(() => {
+      alert('Failed to copy. Please copy manually.');
+    });
+  };
+
+  // Form handling
+  const form = qs('#profile-form');
+  let currentProfile = {};
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const course = qs('#course').value.trim();
+      const gpa = qs('#gpa').value.trim();
+      const location = qs('#location').value.trim();
+      if (!course || !gpa || !location) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      currentProfile = {course, gpa, location};
+      saveProfile(currentProfile);
+      const matches = matchScholarships(currentProfile);
+      renderResults(matches);
+    });
+  }
+
+  // Delegated copy button listener
+  const resultsDiv = qs('#results');
+  if (resultsDiv) {
+    resultsDiv.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-index]');
+      if (btn) {
+        const idx = parseInt(btn.getAttribute('data-index'),10);
+        copyDetails(idx);
+      }
+    });
+  }
+
+  // Premium button
+  const premiumBtn = qs('#premium-btn');
+  if (premiumBtn) {
+    premiumBtn.addEventListener('click', () => {
+      alert('Premium subscription: ₦250 per month.\nFeatures: personalized matching, template library, one‑on‑one consultation.\n(Implementation pending)');
+    });
+  }
+
+  // Initial load
+  loadProfile();
+})();
+</script>
+</body>
+</html>
