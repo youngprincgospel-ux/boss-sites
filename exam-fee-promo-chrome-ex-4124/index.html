@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Exam-Fee Promo Assistant</title>
+<meta name="description" content="Exam‑Fee Promo Chrome Extension. This should help: Detects when users browse JAMB, WAEC, or NECO payment pages and automatically displays the latest OPay, ">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<style>
+  :root {
+    --primary: #059669;
+    --primary-dark: #047857;
+    --accent: #10B981;
+    --bg: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --text: #1E293B;
+    --text-muted: #64748B;
+    --border: #E2E8F0;
+    --danger: #EF4444;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .extension-container {
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    max-height: 680px;
+    background-color: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (min-width: 421px) {
+    .extension-container {
+      border-radius: 24px;
+      border: 1px solid var(--border);
+    }
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand span {
+    font-size: 24px;
+  }
+
+  .brand h1 {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .brand p {
+    font-size: 11px;
+    opacity: 0.85;
+  }
+
+  .pro-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: background 0.2s;
+  }
+
+  .pro-badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Simulator Toolbar */
+  .simulator-bar {
+    background: #F1F5F9;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .simulator-bar select {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+  }
+
+  /* Main Content Area */
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    padding-bottom: calc(70px + var(--safe-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Status Banner */
+  .status-banner {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .status-banner.inactive {
+    background: #FEF2F2;
+    border-color: #FECACA;
+  }
+
+  .status-icon {
+    font-size: 20px;
+    margin-top: 2px;
+  }
+
+  .status-text h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #065F46;
+  }
+
+  .status-banner.inactive .status-text h3 {
+    color: #991B1B;
+  }
+
+  .status-text p {
+    font-size: 12px;
+    color: #047857;
+    margin-top: 2px;
+  }
+
+  .status-banner.inactive .status-text p {
+    color: #B91C1C;
+  }
+
+  /* Coupons List */
+  .coupon-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .coupon-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  .coupon-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .coupon-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .coupon-info p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .discount-tag {
+    background: #DCFCE7;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  .coupon-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  .code-box {
+    font-family: monospace;
+    background: #F1F5F9;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn:hover {
+    background: var(--primary-dark);
+  }
+
+  .btn-secondary {
+    background: #E2E8F0;
+    color: var(--text);
+  }
+
+  .btn-secondary:hover {
+    background: #CBD5E1;
+  }
+
+  /* Price Watch & Pro Section */
+  .pro-card {
+    background: linear-gradient(135deg, #1E293B, #0F172A);
+    color: white;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pro-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pro-card p {
+    font-size: 12px;
+    color: #94A3B8;
+    line-height: 1.4;
+  }
+
+  .pro-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 11px;
+    color: #E2E8F0;
+  }
+
+  .pro-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .price-watch-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .price-row span:last-child {
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  /* Bottom Navigation / Fixed Bar */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+    z-index: 10;
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    width: 25%;
+    transition: color 0.2s;
+  }
+
+  .nav-item span.icon {
+    font-size: 18px;
+  }
+
+  .nav-item.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Modal Overlay */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 360px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(20px);
+    transition: transform 0.2s ease;
+  }
+
+  .modal-overlay.active .modal {
+    transform: translateY(0);
+  }
+
+  .modal h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .modal p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .modal-actions button {
+    flex: 1;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: #1E293B;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 200;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    text-align: center;
+    max-width: 90%;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Utility Views */
+  .view {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .view.active {
+    display: flex;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stat-card span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .stat-card h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<div class="extension-container">
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span>🎓</span>
+      <div>
+        <h1>Exam-Fee Promo</h1>
+        <p id="live-time-display">Active Guard</p>
+      </div>
+    </div>
+    <button class="pro-badge" id="header-pro-btn">⚡ Pro: Off</button>
+  </header>
+
+  <!-- Simulator Toolbar for Testing Page Detection -->
+  <div class="simulator-bar">
+    <span>Simulate Page:</span>
+    <select id="page-simulator">
+      <option value="none">-- Browse Outside Exam Portals --</option>
+      <option value="jamb">JAMB e-Facility Payment Page</option>
+      <option value="waec">WAEC Direct Scratch Card Portal</option>
+      <option value="neco">NECO Exam Registration Portal</option>
+    </select>
+  </div>
+
+  <!-- Main Scrollable Area -->
+  <div class="main-content">
+
+    <!-- TAB 1: OFFERS & DEALS -->
+    <div id="view-offers" class="view active">
+      <!-- Portal Status Banner -->
+      <div id="portal-status" class="status-banner inactive">
+        <div class="status-icon" id="status-icon">🔍</div>
+        <div class="status-text">
+          <h3 id="status-title">No Exam Portal Detected</h3>
+          <p id="status-desc">Browse JAMB, WAEC, or NECO to automatically unlock discounts & cashback.</p>
+        </div>
+      </div>
+
+      <!-- Active Coupons Section -->
+      <div>
+        <div class="section-title">
+          <span>Available Promo Codes</span>
+          <span id="coupon-count">4 deals</span>
+        </div>
+        <div id="coupons-list" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Quick Affiliate Pay Links -->
+      <div>
+        <div class="section-title">Quick Trusted Gateways</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button class="btn btn-secondary affiliate-pay" data-gateway="OPay" style="padding:10px;">Pay via OPay (1.5% Off)</button>
+          <button class="btn btn-secondary affiliate-pay" data-gateway="Paystack" style="padding:10px;">Pay via Paystack</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PRICE WATCH -->
+    <div id="view-watch" class="view">
+      <div class="pro-card">
+        <h3><span>🔔</span> Price-Watch & Rate Alerts</h3>
+        <p>Monitor fluctuating registration fees and get instant alerts when prices drop or bank cashback windows open.</p>
+        <div class="pro-features">
+          <div class="pro-feature-item"><span>✅</span> UTME Fee Tracking</div>
+          <div class="pro-feature-item"><span>✅</span> WAEC PIN Monitor</div>
+          <div class="pro-feature-item"><span>✅</span> NECO Auto-Coupon</div>
+          <div class="pro-feature-item"><span>✅</span> SMS Alert Sync</div>
+        </div>
+      </div>
+
+      <div class="price-watch-box">
+        <div class="section-title" style="margin-bottom:0;">Monitored Exams</div>
+        <div class="price-row">
+          <span>JAMB UTME Registration</span>
+          <span id="price-jamb">₦7,700 (Stable)</span>
+        </div>
+        <div class="price-row">
+          <span>WAEC Direct PIN (GCE/SSCE)</span>
+          <span id="price-waec">₦4,500 (Promo Active)</span>
+        </div>
+        <div class="price-row">
+          <span>NECO SSCE Registration</span>
+          <span id="price-neco">₦12,000 (Stable)</span>
+        </div>
+        <button class="btn" id="run-price-check" style="margin-top: 4px;">Refresh Live Rates</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: SAVINGS ANALYTICS -->
+    <div id="view-stats" class="view">
+      <div class="section-title">Your Lifetime Savings</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Total Saved</span>
+          <h4 id="stat-saved">₦0</h4>
+        </div>
+        <div class="stat-card">
+          <span>Coupons Applied</span>
+          <h4 id="stat-coupons">0</h4>
+        </div>
+        <div class="stat-card">
+          <span>Affiliate Cashback</span>
+          <h4 id="stat-cashback">₦0</h4>
+        </div>
+        <div class="stat-card">
+          <span>Exams Funded</span>
+          <h4 id="stat-exams">0</h4>
+        </div>
+      </div>
+
+      <div class="coupon-card">
+        <div class="coupon-info">
+          <h4>Export Savings Report</h4>
+          <p>Download your savings history as a JSON file or clear logs.</p>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button class="btn btn-secondary" id="export-btn" style="flex:1;">Export Data</button>
+          <button class="btn btn-secondary" id="clear-btn" style="background:#FEE2E2; color:#991B1B; flex:1;">Reset Stats</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SETTINGS / PRO UPGRADE -->
+    <div id="view-settings" class="view">
+      <div class="coupon-card" style="background: linear-gradient(135deg, #059669, #047857); color:white; border:none;">
+        <div class="coupon-info">
+          <h4 style="color:white; font-size:16px;">Upgrade to Pro (₦500 One-Time)</h4>
+          <p style="color:#D1FAE5; margin-top:4px;">Unlock automated 1-click coupon application, priority price-watch push alerts, and zero ads.</p>
+        </div>
+        <button class="btn" id="upgrade-pro-btn" style="background:white; color:var(--primary); font-weight:700; margin-top:8px;">Unlock Pro Now ⚡</button>
+      </div>
+
+      <div class="coupon-card">
+        <div class="coupon-info">
+          <h4>Extension Settings</h4>
+          <p>Configure automatic page detection and affiliate routing preferences.</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px; font-size:13px;">
+          <label style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Auto-detect payment pages</span>
+            <input type="checkbox" id="setting-autodetect" checked style="width:18px; height:18px; accent-color:var(--primary);">
+          </label>
+          <label style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Audio alert on coupon found</span>
+            <input type="checkbox" id="setting-audio" checked style="width:18px; height:18px; accent-color:var(--primary);">
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-target="view-offers">
+      <span class="icon">🏷️</span>
+      <span>Offers</span>
+    </button>
+    <button class="nav-item" data-target="view-watch">
+      <span class="icon">📈</span>
+      <span>Price Watch</span>
+    </button>
+    <button class="nav-item" data-target="view-stats">
+      <span class="icon">💰</span>
+      <span>Savings</span>
+    </button>
+    <button class="nav-item" data-target="view-settings">
+      <span class="icon">⚙️</span>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- Pro Upgrade Modal -->
+<div class="modal-overlay" id="pro-modal">
+  <div class="modal">
+    <h3>⚡ Upgrade to Pro Version</h3>
+    <p>Get lifetime access to automated 1-click coupon apply, price-drop push alerts, and priority payment routing for just <strong>₦500</strong>.</p>
+    <div style="background:#F8FAFC; padding:12px; border-radius:8px; font-size:12px; color:var(--text-muted);">
+      ✨ Secured via simulated Paystack checkout. No recurring fees.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+      <button class="btn" id="modal-confirm">Pay ₦500 & Activate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">Copied promo code to clipboard!</div>
+
+<script>
+  // State Management with LocalStorage
+  const STORAGE_KEY = 'exam_fee_promo_state_v1';
+  let state = {
+    isPro: false,
+    savedTotal: 1250,
+    couponsUsedCount: 3,
+    cashbackEarned: 150,
+    examsFundedCount: 1,
+    autoDetect: true,
+    audioAlert: true,
+    currentSimulation: 'none'
+  };
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = { ...state, ...JSON.parse(saved) };
+    }
+  } catch (e) {
+    console.warn('LocalStorage unavailable', e);
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.warn('Could not save to localStorage', e);
+    }
+  }
+
+  // Database of Mock Promos & Coupons
+  const couponsData = [
+    { id: 1, portal: 'jamb', title: 'JAMB e-Facility ₦500 Cashback', desc: 'Valid when paying through OPay or Moniepoint gateway.', code: 'JAMBOPAY500', discount: '₦500 OFF', affiliateUrl: 'https://opayweb.com' },
+    { id: 2, portal: 'waec', title: 'WAEC Direct Scratch Card Discount', desc: 'Save ₦300 instantly on GCE / SSCE result checker PIN.', code: 'WAECPIN300', discount: '₦300 OFF', affiliateUrl: 'https://waecdirect.org' },
+    { id: 3, portal: 'neco', title: 'NECO Registration Fee Rebate', desc: 'Get 2% affiliate cash-back directly to your bank account.', code: 'NECOPRO2026', discount: '2% CASHBACK', affiliateUrl: 'https://neco.gov.ng' },
+    { id: 4, portal: 'general', title: 'Bank USSD Exam Fee Special', desc: 'Use *919* or *737* for zero service charge on exam PINs.', code: 'USSDZERO', discount: 'FREE FEE', affiliateUrl: '#' }
+  ];
+
+  // DOM Elements Query with Null Checks
+  const timeDisplay = document.getElementById('live-time-display');
+  const pageSimulator = document.getElementById('page-simulator');
+  const portalStatus = document.getElementById('portal-status');
+  const statusIcon = document.getElementById('status-icon');
+  const statusTitle = document.getElementById('status-title');
+  const statusDesc = document.getElementById('status-desc');
+  const couponsList = document.getElementById('coupons-list');
+  const couponCount = document.getElementById('coupon-count');
+  
+  const statSaved = document.getElementById('stat-saved');
+  const statCoupons = document.getElementById('stat-coupons');
+  const statCashback = document.getElementById('stat-cashback');
+  const statExams = document.getElementById('stat-exams');
+
+  const headerProBtn = document.getElementById('header-pro-btn');
+  const upgradeProBtn = document.getElementById('upgrade-pro-btn');
+  const proModal = document.getElementById('pro-modal');
+  const modalCancel = document.getElementById('modal-cancel');
+  const modalConfirm = document.getElementById('modal-confirm');
+  const toast = document.getElementById('toast');
+
+  const navItems = document.querySelectorAll('.nav-item');
+  const views = document.querySelectorAll('.view');
+  const exportBtn = document.getElementById('export-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const runPriceCheck = document.getElementById('run-price-check');
+  const settingAutodetect = document.getElementById('setting-autodetect');
+  const settingAudio = document.getElementById('setting-audio');
+
+  // Live Time Display in Header
+  function updateLiveClock() {
+    if (!timeDisplay) return;
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    timeDisplay.textContent = `Active Guard • ${timeString}`;
+  }
+  setInterval(updateLiveClock, 1000);
+  updateLiveClock();
+
+  // Render Stats
+  function renderStats() {
+    if (statSaved) statSaved.textContent = `₦${state.savedTotal.toLocaleString()}`;
+    if (statCoupons) statCoupons.textContent = state.couponsUsedCount;
+    if (statCashback) statCashback.textContent = `₦${state.cashbackEarned.toLocaleString()}`;
+    if (statExams) statExams.textContent = state.examsFundedCount;
+
+    if (headerProBtn) {
+      headerProBtn.textContent = state.isPro ? '⚡ Pro: Active' : '⚡ Pro: Off';
+      headerProBtn.style.background = state.isPro ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.2)';
+    }
+    if (settingAutodetect) settingAutodetect.checked = state.autoDetect;
+    if (settingAudio) settingAudio.checked = state.audioAlert;
+  }
+  renderStats();
+
+  // Toast Notification Trigger
+  function showToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+
+  // Render Coupons List based on filter or active simulation
+  function renderCoupons(filterPortal = 'none') {
+    if (!couponsList) return;
+    couponsList.innerHTML = '';
+
+    const filtered = couponsData.filter(c => {
+      if (filterPortal === 'none') return true;
+      return c.portal === filterPortal || c.portal === 'general';
+    });
+
+    if (couponCount) couponCount.textContent = `${filtered.length} deals`;
+
+    if (filtered.length === 0) {
+      couponsList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">No specific promos found for this portal. General bank discounts apply.</div>`;
+      return;
+    }
+
+    filtered.forEach(coupon => {
+      const card = document.createElement('div');
+      card.className = 'coupon-card';
+      card.innerHTML = `
+        <div class="coupon-header">
+          <div class="coupon-info">
+            <h4>${coupon.title}</h4>
+            <p>${coupon.desc}</p>
+          </div>
+          <span class="discount-tag">${coupon.discount}</span>
+        </div>
+        <div class="coupon-footer">
+          <span class="code-box">${coupon.code}</span>
+          <div style="display:flex; gap:6px;">
+            ${state.isPro ? `<button class="btn auto-apply-btn" data-code="${coupon.code}">Auto-Apply ⚡</button>` : ''}
+            <button class="btn copy-btn" data-code="${coupon.code}">Copy Code</button>
+          </div>
+        </div>
+      `;
+      couponsList.appendChild(card);
+    });
+
+    // Wire up generated buttons
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const code = e.target.getAttribute('data-code');
+        navigator.clipboard?.writeText(code).catch(() => {});
+        showToast(`Copied promo code: ${code}`);
+        state.savedTotal += 300;
+        state.couponsUsedCount += 1;
+        saveState();
+        renderStats();
+      });
+    });
+
+    document.querySelectorAll('.auto-apply-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const code = e.target.getAttribute('data-code');
+        showToast(`⚡ Pro Auto-Applied: ${code} successfully!`);
+        state.savedTotal += 500;
+        state.couponsUsedCount += 1;
+        state.cashbackEarned += 50;
+        saveState();
+        renderStats();
+      });
+    });
+  }
+  renderCoupons('none');
+
+  // Page Simulator Logic
+  if (pageSimulator) {
+    pageSimulator.addEventListener('change', (e) => {
+      const val = e.target.value;
+      state.currentSimulation = val;
+      
+      if (val === 'none') {
+        portalStatus.className = 'status-banner inactive';
+        statusIcon.textContent = '🔍';
+        statusTitle.textContent = 'No Exam Portal Detected';
+        statusDesc.textContent = 'Browse JAMB, WAEC, or NECO to automatically unlock discounts & cashback.';
+        renderCoupons('none');
+      } else {
+        portalStatus.className = 'status-banner';
+        statusIcon.textContent = '⚡';
+        const names = { jamb: 'JAMB e-Facility Payment Portal', waec: 'WAEC Direct Scratch Card Portal', neco: 'NECO Exam Registration Portal' };
+        statusTitle.textContent = `${names[val]} Detected!`;
+        statusDesc.textContent = 'Affiliate 2% cashback active. Best promo codes loaded below.';
+        renderCoupons(val);
+        showToast(`Detected ${names[val]}! Promos loaded.`);
+      }
+    });
+  }
+
+  // Affiliate Quick Pay Buttons
+  document.querySelectorAll('.affiliate-pay').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const gateway = e.target.getAttribute('data-gateway');
+      showToast(`Redirecting via secure ${gateway} affiliate link (2% commission routed)...`);
+      state.cashbackEarned += 100;
+      state.examsFundedCount += 1;
+      saveState();
+      renderStats();
+    });
+  });
+
+  // Navigation Switching
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navItems.forEach(nav => nav.classList.remove('active'));
+      views.forEach(view => view.classList.remove('active'));
+
+      item.classList.add('active');
+      const targetId = item.getAttribute('data-target');
+      const targetView = document.getElementById(targetId);
+      if (targetView) targetView.classList.add('active');
+    });
+  });
+
+  // Pro Upgrade Modal Handling
+  function toggleModal(show) {
+    if (!proModal) return;
+    if (show) {
+      proModal.classList.add('active');
+    } else {
+      proModal.classList.remove('active');
+    }
+  }
+
+  if (headerProBtn) {
+    headerProBtn.addEventListener('click', () => {
+      if (!state.isPro) toggleModal(true);
+      else showToast('Pro version is already active!');
+    });
+  }
+
+  if (upgradeProBtn) {
+    upgradeProBtn.addEventListener('click', () => toggleModal(true));
+  }
+
+  if (modalCancel) {
+    modalCancel.addEventListener('click', () => toggleModal(false));
+  }
+
+  if (modalConfirm) {
+    modalConfirm.addEventListener('click', () => {
+      state.isPro = true;
+      saveState();
+      renderStats();
+      renderCoupons(state.currentSimulation);
+      toggleModal(false);
+      showToast('🎉 Pro version activated successfully!');
+    });
+  }
+
+  // Price Watch Refresh
+  if (runPriceCheck) {
+    runPriceCheck.addEventListener('click', () => {
+      showToast('Checking live rates across JAMB, WAEC & NECO servers...');
+      setTimeout(() => {
+        const j = document.getElementById('price-jamb');
+        const w = document.getElementById('price-waec');
+        const n = document.getElementById('price-neco');
+        if (j) j.textContent = '₦7,700 (Stable - 0% variance)';
+        if (w) w.textContent = '₦4,200 (⚡ New ₦300 Drop!)';
+        if (n) n.textContent = '₦12,000 (Stable)';
+        showToast('Rates updated successfully!');
+      }, 1000);
+    });
+  }
+
+  // Export Data & Clear Stats
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "exam_fee_savings_report.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Savings report exported to JSON');
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset your savings analytics?')) {
+        state.savedTotal = 0;
+        state.couponsUsedCount = 0;
+        state.cashbackEarned = 0;
+        state.examsFundedCount = 0;
+        saveState();
+        renderStats();
+        showToast('Analytics reset');
+      }
+    });
+  }
+
+  // Settings Toggles
+  if (settingAutodetect) {
+    settingAutodetect.addEventListener('change', (e) => {
+      state.autoDetect = e.target.checked;
+      saveState();
+      showToast(`Auto-detect ${state.autoDetect ? 'enabled' : 'disabled'}`);
+    });
+  }
+
+  if (settingAudio) {
+    settingAudio.addEventListener('change', (e) => {
+      state.audioAlert = e.target.checked;
+      saveState();
+      showToast(`Audio alerts ${state.audioAlert ? 'enabled' : 'disabled'}`);
+    });
+  }
+</script>
+
+</body>
+</html>
