@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📚 TikTok‑Driven Study‑Tip Funnel</title>
+<meta name="description" content="TikTok‑Driven Study‑Tip Funnel with Lead Magnet PDF. Daily 15‑second study hacks synced to your free‑data windows.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --primary:#0066cc;
+  --bg:#f9f9f9;
+  --text:#222;
+  --contrast:#fff;
+}
+html{box-sizing:border-box}
+*,*:before,*:after{box-sizing:inherit}
+body{
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+header,main,footer{padding:1rem}
+h1{font-size:1.8rem;margin:0 0 .5rem}
+h2{font-size:1.5rem;margin:0 0 .5rem}
+p{margin:0 0 1rem;line-height:1.4}
+section{margin-bottom:2rem}
+button{
+  display:inline-block;
+  width:100%;
+  padding:.75rem;
+  font-size:1rem;
+  background:var(--primary);
+  color:var(--contrast);
+  border:none;
+  border-radius:.4rem;
+  cursor:pointer;
+}
+button:active{background:#004999}
+button:focus-visible{
+  outline:3px solid #ffbf47;
+  outline-offset:2px;
+}
+input[type="email"]{
+  width:100%;
+  padding:.75rem;
+  font-size:1rem;
+  margin-bottom:.5rem;
+  border:1px solid #ccc;
+  border-radius:.4rem;
+}
+input[type="email"]:focus-visible{
+  outline:3px solid #ffbf47;
+  outline-offset:2px;
+}
+label{font-weight:600}
+#bottom-bar{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#fff;
+  border-top:1px solid #ddd;
+  display:flex;
+  justify-content:center;
+  padding:0.5rem;
+  gap:1rem;
+  font-size:1rem;
+}
+#bottom-bar a{
+  color:var(--primary);
+  text-decoration:none;
+  font-weight:600;
+}
+#bottom-bar a:focus-visible{
+  outline:3px solid #ffbf47;
+  outline-offset:2px;
+}
+main{padding-bottom:5rem}
+.time{font-weight:600}
+svg.video-preview{
+  width:100%;
+  max-width:100%;
+  height:auto;
+  border-radius:.4rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Study Hacks on TikTok</h1>
+  <p>Live now: <span id="live-time" class="time" aria-live="polite"></span></p>
+</header>
+<main>
+  <section aria-labelledby="intro-heading">
+    <h2 id="intro-heading">Your Daily 15‑second Study Tip</h2>
+    <p>Watch our TikTok series for bite‑size hacks that fit your free‑data windows.</p>
+    <a href="https://www.tiktok.com/@studyhacks" target="_blank" rel="noopener" style="display:block;text-align:center;margin:.5rem 0;">
+      <svg class="video-preview" role="img" aria-label="TikTok video preview" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="200" fill="#e0e0e0" rx="8"/>
+        <polygon points="130,80 130,120 170,100" fill="#555"/>
+        <text x="150" y="30" text-anchor="middle" font-size="24" fill="#555">TikTok</text>
+      </svg>
+    </a>
+  </section>
+
+  <section aria-labelledby="lead-heading">
+    <h2 id="lead-heading">Get Your Free “Ultimate Exam Prep Checklist” PDF</h2>
+    <p>Enter your email to receive the checklist instantly.</p>
+    <form id="lead-form" novalidate>
+      <label for="email-input">Email address</label>
+      <input type="email" id="email-input" placeholder="you@example.com" required aria-required="true">
+      <button type="submit" id="download-btn">Download Checklist</button>
+    </form>
+    <p id="lead-msg" role="status" aria-live="polite" style="margin-top:.5rem;"></p>
+  </section>
+
+  <section aria-labelledby="premium-heading">
+    <h2 id="premium-heading">Upgrade to Premium Study Plan</h2>
+    <p>One‑time ₦500 gives you a personalized 30‑day study schedule.</p>
+    <button id="premium-btn">Buy Premium (₦500)</button>
+    <p id="premium-msg" role="status" aria-live="polite" style="margin-top:.5rem;"></p>
+  </section>
+</main>
+
+<div id="bottom-bar" aria-label="Main navigation">
+  <a href="#intro-heading">Home</a>
+  <a href="#lead-heading">Free PDF</a>
+  <a href="#premium-heading">Premium</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-6c2QXhVQ0G+6G6e6w6C5eJcJp4X3Z2lQzKjU7E+eGf6M0eZyN3n6cG5nVfYVfIhT9X4rCjKcP5dB4sZyZ4X2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  // Live time
+  const timeEl = document.getElementById('live-time');
+  if (timeEl) {
+    const updateTime = () => {
+      const now = new Date();
+      timeEl.textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    };
+    updateTime();
+    setInterval(updateTime, 1000);
+  }
+
+  // Lead form handling
+  const form = document.getElementById('lead-form');
+  const emailInput = document.getElementById('email-input');
+  const leadMsg = document.getElementById('lead-msg');
+  if (form && emailInput && leadMsg) {
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        leadMsg.textContent = 'Please enter a valid email address.';
+        leadMsg.style.color = 'red';
+        return;
+      }
+      try {
+        localStorage.setItem('leadEmail', email);
+      } catch (err) {}
+      const {jsPDF}=window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(22);
+      doc.text('Ultimate Exam Prep Checklist', 20, 30);
+      doc.setFontSize(12);
+      const lines = [
+        '1. Set clear goals for each study session.',
+        '2. Use the Pomodoro technique (25‑min focus, 5‑min break).',
+        '3. Review notes within 24 hours.',
+        '4. Practice past questions.',
+        '5. Stay hydrated and take short walks.',
+        '',
+        'Sponsored by EduTech Nigeria – Upgrade your learning experience!'
+      ];
+      doc.text(lines, 20, 45);
+      doc.save('Study-Checklist.pdf');
+      leadMsg.textContent = 'Checklist downloaded! (Your email is saved locally.)';
+      leadMsg.style.color = 'green';
+    });
+  }
+
+  // Premium button handling
+  const premiumBtn = document.getElementById('premium-btn');
+  const premiumMsg = document.getElementById('premium-msg');
+  if (premiumBtn && premiumMsg) {
+    premiumBtn.addEventListener('click', function(){
+      premiumMsg.textContent = 'Payment integration not available in this demo.';
+      premiumMsg.style.color = 'orange';
+    });
+  }
+});
+</script>
+</body>
+</html>
