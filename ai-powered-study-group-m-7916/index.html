@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaStudyMatch - AI-Powered Study-Group Matcher</title>
+<meta name="description" content="AI‑Powered Study‑Group Matcher. This should help: Matches Nigerian students into virtual or local study groups based on subject, exam dates, and availabili">
+    <link rel="icon" href="📚">
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #d1fae5;
+            --accent: #d97706;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-secondary: #4b5563;
+            --border: #e5e7eb;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #064e3b;
+            --accent: #fbbf24;
+            --bg: #111827;
+            --card-bg: #1f2937;
+            --text: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.85rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge-pro {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        /* Group Item */
+        .group-item {
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--card-bg);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .group-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Bottom Nav */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0 calc(0.5rem + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            flex: 1;
+            padding: 0.25rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.15rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .pro-banner {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .pro-banner h2 {
+            color: white;
+        }
+
+        .affiliate-card {
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: calc(80px + var(--safe-bottom) + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: var(--bg);
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>📚</span> NaijaStudyMatch
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">🌙</button>
+            <button class="icon-btn" id="proStatusBtn" aria-label="Pro Status">⭐</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: MATCHING / FIND GROUPS -->
+        <section id="matchView" class="view active">
+            <div class="card">
+                <h1>AI Study Group Matcher 🇳🇬</h2>
+                <p>Find Nigerian students preparing for the same exams, sharing notes, and keeping each other accountable.</p>
+                <form id="matcherForm">
+                    <div class="form-group">
+                        <label for="examSelect">Exam Category</label>
+                        <select id="examSelect" required>
+                            <option value="">Select Exam</option>
+                            <option value="UTME (JAMB)">UTME (JAMB)</option>
+                            <option value="WAEC / NECO">WAEC / NECO</option>
+                            <option value="University / Polytechnic">University / Polytechnic Exams</option>
+                            <option value="ICAN / Professional">ICAN / Professional Exams</option>
+                            <option value="Programming / Tech">Tech / Coding Bootcamp</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subjectInput">Target Subject / Topic</label>
+                        <input type="text" id="subjectInput" placeholder="e.g., Physics, Data Structures, Cost Accounting" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formatSelect">Study Format</label>
+                        <select id="formatSelect" required>
+                            <option value="Virtual (WhatsApp / Telegram)">Virtual (WhatsApp / Telegram)</option>
+                            <option value="Physical Campus Meetup">Physical Campus / Neighborhood Meetup</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="locationGroup" style="display:none;">
+                        <label for="locationInput">Campus / Location</label>
+                        <input type="text" id="locationInput" placeholder="e.g., UNILAG, UI, OAU, Abuja">
+                    </div>
+                    <button type="submit" class="btn">✨ Run AI Matchmaking</button>
+                </form>
+            </div>
+
+            <div id="matchResultsContainer" style="display: none;">
+                <h3>Recommended Groups For You</h3>
+                <div id="matchResultsList"></div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: MY GROUPS -->
+        <section id="myGroupsView" class="view">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>My Study Groups</h2>
+                    <button class="btn" id="openCreateGroupModal" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">+ Create Group</button>
+                </div>
+                <div id="myGroupsList">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: RESOURCES & AFFILIATES -->
+        <section id="resourcesView" class="view">
+            <div class="card">
+                <h2>Recommended Study Resources</h2>
+                <p>Top-rated Nigerian textbooks and online courses handpicked to boost your exam scores.</p>
+                
+                <div class="card affiliate-card">
+                    <span class="badge">Recommended Partner</span>
+                    <h3 style="margin-top: 0.5rem;">Passnownow e-Learning Platform</h3>
+                    <p>Comprehensive Nigerian curriculum notes, past questions, and test practice.</p>
+                    <button class="btn btn-secondary affiliate-link-btn" data-url="https://passnownow.com" data-name="Passnownow">Visit Partner & Support App</button>
+                </div>
+
+                <div class="card affiliate-card">
+                    <span class="badge">Recommended Partner</span>
+                    <h3 style="margin-top: 0.5rem;">UTME/JAMB CBT Practice Software</h3>
+                    <p>Over 60,000 past questions with detailed explanations to pass JAMB at one sitting.</p>
+                    <button class="btn btn-secondary affiliate-link-btn" data-url="https://myschool.ng" data-name="Myschool CBT">Get CBT Software</button>
+                </div>
+
+                <div class="card affiliate-card">
+                    <span class="badge">Recommended Partner</span>
+                    <h3 style="margin-top: 0.5rem;">UBA Campus Laptop & Book Loan</h3>
+                    <p>Flexible financial assistance for Nigerian undergraduates to acquire study gadgets.</p>
+                    <button class="btn btn-secondary affiliate-link-btn" data-url="https://ubagroup.com" data-name="UBA Student Solutions">Learn More</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: PRO / MONETIZATION -->
+        <section id="proView" class="view">
+            <div class="pro-banner">
+                <span class="badge badge-pro" style="background: white; color: #d97706; margin-bottom: 0.5rem;">NaijaStudyMatch PRO</span>
+                <h2>Unlock Ultimate Success</h2>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem;">Create private groups, unlock advanced analytics on group performance, and get 24/7 priority support.</p>
+            </div>
+
+            <div class="card">
+                <h3>Pro Member Benefits</h3>
+                <ul style="padding-left: 1.25rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                    <li>Create unlimited private invite-only study groups</li>
+                    <li>Detailed attendance & accountability metrics</li>
+                    <li>Priority placement in AI matching queue</li>
+                    <li>Badge on your profile recognizing dedication</li>
+                </ul>
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <span style="font-size: 2rem; font-weight: 700; color: var(--primary);">₦150</span>
+                    <span style="color: var(--text-secondary);"> / month</span>
+                </div>
+                <button class="btn" id="upgradeProBtn">Upgrade to Pro Now (₦150)</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- CREATE GROUP MODAL -->
+    <div class="modal-overlay" id="createGroupModal">
+        <div class="modal">
+            <h3 id="groupModalTitle">Create Study Group</h3>
+            <form id="createGroupForm">
+                <div class="form-group">
+                    <label for="newGroupName">Group Name</label>
+                    <input type="text" id="newGroupName" placeholder="e.g., UNILAG Physics Masters" required>
+                </div>
+                <div class="form-group">
+                    <label for="newGroupExam">Exam / Focus</label>
+                    <input type="text" id="newGroupExam" placeholder="e.g., UTME Physics" required>
+                </div>
+                <div class="form-group">
+                    <label for="newGroupLink">Group Link (WhatsApp / Telegram / Meet)</label>
+                    <input type="url" id="newGroupLink" placeholder="https://chat.whatsapp.com/..." required>
+                </div>
+                <div class="form-group">
+                    <label for="newGroupDesc">Description</label>
+                    <textarea id="newGroupDesc" rows="3" placeholder="What is the goal of this group?" required></textarea>
+                </div>
+                <div class="flex-row">
+                    <button type="button" class="btn btn-secondary" id="closeModalBtn">Cancel</button>
+                    <button type="submit" class="btn">Save Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast">Action successful</div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="matchView">
+            <span class="icon">🔍</span>
+            <span>Match</span>
+        </button>
+        <button class="nav-item" data-target="myGroupsView">
+            <span class="icon">👥</span>
+            <span>My Groups</span>
+        </button>
+        <button class="nav-item" data-target="resourcesView">
+            <span class="icon">📖</span>
+            <span>Resources</span>
+        </button>
+        <button class="nav-item" data-target="proView">
+            <span class="icon">⭐</span>
+            <span>PRO</span>
+        </button>
+    </nav>
+
+    <script>
+        // State Management with LocalStorage
+        const STORAGE_KEY = 'naija_study_match_state_v1';
+        
+        let state = {
+            theme: 'light',
+            isPro: false,
+            myGroups: [
+                {
+                    id: '1',
+                    name: 'JAMB 2026 Physics & Chemistry Aces',
+                    exam: 'UTME (JAMB)',
+                    link: 'https://chat.whatsapp.com/sampleLink1',
+                    desc: 'Daily past question drills and tough concept breakdowns.',
+                    membersCount: 14,
+                    isJoined: true
+                }
+            ],
+            publicGroups: [
+                {
+                    id: 'p1',
+                    name: 'UNILAG Direct Entry Aspirants',
+                    exam: 'University / Polytechnic',
+                    subject: 'General Aptitude',
+                    format: 'Virtual (WhatsApp / Telegram)',
+                    location: 'UNILAG',
+                    link: 'https://chat.whatsapp.com/sampleUnilagDE',
+                    desc: 'Sharing direct entry updates, syllabus guidance, and past papers.',
+                    membersCount: 28,
+                    matchScore: '98%'
+                },
+                {
+                    id: 'p2',
+                    name: 'Lagos Island WAEC Night Study Hub',
+                    exam: 'WAEC / NECO',
+                    subject: 'Mathematics & English',
+                    format: 'Physical Campus Meetup',
+                    location: 'Lagos Island',
+                    link: 'https://t.me/sampleWaecLagos',
+                    desc: 'Physical weekend tutorials and mock tests.',
+                    membersCount: 19,
+                    matchScore: '92%'
+                },
+                {
+                    id: 'p3',
+                    name: 'TechBrothers & Sisters Naija',
+                    exam: 'Programming / Tech',
+                    subject: 'JavaScript & HTML/CSS',
+                    format: 'Virtual (WhatsApp / Telegram)',
+                    location: 'Remote (Nigeria)',
+                    link: 'https://chat.whatsapp.com/sampleTechNaija',
+                    desc: 'Building single-file web apps and helping beginners ship projects.',
+                    membersCount: 45,
+                    matchScore: '89%'
+                },
+                {
+                    id: 'p4',
+                    name: 'ICAN Skills Level Mastery',
+                    exam: 'ICAN / Professional',
+                    subject: 'Financial Accounting',
+                    format: 'Virtual (WhatsApp / Telegram)',
+                    location: 'Abuja / Remote',
+                    link: 'https://t.me/sampleIcanAbuja',
+                    desc: 'Tackling complex accounting standards together.',
+                    membersCount: 12,
+                    matchScore: '85%'
+                }
+            ]
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                }
+            } catch (e) {
+                console.error('Failed to load state from localStorage', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error('Failed to save state to localStorage', e);
+            }
+        }
+
+        // DOM Elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const proStatusBtn = document.getElementById('proStatusBtn');
+        const navItems = document.querySelectorAll('.nav-item');
+        const views = document.querySelectorAll('.view');
+        const matcherForm = document.getElementById('matcherForm');
+        const examSelect = document.getElementById('examSelect');
+        const formatSelect = document.getElementById('formatSelect');
+        const locationGroup = document.getElementById('locationGroup');
+        const locationInput = document.getElementById('locationInput');
+        const matchResultsContainer = document.getElementById('matchResultsContainer');
+        const matchResultsList = document.getElementById('matchResultsList');
+        const myGroupsList = document.getElementById('myGroupsList');
+        const openCreateGroupModal = document.getElementById('openCreateGroupModal');
+        const createGroupModal = document.getElementById('createGroupModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const createGroupForm = document.getElementById('createGroupForm');
+        const upgradeProBtn = document.getElementById('upgradeProBtn');
+        const toast = document.getElementById('toast');
+        const affiliateLinkBtns = document.querySelectorAll('.affiliate-link-btn');
+
+        // Initialize App
+        function initApp() {
+            loadState();
+            applyTheme();
+            renderMyGroups();
+            
+            // Event Listeners
+            themeToggleBtn.addEventListener('click', toggleTheme);
+            proStatusBtn.addEventListener('click', () => switchView('proView'));
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const target = item.getAttribute('data-target');
+                    switchView(target);
+                });
+            });
+
+            formatSelect.addEventListener('change', (e) => {
+                if (e.target.value.includes('Physical') || e.target.value === 'Hybrid') {
+                    locationGroup.style.display = 'block';
+                    locationInput.required = true;
+                } else {
+                    locationGroup.style.display = 'none';
+                    locationInput.required = false;
+                }
+            });
+
+            matcherForm.addEventListener('submit', handleMatching);
+            
+            openCreateGroupModal.addEventListener('click', () => {
+                if (!state.isPro && state.myGroups.length >= 2) {
+                    showToast('Free tier allows 2 active groups. Upgrade to Pro for unlimited!');
+                    switchView('proView');
+                    return;
+                }
+                createGroupModal.classList.add('active');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                createGroupModal.classList.remove('active');
+            });
+
+            createGroupForm.addEventListener('submit', handleCreateGroup);
+            upgradeProBtn.addEventListener('click', handleUpgradePro);
+
+            affiliateLinkBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const url = e.target.getAttribute('data-url');
+                    const name = e.target.getAttribute('data-name');
+                    showToast(`Redirecting to partner: ${name}...`);
+                    window.open(url, '_blank');
+                });
+            });
+        }
+
+        function showToast(message) {
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function switchView(viewId) {
+            views.forEach(v => v.classList.remove('active'));
+            navItems.forEach(n => n.classList.remove('active'));
+
+            const targetView = document.getElementById(viewId);
+            if (targetView) targetView.classList.add('active');
+
+            navItems.forEach(n => {
+                if (n.getAttribute('data-target') === viewId) {
+                    n.classList.add('active');
+                }
+            });
+            window.scrollTo(0, 0);
+        }
+
+        function toggleTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            applyTheme();
+            saveState();
+        }
+
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', state.theme);
+            if (themeToggleBtn) {
+                themeToggleBtn.textContent = state.theme === 'light' ? '🌙' : '☀️';
+            }
+        }
+
+        function handleMatching(e) {
+            e.preventDefault();
+            const exam = examSelect.value;
+            const subject = document.getElementById('subjectInput').value.toLowerCase();
+            const format = formatSelect.value;
+
+            showToast('AI is calculating optimal study match...');
+            
+            setTimeout(() => {
+                // Filter or simulate matching based on inputs
+                const filtered = state.publicGroups.filter(g => {
+                    return g.exam === exam || g.name.toLowerCase().includes(subject) || g.subject.toLowerCase().includes(subject);
+                });
+
+                // If filter is too strict, fallback to all
+                const results = filtered.length > 0 ? filtered : state.publicGroups;
+
+                renderMatchResults(results);
+                matchResultsContainer.style.display = 'block';
+                showToast(`Found ${results.length} matching study groups!`);
+            }, 600);
+        }
+
+        function renderMatchResults(groups) {
+            if (!matchResultsList) return;
+            matchResultsList.innerHTML = '';
+
+            groups.forEach(group => {
+                const isJoinedAlready = state.myGroups.some(g => g.id === group.id);
+                const el = document.createElement('div');
+                el.className = 'group-item';
+                el.innerHTML = `
+                    <div class="group-header">
+                        <h4>${group.name}</h4>
+                        <span class="badge">Match: ${group.matchScore || '90%'}</span>
+                    </div>
+                    <div class="group-meta">
+                        <span>📖 ${group.exam}</span>
+                        <span>📍 ${group.location || 'Virtual'}</span>
+                        <span>👥 ${group.membersCount} members</span>
+                    </div>
+                    <p>${group.desc}</p>
+                    <div class="flex-row">
+                        <button class="btn btn-secondary join-group-btn" data-id="${group.id}" ${isJoinedAlready ? 'disabled' : ''}>
+                            ${isJoinedAlready ? 'Already Joined' : 'Join Group'}
+                        </button>
+                        <button class="btn visit-link-btn" data-url="${group.link}">Open Chat</button>
+                    </div>
+                `;
+                matchResultsList.appendChild(el);
+            });
+
+            // Bind actions inside results
+            matchResultsList.querySelectorAll('.join-group-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    joinGroup(id);
+                });
+            });
+
+            matchResultsList.querySelectorAll('.visit-link-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const url = e.target.getAttribute('data-url');
+                    window.open(url, '_blank');
+                });
+            });
+        }
+
+        function joinGroup(groupId) {
+            const group = state.publicGroups.find(g => g.id === groupId);
+            if (group && !state.myGroups.some(g => g.id === groupId)) {
+                state.myGroups.push({ ...group, isJoined: true });
+                saveState();
+                renderMyGroups();
+                showToast('Successfully joined study group!');
+                // Re-render matches to update button state
+                matcherForm.dispatchEvent(new Event('submit'));
+            }
+        }
+
+        function renderMyGroups() {
+            if (!myGroupsList) return;
+            myGroupsList.innerHTML = '';
+
+            if (state.myGroups.length === 0) {
+                myGroupsList.innerHTML = `<p>You haven't joined any study groups yet. Use the Match tab to find one!</p>`;
+                return;
+            }
+
+            state.myGroups.forEach(group => {
+                const el = document.createElement('div');
+                el.className = 'group-item';
+                el.innerHTML = `
+                    <div class="group-header">
+                        <h4>${group.name}</h4>
+                        <span class="badge">Active</span>
+                    </div>
+                    <div class="group-meta">
+                        <span>📖 ${group.exam}</span>
+                        <span>👥 ${group.membersCount || 1} members</span>
+                    </div>
+                    <p>${group.desc || 'No description provided.'}</p>
+                    <div class="flex-row">
+                        <button class="btn visit-link-btn" data-url="${group.link}">Open Chat Room</button>
+                        <button class="btn btn-secondary leave-group-btn" data-id="${group.id}">Leave</button>
+                    </div>
+                `;
+                myGroupsList.appendChild(el);
+            });
+
+            myGroupsList.querySelectorAll('.visit-link-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const url = e.target.getAttribute('data-url');
+                    window.open(url, '_blank');
+                });
+            });
+
+            myGroupsList.querySelectorAll('.leave-group-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    state.myGroups = state.myGroups.filter(g => g.id !== id);
+                    saveState();
+                    renderMyGroups();
+                    showToast('Left study group.');
+                });
+            });
+        }
+
+        function handleCreateGroup(e) {
+            e.preventDefault();
+            const name = document.getElementById('newGroupName').value;
+            const exam = document.getElementById('newGroupExam').value;
+            const link = document.getElementById('newGroupLink').value;
+            const desc = document.getElementById('newGroupDesc').value;
+
+            const newGroup = {
+                id: 'custom_' + Date.now(),
+                name,
+                exam,
+                link,
+                desc,
+                membersCount: 1,
+                isJoined: true
+            };
+
+            state.myGroups.push(newGroup);
+            saveState();
+            renderMyGroups();
+            createGroupModal.classList.remove('active');
+            createGroupForm.reset();
+            showToast('Study group created successfully!');
+            switchView('myGroupsView');
+        }
+
+        function handleUpgradePro() {
+            showToast('Simulating Paystack secure checkout (₦150)...');
+            setTimeout(() => {
+                state.isPro = true;
+                saveState();
+                showToast('🎉 Congratulations! You are now a Pro Member.');
+                proStatusBtn.textContent = '🌟';
+                switchView('matchView');
+            }, 1500);
+        }
+
+        // Run on DOM ready
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
