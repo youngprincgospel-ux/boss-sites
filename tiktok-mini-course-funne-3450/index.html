@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zero-Capital Side Hustles | TikTok Mini-Course Funnel</title>
+    <meta name="description" content="TikTok Mini‑Course Funnel: Zero‑Capital Side Hustles. This should help: A series of 5‑minute TikTok videos teaching practical side‑hustles that require no ">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>📱</text></svg>">
+    <style>
+        :root {
+            --primary: #fe2c55;
+            --secondary: #25f4ee;
+            --dark: #121212;
+            --light: #ffffff;
+            --gray: #8a8a8a;
+            --surface: #1e1e1e;
+            --surface-glass: rgba(30, 30, 30, 0.85);
+            --border: #333333;
+            --success: #00f2fe;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            max-width: 480px;
+            padding: 16px 20px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-streak {
+            font-size: 0.85rem;
+            background: rgba(254, 44, 85, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(254, 44, 85, 0.3);
+        }
+
+        main {
+            width: 100%;
+            max-width: 480px;
+            flex: 1;
+            padding: 80px 16px calc(80px + var(--safe-bottom)) 16px; /* top, sides, bottom accounting for nav */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .view-section {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-simulated-content {
+            text-align: center;
+            padding: 24px;
+            z-index: 2;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .video-bg-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #2a2a2a 0%, #0a0a0a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .video-desc {
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--light);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s ease, opacity 0.2s;
+            width: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--light);
+        }
+
+        .btn-accent {
+            background: linear-gradient(45deg, var(--primary), #ff708f);
+        }
+
+        .module-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .module-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .module-card:hover {
+            border-color: var(--gray);
+        }
+
+        .module-card.completed {
+            border-color: rgba(0, 242, 254, 0.4);
+            background: rgba(0, 242, 254, 0.03);
+        }
+
+        .module-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .module-info p {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .module-badge {
+            font-size: 1.2rem;
+        }
+
+        .funnel-card {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2a1520 100%);
+            border: 1px solid rgba(254, 44, 85, 0.4);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            text-align: center;
+        }
+
+        .funnel-card h3 {
+            font-size: 1.2rem;
+            color: var(--light);
+        }
+
+        .price-tag {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 4px 0;
+        }
+
+        .benefits-list {
+            text-align: left;
+            font-size: 0.85rem;
+            color: #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .benefits-list li {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .benefits-list li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .tool-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tool-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tool-details h5 {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .tool-details p {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .tool-btn {
+            background: var(--surface);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--gray);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span.icon {
+            font-size: 1.2rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .form-input {
+            background: var(--dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--light);
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #222;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>📱</span> HustleTok Funnel
+        </div>
+        <div class="header-streak" id="headerStreak">🔥 Streak: 0 Days</div>
+    </header>
+
+    <main>
+        <!-- TAB 1: TikTok Feed / Mini-Course -->
+        <section id="view-feed" class="view-section active">
+            <div class="video-container" id="videoBox">
+                <div class="video-bg-placeholder" id="videoEmoji">🎥</div>
+                <div class="video-simulated-content">
+                    <div class="video-title" id="videoTitle">Loading lesson...</div>
+                    <div class="video-desc" id="videoDesc">Please select a module below</div>
+                </div>
+            </div>
+
+            <button class="btn" id="btnCompleteModule">
+                <span>✅ Mark Lesson Complete</span>
+            </button>
+
+            <h3 style="font-size: 1rem; margin-top: 6px;">Zero-Capital Modules</h3>
+            <div class="module-list" id="moduleList">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: Mentorship Funnel -->
+        <section id="view-mentorship" class="view-section">
+            <div class="funnel-card">
+                <div style="font-size: 2.5rem;">👑</div>
+                <h3>VIP Side-Hustle Mastermind</h3>
+                <p style="font-size: 0.850rem; color: #aaa;">Get direct access to weekly live Q&A, verified supplier contacts, and automated templates.</p>
+                <div class="price-tag">₦2,000 <span style="font-size:0.9rem; color: var(--gray);">/ month</span></div>
+                
+                <ul class="benefits-list">
+                    <li>Daily high-ticket hustle alerts</li>
+                    <li>Private WhatsApp mastermind group</li>
+                    <li>Direct review of your TikTok funnels</li>
+                    <li>Cancel anytime with 1 click</li>
+                </ul>
+
+                <button class="btn btn-accent" id="btnJoinMentorship">
+                    <span>🚀 Claim VIP Access Now</span>
+                </button>
+            </div>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; text-align: center;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 6px;">Already a Member?</h4>
+                <p style="font-size: 0.8rem; color: var(--gray); margin-bottom: 12px;">Access your portal dashboard or sync subscription.</p>
+                <button class="btn btn-secondary" id="btnLoginPortal" style="font-size: 0.85rem; padding: 10px;">Member Login</button>
+            </div>
+        </section>
+
+        <!-- TAB 3: Affiliate Toolkit -->
+        <section id="view-toolkit" class="view-section">
+            <h3 style="font-size: 1.1rem;">Recommended Zero-Capital Tools</h3>
+            <p style="font-size: 0.85rem; color: var(--gray); margin-top: -10px;">The exact software stack used to build automated side hustles in Nigeria.</p>
+            
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-details">
+                        <h5>Canva (Free Tier)</h5>
+                        <p>Create stunning TikTok carousels & videos</p>
+                    </div>
+                    <a href="https://www.canva.com" target="_blank" rel="noopener noreferrer" class="tool-btn">Use Tool</a>
+                </div>
+
+                <div class="tool-item">
+                    <div class="tool-details">
+                        <h5>Paystack Checkout</h5>
+                        <p>Accept instant payments & local transfers</p>
+                    </div>
+                    <a href="https://paystack.com" target="_blank" rel="noopener noreferrer" class="tool-btn">Use Tool</a>
+                </div>
+
+                <div class="tool-item">
+                    <div class="tool-details">
+                        <h5>CapCut Mobile</h5>
+                        <p>Auto-caption & edit viral 5-min videos</p>
+                    </div>
+                    <a href="https://www.capcut.com" target="_blank" rel="noopener noreferrer" class="tool-btn">Use Tool</a>
+                </div>
+
+                <div class="tool-item">
+                    <div class="tool-details">
+                        <h5>WhatsApp Business</h5>
+                        <p>Automate client chats & broadcast catalogs</p>
+                    </div>
+                    <a href="https://www.whatsapp.com/business" target="_blank" rel="noopener noreferrer" class="tool-btn">Use Tool</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-feed">
+            <span class="icon">🎬</span>
+            <span>Mini-Course</span>
+        </button>
+        <button class="nav-item" data-target="view-mentorship">
+            <span class="icon">💎</span>
+            <span>VIP Mastermind</span>
+        </button>
+        <button class="nav-item" data-target="view-toolkit">
+            <span class="icon">🛠️</span>
+            <span>Affiliate Tools</span>
+        </button>
+    </nav>
+
+    <!-- Modal for Lead Capture / Payment Simulation -->
+    <div class="modal-overlay" id="leadModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
+            <h3 id="modalTitle" style="font-size: 1.1rem;">Join VIP Mastermind</h3>
+            <p id="modalDesc" style="font-size: 0.82rem; color: var(--gray);">Enter your details to secure your spot for ₦2,000/month.</p>
+            
+            <div class="form-group">
+                <label for="userName">Full Name</label>
+                <input type="text" id="userName" class="form-input" placeholder="e.g. Samuel Adebayo" autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label for="userEmail">Email Address</label>
+                <input type="email" id="userEmail" class="form-input" placeholder="samuel@example.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="userPhone">WhatsApp Phone Number</label>
+                <input type="tel" id="userPhone" class="form-input" placeholder="08012345678" autocomplete="tel">
+            </div>
+
+            <button class="btn btn-accent" id="btnProcessPayment" style="margin-top: 6px;">
+                <span>Proceed to Secure Checkout (₦2,000)</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Notification message</div>
+
+    <script>
+        // State Management & LocalStorage
+        const STORAGE_KEY = 'hustletok_funnel_state_v1';
+        let appState = {
+            streak: 0,
+            lastActiveDate: null,
+            completedModules: [],
+            currentModuleIndex: 0
+        };
+
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                appState = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('LocalStorage unavailable', e);
+        }
+
+        // Streak calculation (live)
+        const todayStr = new Date().toDateString();
+        if (appState.lastActiveDate !== todayStr) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (appState.lastActiveDate === yesterday.toDateString()) {
+                appState.streak += 1;
+            } else if (!appState.lastActiveDate) {
+                appState.streak = 1;
+            } else {
+                appState.streak = 1; // reset if a day was missed
+            }
+            appState.lastActiveDate = todayStr;
+            saveState();
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {}
+        }
+
+        // Modules Data
+        const modules = [
+            { id: 0, title: "1. WhatsApp Resale Empire", desc: "How to drop-service products without buying stock upfront using status views.", emoji: "📦" },
+            { id: 1, title: "2. Referral & CPA Marketing", desc: "Generating instant commissions by sharing free local finance apps on TikTok.", emoji: "💸" },
+            { id: 2, title: "3. Micro-Content Creation", desc: "Editing 5-min viral clips for busy business owners using free smartphone tools.", emoji: "🎬" },
+            { id: 3, title: "4. Digital Resume & CV Writing", desc: "Offering quick gig-economy typing services directly to fresh graduates.", emoji: "📝" },
+            { id: 4, title: "5. Converting TikTok to WhatsApp", desc: "Mastering the bio-link strategy that funnels viewers straight to your DMs.", emoji: "🔗" }
+        ];
+
+        // Safe element queries
+        const headerStreak = document.getElementById('headerStreak');
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+        const moduleListEl = document.getElementById('moduleList');
+        const videoTitle = document.getElementById('videoTitle');
+        const videoDesc = document.getElementById('videoDesc');
+        const videoEmoji = document.getElementById('videoEmoji');
+        const btnCompleteModule = document.getElementById('btnCompleteModule');
+        const btnJoinMentorship = document.getElementById('btnJoinMentorship');
+        const btnLoginPortal = document.getElementById('btnLoginPortal');
+        const leadModal = document.getElementById('leadModal');
+        const modalClose = document.getElementById('modalClose');
+        const btnProcessPayment = document.getElementById('btnProcessPayment');
+        const userNameInput = document.getElementById('userName');
+        const userEmailInput = document.getElementById('userEmail');
+        const userPhoneInput = document.getElementById('userPhone');
+        const toastEl = document.getElementById('toast');
+
+        if (headerStreak) {
+            headerStreak.textContent = `🔥 Streak: ${appState.streak} Days`;
+        }
+
+        // Render modules list
+        function renderModules() {
+            if (!moduleListEl) return;
+            moduleListEl.innerHTML = '';
+            modules.forEach((mod, idx) => {
+                const completed = appState.completedModules.includes(mod.id);
+                const card = document.createElement('div');
+                card.className = `module-card ${completed ? 'completed' : ''}`;
+                card.innerHTML = `
+                    <div class="module-info">
+                        <h4>${mod.title}</h4>
+                        <p>${mod.desc}</p>
+                    </div>
+                    <div class="module-badge">${completed ? '✅' : mod.emoji}</div>
+                `;
+                card.addEventListener('click', () => {
+                    appState.currentModuleIndex = idx;
+                    loadCurrentVideo();
+                    showToast(`Loaded: ${mod.title}`);
+                });
+                moduleListEl.appendChild(card);
+            });
+        }
+
+        function loadCurrentVideo() {
+            const mod = modules[appState.currentModuleIndex];
+            if (!mod) return;
+            if (videoTitle) videoTitle.textContent = mod.title;
+            if (videoDesc) videoDesc.textContent = mod.desc;
+            if (videoEmoji) videoEmoji.textContent = mod.emoji;
+            const completed = appState.completedModules.includes(mod.id);
+            if (btnCompleteModule) {
+                btnCompleteModule.innerHTML = completed
+                    ? '<span>✅ Lesson Completed (Replay)</span>'
+                    : '<span>✅ Mark Lesson Complete</span>';
+            }
+        }
+
+        // Navigation handling
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                viewSections.forEach(sec => {
+                    sec.classList.toggle('active', sec.id === target);
+                });
+            });
+        });
+
+        // Module completion
+        if (btnCompleteModule) {
+            btnCompleteModule.addEventListener('click', () => {
+                const current = modules[appState.currentModuleIndex];
+                if (!appState.completedModules.includes(current.id)) {
+                    appState.completedModules.push(current.id);
+                    saveState();
+                    renderModules();
+                    showToast('🎉 Lesson completed! Streak updated.');
+                } else {
+                    showToast('You already completed this lesson!');
+                }
+                loadCurrentVideo();
+            });
+        }
+
+        // Modal controls
+        function openModal() {
+            if (leadModal) leadModal.classList.add('open');
+        }
+        function closeModal() {
+            if (leadModal) leadModal.classList.remove('open');
+        }
+
+        if (btnJoinMentorship) btnJoinMentorship.addEventListener('click', openModal);
+        if (modalClose) modalClose.addEventListener('click', closeModal);
+        if (leadModal) {
+            leadModal.addEventListener('click', e => {
+                if (e.target === leadModal) closeModal();
+            });
+        }
+
+        // Member login simulation
+        if (btnLoginPortal) {
+            btnLoginPortal.addEventListener('click', () => {
+                const email = prompt('Enter your registered VIP email address:');
+                if (email && email.includes('@')) {
+                    showToast('Welcome back, verified member! Dashboard unlocked.');
+                } else if (email) {
+                    showToast('Please enter a valid email address.');
+                }
+            });
+        }
+
+        // Payment simulation
+        if (btnProcessPayment) {
+            btnProcessPayment.addEventListener('click', () => {
+                const name = userNameInput?.value.trim() ?? '';
+                const email = userEmailInput?.value.trim() ?? '';
+                const phone = userPhoneInput?.value.trim() ?? '';
+
+                if (!name || !email || !phone) {
+                    showToast('⚠️ Please fill in all fields correctly.');
+                    return;
+                }
+                if (!email.includes('@') || !email.includes('.')) {
+                    showToast('⚠️ Please provide a valid email address.');
+                    return;
+                }
+
+                btnProcessPayment.textContent = 'Redirecting to Paystack...';
+                btnProcessPayment.disabled = true;
+
+                setTimeout(() => {
+                    closeModal();
+                    showToast('🚀 Secure checkout simulated! Welcome to VIP Mastermind.');
+                    btnProcessPayment.textContent = 'Proceed to Secure Checkout (₦2,000)';
+                    btnProcessPayment.disabled = false;
+                    if (userNameInput) userNameInput.value = '';
+                    if (userEmailInput) userEmailInput.value = '';
+                    if (userPhoneInput) userPhoneInput.value = '';
+                }, 1200);
+            });
+        }
+
+        // Toast helper
+        function showToast(message) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 3000);
+        }
+
+        // Initial render
+        renderModules();
+        loadCurrentVideo();
+    </script>
+</body>
+</html>
