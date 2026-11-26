@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WhatsApp AI-Powered Contract Review Bot for Freelancers</title>
+<meta name="description" content="WhatsApp AI‑Powered Contract Review Bot for Freelancers. This should help: Freelancers forward contract PDFs or text to a WhatsApp number; the bot uses a f">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ecKPFeaGfziTD4HiPr053z+0GHUu6yCfIaTY182UE0PY37RQTXnUn59_xlIpXGyVseHYtLpdJau5Vg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #d1fae5;
+            --whatsapp: #25d366;
+            --whatsapp-dark: #128c7e;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            font-size: 28px;
+            background: var(--primary-light);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .brand-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .badge-pro {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .banner-whatsapp {
+            background: linear-gradient(135deg, var(--whatsapp-dark), var(--whatsapp));
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+        }
+
+        .banner-whatsapp h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .banner-whatsapp p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-wa {
+            background: white;
+            color: var(--whatsapp-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input:focus {
+            border-color: var(--primary);
+            background: var(--surface);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .sample-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .chip {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Review Results */
+        .result-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .risk-item {
+            background: var(--surface);
+            border-left: 4px solid var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .risk-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .risk-title {
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .risk-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .summary-text {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 12px;
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* Pricing Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            transition: transform 0.2s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: var(--bg);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .price-tag {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .price-tag span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 16px 0 24px 0;
+        }
+
+        .feature-list li {
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-list li::before {
+            content: "✅";
+            font-size: 12px;
+        }
+
+        /* Bottom Fixed Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            padding-bottom: calc(12px + var(--safe-bottom));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 99;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+        }
+
+        .usage-counter {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .usage-counter strong {
+            color: var(--text);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--text);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 2000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .badge-count {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .partner-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="brand-icon">⚖️</div>
+            <div class="brand-text">
+                <h1>ContractGuard AI</h1>
+                <p>WhatsApp Freelance Legal Bot</p>
+            </div>
+        </div>
+        <button class="badge-pro" id="headerUpgradeBtn">👑 Go Pro</button>
+    </header>
+
+    <main>
+        <!-- WhatsApp Banner -->
+        <div class="banner-whatsapp">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <h2>Review via WhatsApp 📱</h2>
+                    <p style="margin-top:4px;">Forward your contract PDF or text directly to our WhatsApp AI bot for instant clause analysis.</p>
+                </div>
+            </div>
+            <a href="https://wa.me/2348100000000?text=Hello%20ContractGuard,%20I%20want%20to%20review%20my%20freelance%20contract." target="_blank" rel="noopener" class="btn btn-wa" id="whatsappBannerBtn">
+                💬 Chat on WhatsApp Now
+            </a>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="tab-review">AI Reviewer</button>
+            <button class="tab" data-tab="tab-clauses">Clause Library</button>
+            <button class="tab" data-tab="tab-partners">Legal Partners</button>
+        </div>
+
+        <!-- Tab 1: AI Reviewer -->
+        <div id="tab-review" class="tab-content active">
+            <div class="card">
+                <h3 style="font-size: 16px; margin-bottom: 12px;">Test Contract AI Review</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Paste contract text below or pick a sample to scan for risky clauses, non-competes, and payment traps.</p>
+                
+                <div class="form-group">
+                    <label for="contractInput">Contract Text or Clauses</label>
+                    <textarea id="contractInput" placeholder="Paste contract terms here... (e.g. 'Client owns all IP upon draft submission. Payment 90 days after delivery. Freelancer liable for unlimited damages...')"></textarea>
+                    
+                    <div class="sample-chips">
+                        <button type="button" class="chip" data-sample="ip">Sample: IP Grab</button>
+                        <button type="button" class="chip" data-sample="payment">Sample: 90-Day Delay</button>
+                        <button type="button" class="chip" data-sample="scope">Sample: Infinite Scope</button>
+                    </div>
+                </div>
+
+                <button class="btn" id="runReviewBtn">🔍 Run AI Risk Scan</button>
+
+                <div id="reviewResults" style="display: none;" class="result-box">
+                    <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">📊 Plain-English Summary</h4>
+                    <div class="summary-text" id="summaryTextOutput"></div>
+
+                    <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">⚠️ Flagged Risky Clauses</h4>
+                    <div id="riskListContainer"></div>
+
+                    <div class="action-btns">
+                        <button class="btn btn-outline" id="downloadPdfBtn" style="flex:1;">📥 Download PDF Report</button>
+                        <button class="btn" id="copySummaryBtn" style="flex:1;">📋 Copy Summary</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Clause Library -->
+        <div id="tab-clauses" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="font-size: 16px;">Safe Freelance Clauses</h3>
+                    <span class="badge-count" id="clauseCountBadge">5 Templates</span>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Tap any safe clause to copy and paste directly into your freelance agreements.</p>
+                
+                <div id="clauseListContainer">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Legal Partners -->
+        <div id="tab-partners" class="tab-content">
+            <div class="card">
+                <h3 style="font-size: 16px; margin-bottom: 8px;">Partner Legal Services 🤝</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Need custom contracts drafted or formal legal representation? Connect with our vetted Nigerian legal tech partners.</p>
+                
+                <div class="partner-card">
+                    <div>
+                        <strong style="font-size: 14px; display: block;">LexAfrica Counsel</strong>
+                        <span style="font-size: 12px; color: var(--text-secondary);">Custom NDA & SLA Drafting (15% off via us)</span>
+                    </div>
+                    <button class="btn" style="width: auto; padding: 8px 14px; font-size: 13px;" onclick="triggerPartnerRedirect('LexAfrica Counsel')">Connect</button>
+                </div>
+
+                <div class="partner-card">
+                    <div>
+                        <strong style="font-size: 14px; display: block;">TechLegal NG</strong>
+                        <span style="font-size: 12px; color: var(--text-secondary);">Freelancer Dispute & Recovery Support</span>
+                    </div>
+                    <button class="btn" style="width: auto; padding: 8px 14px; font-size: 13px;" onclick="triggerPartnerRedirect('TechLegal NG')">Connect</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Fixed Bar -->
+    <div class="bottom-bar">
+        <div class="usage-counter" id="usageCounterText">
+            Free tier: <strong id="usedCountNum">0</strong> / 2 used this month
+        </div>
+        <button class="btn" id="bottomUpgradeBtn" style="width: auto; padding: 10px 16px; font-size: 13px;">Unlock Pro ₦500/mo</button>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div class="modal-overlay" id="pricingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Upgrade to ContractGuard Pro</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="price-tag">₦500 <span>/ month</span></div>
+            <ul class="feature-list">
+                <li>Unlimited AI Contract Reviews</li>
+                <li>Full Custom Clause Library Access</li>
+                <li>WhatsApp Instant PDF Parsing</li>
+                <li>Priority Legal Partner Discounts</li>
+                <li>Dispute & Debt Recovery Templates</li>
+            </ul>
+            <button class="btn" id="subscribeBtn">🚀 Pay ₦500 via Bank Transfer / Card</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastNotification">Action completed successfully</div>
+
+    <script>
+        // State Management
+        const STORAGE_KEY_USAGE = 'contract_guard_usage_v1';
+        const STORAGE_KEY_PRO = 'contract_guard_is_pro_v1';
+
+        let appState = {
+            isPro: localStorage.getItem(STORAGE_KEY_PRO) === 'true',
+            usageCount: parseInt(localStorage.getItem(STORAGE_KEY_USAGE) || '0', 10),
+            lastReviewData: null
+        };
+
+        // Safe Clause Templates
+        const safeClauses = [
+            {
+                title: "Milestone-Based Payment Protection",
+                category: "Payment",
+                text: "Client shall pay a 50% mobilization deposit prior to commencement of work, with 40% upon milestone review approval, and the final 10% upon final source file handover."
+            },
+            {
+                title: "Client Revision Limit Clause",
+                category: "Scope",
+                text: "This agreement includes up to two (2) rounds of revisions per milestone. Additional revision requests or scope changes shall be billed at an hourly rate of ₦15,000/hr."
+            },
+            {
+                title: "Intellectual Property Retention",
+                category: "IP Rights",
+                text: "All intellectual property, code, and design assets remain the sole property of the Freelancer until full and final payment has been successfully received."
+            },
+            {
+                title: "Kill Fee / Cancellation Protection",
+                category: "Termination",
+                text: "If the Client terminates this agreement prematurely, the 50% mobilization deposit is strictly non-refundable, and Client shall compensate Freelancer for all hours worked to date."
+            },
+            {
+                title: "Limitation of Liability",
+                category: "Liability",
+                text: "Freelancer's total liability under this agreement shall be strictly limited to the total sum actually paid by Client to Freelancer under this specific contract."
+            }
+        ];
+
+        // Sample contract templates
+        const sampleTexts = {
+            ip: "The Freelancer agrees that all intellectual property, source code, designs, and copyrights developed under this project shall instantly become the absolute property of the Client upon draft submission, regardless of payment status.",
+            payment: "Client shall remit payment in full via bank transfer within ninety (90) business days following final delivery and sign-off by the quality assurance team.",
+            scope: "The Freelancer shall provide unlimited revisions, ongoing maintenance, and additional feature implementations at no extra cost until the Client is 100% fully satisfied."
+        };
+
+        // DOM Elements
+        const headerUpgradeBtn = document.getElementById('headerUpgradeBtn');
+        const bottomUpgradeBtn = document.getElementById('bottomUpgradeBtn');
+        const pricingModal = document.getElementById('pricingModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const subscribeBtn = document.getElementById('subscribeBtn');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const contractInput = document.getElementById('contractInput');
+        const runReviewBtn = document.getElementById('runReviewBtn');
+        const reviewResults = document.getElementById('reviewResults');
+        const summaryTextOutput = document.getElementById('summaryTextOutput');
+        const riskListContainer = document.getElementById('riskListContainer');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const copySummaryBtn = document.getElementById('copySummaryBtn');
+        const usedCountNum = document.getElementById('usedCountNum');
+        const clauseListContainer = document.getElementById('clauseListContainer');
+        const clauseCountBadge = document.getElementById('clauseCountBadge');
+        const toastNotification = document.getElementById('toastNotification');
+        const whatsappBannerBtn = document.getElementById('whatsappBannerBtn');
+
+        // Initialize UI
+        function initApp() {
+            updateUsageUI();
+            renderClauses();
+            
+            // Null checks & event listeners
+            if (headerUpgradeBtn) headerUpgradeBtn.addEventListener('click', openModal);
+            if (bottomUpgradeBtn) bottomUpgradeBtn.addEventListener('click', openModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+            if (pricingModal) {
+                pricingModal.addEventListener('click', (e) => {
+                    if (e.target === pricingModal) closeModal();
+                });
+            }
+            if (subscribeBtn) subscribeBtn.addEventListener('click', handleSubscription);
+            if (runReviewBtn) runReviewBtn.addEventListener('click', handleRunReview);
+            if (downloadPdfBtn) downloadPdfBtn.addEventListener('click', handleDownloadPdf);
+            if (copySummaryBtn) copySummaryBtn.addEventListener('click', handleCopySummary);
+
+            // Tabs setup
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetId = tab.getAttribute('data-tab');
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) targetEl.classList.add('active');
+                });
+            });
+
+            // Sample chips
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const sampleKey = chip.getAttribute('data-sample');
+                    if (sampleTexts[sampleKey]) {
+                        contractInput.value = sampleTexts[sampleKey];
+                        showToast("Sample loaded successfully!");
+                    }
+                });
+            });
+        }
+
+        function updateUsageUI() {
+            if (usedCountNum) {
+                usedCountNum.textContent = appState.usageCount;
+            }
+            if (appState.isPro) {
+                if (headerUpgradeBtn) {
+                    headerUpgradeBtn.textContent = '👑 PRO ACTIVE';
+                    headerUpgradeBtn.style.background = '#059669';
+                }
+                if (bottomUpgradeBtn) {
+                    bottomUpgradeBtn.textContent = 'Pro Member (Unlimited)';
+                    bottomUpgradeBtn.style.background = '#059669';
+                }
+            }
+        }
+
+        function openModal() {
+            if (pricingModal) pricingModal.classList.add('open');
+        }
+
+        function closeModal() {
+            if (pricingModal) pricingModal.classList.remove('open');
+        }
+
+        function handleSubscription() {
+            appState.isPro = true;
+            try {
+                localStorage.setItem(STORAGE_KEY_PRO, 'true');
+            } catch (e) {
+                console.error(e);
+            }
+            updateUsageUI();
+            closeModal();
+            showToast("🎉 Welcome to ContractGuard Pro! Enjoy unlimited reviews.");
+        }
+
+        function showToast(message) {
+            if (!toastNotification) return;
+            toastNotification.textContent = message;
+            toastNotification.classList.add('show');
+            setTimeout(() => {
+                toastNotification.classList.remove('show');
+            }, 3000);
+        }
+
+        function handleRunReview() {
+            const text = contractInput ? contractInput.value.trim() : '';
+            if (!text) {
+                showToast("⚠️ Please enter or paste contract text first.");
+                return;
+            }
+
+            // Check usage limits
+            if (!appState.isPro && appState.usageCount >= 2) {
+                openModal();
+                showToast("⚠️ Free monthly limit reached (2/2). Upgrade to Pro for unlimited reviews!");
+                return;
+            }
+
+            if (!appState.isPro) {
+                appState.usageCount++;
+                try {
+                    localStorage.setItem(STORAGE_KEY_USAGE, appState.usageCount.toString());
+                } catch (e) {
+                    console.error(e);
+                }
+                updateUsageUI();
+            }
+
+            // Simulate AI Analysis
+            const analysis = analyzeContractText(text);
+            appState.lastReviewData = analysis;
+
+            // Render Results
+            if (summaryTextOutput) summaryTextOutput.textContent = analysis.summary;
+            if (riskListContainer) {
+                riskListContainer.innerHTML = '';
+                analysis.risks.forEach(risk => {
+                    const div = document.createElement('div');
+                    div.className = `risk-item ${risk.level === 'warning' ? 'warning' : ''}`;
+                    div.innerHTML = `
+                        <div class="risk-title"><span>${risk.level === 'warning' ? '⚠️' : '❌'}</span> ${risk.title}</div>
+                        <div class="risk-desc">${risk.description}</div>
+                    `;
+                    riskListContainer.appendChild(div);
+                });
+            }
+
+            if (reviewResults) {
+                reviewResults.style.display = 'block';
+                reviewResults.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showToast("✅ AI Contract Scan Complete!");
+        }
+
+        function analyzeContractText(text) {
+            const lower = text.toLowerCase();
+            let risks = [];
+            let summary = "This contract contains standard professional clauses but requires attention on payment terms and intellectual property handover.";
+
+            if (lower.includes('ip') || lower.includes('property') || lower.includes('copyright') || lower.includes('own')) {
+                risks.push({
+                    title: "Immediate IP Transfer Risk",
+                    description: "Contract specifies complete ownership transfer prior to final payment clearance. Ensure payment is tied directly to IP assignment.",
+                    level: "danger"
+                });
+            }
+
+            if (lower.includes('90') || lower.includes('day') || lower.includes('net') || lower.includes('delay')) {
+                risks.push({
+                    title: "Extended Payment Window",
+                    description: "Delayed payment terms detected. Standard industry freelance terms recommend payment within 7-14 days upon delivery.",
+                    level: "warning"
+                });
+            }
+
+            if (lower.includes('unlimited') || lower.includes('infinite') || lower.includes('any time')) {
+                risks.push({
+                    title: "Uncapped Scope / Revisions",
+                    description: "No limitation on revision rounds or project scope. This can lead to endless scope creep without extra compensation.",
+                    level: "danger"
+                });
+            }
+
+            if (risks.length === 0) {
+                risks.push({
+                    title: "General Indemnity Clause",
+                    description: "Review indemnification clauses to ensure you are not held liable for third-party delays or client server outages.",
+                    level: "warning"
+                });
+                summary = "Contract appears reasonably balanced. Minor standard adjustments recommended for protection.";
+            } else {
+                summary = `Identified ${risks.length} major risk factor(s) that could impact your payment security and intellectual property rights as a freelancer.`;
+            }
+
+            return { summary, risks, rawText: text };
+        }
+
+        function renderClauses() {
+            if (!clauseListContainer) return;
+            clauseListContainer.innerHTML = '';
+            if (clauseCountBadge) clauseCountBadge.textContent = `${safeClauses.length} Templates`;
+
+            safeClauses.forEach((c, idx) => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.style.marginBottom = '10px';
+                div.style.padding = '14px';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="font-size: 14px;">${c.title}</strong>
+                        <span class="badge-count">${c.category}</span>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; background: var(--bg); padding: 8px; border-radius: 6px;">${c.text}</p>
+                    <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px; width: auto;" data-clause-idx="${idx}">📋 Copy Clause</button>
+                `;
+                clauseListContainer.appendChild(div);
+            });
+
+            // Wire copy buttons
+            clauseListContainer.querySelectorAll('button[data-clause-idx]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.getAttribute('data-clause-idx'), 10);
+                    const clauseText = safeClauses[idx].text;
+                    navigator.clipboard.writeText(clauseText).then(() => {
+                        showToast("📋 Safe clause copied to clipboard!");
+                    }).catch(() => {
+                        showToast("❌ Failed to copy clause.");
+                    });
+                });
+            });
+        }
+
+        function handleCopySummary() {
+            if (!appState.lastReviewData) return;
+            const textToCopy = `ContractGuard AI Review Summary:\n${appState.lastReviewData.summary}\n\nRisks Found:\n` + 
+                appState.lastReviewData.risks.map(r => `- ${r.title}: ${r.description}`).join('\n');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast("📋 Report copied to clipboard!");
+            }).catch(() => {
+                showToast("❌ Failed to copy report.");
+            });
+        }
+
+        function handleDownloadPdf() {
+            if (!appState.lastReviewData) return;
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(18);
+                doc.text("ContractGuard AI - Review Report", 14, 20);
+
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Executive Summary:", 14, 40);
+                doc.setFont("helvetica", "normal");
+                const splitSummary = doc.splitTextToSize(appState.lastReviewData.summary, 180);
+                doc.text(splitSummary, 14, 48);
+
+                let startY = 48 + (splitSummary.length * 6) + 10;
+                doc.setFont("helvetica", "bold");
+                doc.text("Identified Risk Clauses:", 14, startY);
+
+                startY += 8;
+                doc.setFont("helvetica", "normal");
+                appState.lastReviewData.risks.forEach((risk, i) => {
+                    if (startY > 270) {
+                        doc.addPage();
+                        startY = 20;
+                    }
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`${i + 1}. ${risk.title}`, 14, startY);
+                    startY += 6;
+                    doc.setFont("helvetica", "normal");
+                    const splitDesc = doc.splitTextToSize(risk.description, 180);
+                    doc.text(splitDesc, 14, startY);
+                    startY += (splitDesc.length * 6) + 6;
+                });
+
+                doc.save("ContractGuard-AI-Report.pdf");
+                showToast("📥 PDF Report downloaded successfully!");
+            } catch (e) {
+                console.error(e);
+                showToast("❌ Error generating PDF.");
+            }
+        }
+
+        function triggerPartnerRedirect(partnerName) {
+            showToast(`🔗 Connecting you with ${partnerName}...`);
+            setTimeout(() => {
+                window.open(`https://wa.me/2348100000000?text=Hello,%20I%20was%20referred%20by%20ContractGuard%20AI%20for%20${encodeURIComponent(partnerName)}%20services.`, '_blank');
+            }, 600);
+        }
+
+        // Run on load
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
