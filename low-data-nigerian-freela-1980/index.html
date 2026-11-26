@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaWork Lite - Nigerian Freelance Marketplace</title>
+<meta name="description" content="Low‑Data Nigerian Freelance Marketplace Lite. This should help: Provides a lightweight web portal (HTML + JS, hosted free on Vercel) that lists vetted loca">
+    <link rel="icon" href="💼">
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #00663d;
+            --accent: #ff8c00;
+            --bg: #f4f6f8;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-secondary: #555555;
+            --border: #e0e0e0;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: calc(80px + var(--safe-bottom));
+            line-height: 1.5;
+        }
+
+        header {
+            background-color: var(--surface);
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logo-area span {
+            font-size: 0.75rem;
+            background: #e6f4ed;
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary:active {
+            background-color: var(--primary-dark);
+        }
+
+        .banner-ad {
+            background: #fff8e1;
+            border-bottom: 1px solid #ffe082;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .banner-ad a {
+            color: #e65100;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--surface);
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .filter-select {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gig-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .gig-card.highlighted {
+            border-color: var(--accent);
+            background: #fffdf9;
+        }
+
+        .badge-highlight {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .gig-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+            padding-right: 60px;
+        }
+
+        .gig-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .gig-budget {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .gig-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .gig-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        .source-tag {
+            font-size: 0.75rem;
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-sheet {
+            background: var(--surface);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: var(--bg);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background: var(--surface);
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .info-box {
+            background: #e6f4ed;
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            font-size: 0.85rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 16px;
+            color: var(--primary-dark);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            z-index: 2000;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>NaijaWork <span>Lite</span></h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" id="btnPostGig">Post Gig</button>
+        </div>
+    </header>
+
+    <div class="banner-ad">
+        <span>📢 Need fast web hosting for your gigs? Try ₦1,000/mo Cloud servers.</span>
+        <a href="#" id="btnAdClick">Sponsor</a>
+    </div>
+
+    <div class="container">
+        <!-- TAB 1: GIGS DIRECTORY -->
+        <div id="tabGigs" class="tab-content active">
+            <div class="search-filter">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search gigs (e.g. writing, design)...">
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="Writing">Writing</option>
+                    <option value="Design">Design</option>
+                    <option value="Tech">Tech / Dev</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+
+            <div class="section-title">
+                <span>Verified Gigs (Optimized for 2G/3G)</span>
+                <span id="gigCount" style="font-size: 0.8rem; color: var(--text-secondary);">0 gigs</span>
+            </div>
+
+            <div id="gigList">
+                <!-- Gigs injected dynamically -->
+            </div>
+        </div>
+
+        <!-- TAB 2: MY CONTRACTS / ESCROW -->
+        <div id="tabContracts" class="tab-content">
+            <div class="section-title"><span>Confirmed Contracts</span></div>
+            <div class="info-box">
+                All contracts secured here include our 5% platform safety guarantee. Submit your Google Form confirmation after project delivery to log earnings.
+            </div>
+            <div id="contractList">
+                <div style="text-align: center; padding: 30px; color: var(--text-secondary); font-size: 0.9rem;">
+                    No active contracts yet. Apply to a gig to get started.
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: PROMOTE / HIGHLIGHT -->
+        <div id="tabPromote" class="tab-content">
+            <div class="section-title"><span>Freelancer Tools</span></div>
+            <div class="gig-card">
+                <h3 class="gig-title">🚀 Highlight Your Profile</h3>
+                <p class="gig-desc">Get noticed faster by Nigerian clients. Feature your profile or gig at the top of the feed for 7 days.</p>
+                <button class="btn-primary" id="btnHighlightProfile" style="width: 100%;">Boost Profile (₦1,500)</button>
+            </div>
+            <div class="gig-card">
+                <h3 class="gig-title">📄 Naija Freelance Guide</h3>
+                <p class="gig-desc">Download our low-data offline PDF guide on closing clients via WhatsApp and Nairaland.</p>
+                <button class="btn-icon" id="btnDownloadGuide" style="width: 100%; margin-top: 8px;">Download PDF (Free)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="tabGigs">
+            <span class="icon">🔍</span>
+            <span>Browse Gigs</span>
+        </button>
+        <button class="nav-item" data-target="tabContracts">
+            <span class="icon">📋</span>
+            <span>Contracts</span>
+        </button>
+        <button class="nav-item" data-target="tabPromote">
+            <span class="icon">⚡</span>
+            <span>Boost & Tools</span>
+        </button>
+    </nav>
+
+    <!-- POST GIG / APPLY MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h3 id="modalTitle">Post a New Gig</h3>
+                <button class="close-modal" id="closeModal">✕</button>
+            </div>
+            <div id="modalBody">
+                <!-- Dynamic form content -->
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const initialGigs = [
+            {
+                id: 1,
+                title: "Content Writer for Nigerian Fintech Blog",
+                category: "Writing",
+                budget: "₦25,000 / article",
+                duration: "3 days",
+                source: "Nairaland Job Section",
+                desc: "Looking for an experienced writer who understands Nigerian crypto, banking apps, and digital wallets. Must be original content.",
+                highlighted: true,
+                formUrl: "https://forms.gle/sampleLeadCapture1"
+            },
+            {
+                id: 2,
+                title: "UI/UX Designer for Lagos SME Ecommerce App",
+                category: "Design",
+                budget: "₦70,000",
+                duration: "1 week",
+                source: "Techcabal Radar",
+                desc: "Redesign our mobile checkout flow to be extremely low-data and intuitive for local shoppers across all 36 states.",
+                highlighted: false,
+                formUrl: "https://forms.gle/sampleLeadCapture2"
+            },
+            {
+                id: 3,
+                title: "WhatsApp Customer Support Agent (Night Shift)",
+                category: "Admin",
+                budget: "₦40,000 / mo",
+                duration: "Monthly",
+                source: "SME Portal NG",
+                desc: "Respond to customer inquiries via WhatsApp business API between 8 PM and 4 AM daily. Reliable smartphone and stable internet required.",
+                highlighted: false,
+                formUrl: "https://forms.gle/sampleLeadCapture3"
+            },
+            {
+                id: 4,
+                title: "React / Frontend Dev for USSD Portal Frontend",
+                category: "Tech",
+                budget: "₦120,000",
+                duration: "2 weeks",
+                source: "Direct Client",
+                desc: "Build a responsive web dashboard that simulates USSD menu flows for a micro-lending startup in Ikeja.",
+                highlighted: true,
+                formUrl: "https://forms.gle/sampleLeadCapture4"
+            }
+        ];
+
+        let gigs = [];
+        let contracts = [];
+
+        try {
+            const savedGigs = localStorage.getItem('naijawork_gigs');
+            gigs = savedGigs ? JSON.parse(savedGigs) : initialGigs;
+            const savedContracts = localStorage.getItem('naijawork_contracts');
+            contracts = savedContracts ? JSON.parse(savedContracts) : [];
+        } catch (e) {
+            gigs = initialGigs;
+            contracts = [];
+        }
+
+        const gigListEl = document.getElementById('gigList');
+        const searchInputEl = document.getElementById('searchInput');
+        const categoryFilterEl = document.getElementById('categoryFilter');
+        const gigCountEl = document.getElementById('gigCount');
+        const modalOverlayEl = document.getElementById('modalOverlay');
+        const modalTitleEl = document.getElementById('modalTitle');
+        const modalBodyEl = document.getElementById('modalBody');
+        const closeModalEl = document.getElementById('closeModal');
+        const btnPostGigEl = document.getElementById('btnPostGig');
+        const toastEl = document.getElementById('toast');
+        const contractListEl = document.getElementById('contractList');
+        const btnAdClickEl = document.getElementById('btnAdClick');
+        const btnHighlightProfileEl = document.getElementById('btnHighlightProfile');
+        const btnDownloadGuideEl = document.getElementById('btnDownloadGuide');
+
+        function showToast(message) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.style.display = 'block';
+            setTimeout(() => {
+                toastEl.style.display = 'none';
+            }, 3000);
+        }
+
+        function renderGigs() {
+            if (!gigListEl) return;
+            const search = searchInputEl ? searchInputEl.value.toLowerCase() : '';
+            const category = categoryFilterEl ? categoryFilterEl.value : '';
+
+            const filtered = gigs.filter(g => {
+                const matchesSearch = g.title.toLowerCase().includes(search) || g.desc.toLowerCase().includes(search);
+                const matchesCategory = category === '' || g.category === category;
+                return matchesSearch && matchesCategory;
+            });
+
+            if (gigCountEl) {
+                gigCountEl.textContent = `${filtered.length} gigs found`;
+            }
+
+            if (filtered.length === 0) {
+                gigListEl.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);">No matching gigs found. Try adjusting your search.</div>`;
+                return;
+            }
+
+            gigListEl.innerHTML = filtered.map(g => `
+                <div class="gig-card ${g.highlighted ? 'highlighted' : ''}">
+                    ${g.highlighted ? '<span class="badge-highlight">Featured</span>' : ''}
+                    <h3 class="gig-title">${g.title}</h3>
+                    <div class="gig-meta">
+                        <span class="gig-budget">${g.budget}</span>
+                        <span>⏱ ${g.duration}</span>
+                        <span>📁 ${g.category}</span>
+                    </div>
+                    <p class="gig-desc">${g.desc}</p>
+                    <div class="gig-footer">
+                        <span class="source-tag">Source: ${g.source}</span>
+                        <button class="btn-primary" onclick="openApplyModal(${g.id})" style="padding: 6px 12px; font-size: 0.85rem;">Apply / Confirm</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderContracts() {
+            if (!contractListEl) return;
+            if (contracts.length === 0) {
+                contractListEl.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--text-secondary); font-size: 0.9rem;">
+                        No active contracts yet. Apply to a gig to record agreements.
+                    </div>`;
+                return;
+            }
+
+            contractListEl.innerHTML = contracts.map(c => `
+                <div class="gig-card">
+                    <h3 class="gig-title">${c.gigTitle}</h3>
+                    <div class="gig-meta">
+                        <span class="gig-budget">${c.budget}</span>
+                        <span>📅 ${c.date}</span>
+                    </div>
+                    <p class="gig-desc">Client Contact: <strong>${c.contact}</strong></p>
+                    <div class="gig-footer">
+                        <span class="source-tag" style="color: var(--primary); font-weight: 600;">Status: Pending Google Form Lead Verification</span>
+                        <a href="${c.formUrl}" target="_blank" class="btn-icon" style="text-decoration:none; color:var(--primary); font-size:0.8rem;">Open Lead Form ↗</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.openApplyModal = function(gigId) {
+            const gig = gigs.find(g => g.id === gigId);
+            if (!gig) return;
+
+            modalTitleEl.textContent = "Apply & Confirm Contract";
+            modalBodyEl.innerHTML = `
+                <div class="info-box">
+                    Applying to: <strong>${gig.title}</strong><br>
+                    Budget: <strong>${gig.budget}</strong>
+                </div>
+                <form id="applyForm">
+                    <div class="form-group">
+                        <label>Your Full Name / Alias</label>
+                        <input type="text" id="applicantName" required placeholder="e.g. Chinedu Okafor">
+                    </div>
+                    <div class="form-group">
+                        <label>Your WhatsApp Number or Email</label>
+                        <input type="text" id="applicantContact" required placeholder="e.g. 08030000000">
+                    </div>
+                    <div class="form-group">
+                        <label>Why are you qualified?</label>
+                        <textarea id="applicantPitch" rows="3" required placeholder="Briefly state your experience..."></textarea>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
+                        By clicking submit, you agree to our 5% commission structure on completed contracts verified via our Google Form lead capture.
+                    </p>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Submit Application & Secure</button>
+                </form>
+            `;
+            modalOverlayEl.classList.add('open');
+
+            const applyFormEl = document.getElementById('applyForm');
+            if (applyFormEl) {
+                applyFormEl.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('applicantName').value;
+                    const contact = document.getElementById('applicantContact').value;
+                    
+                    const newContract = {
+                        id: Date.now(),
+                        gigTitle: gig.title,
+                        budget: gig.budget,
+                        contact: `${name} (${contact})`,
+                        date: new Date().toLocaleDateString(),
+                        formUrl: gig.formUrl
+                    };
+
+                    contracts.push(newContract);
+                    try {
+                        localStorage.setItem('naijawork_contracts', JSON.stringify(contracts));
+                    } catch(err) {}
+
+                    modalOverlayEl.classList.remove('open');
+                    showToast('Application logged! Complete the Google Form to finalize.');
+                    renderContracts();
+                });
+            }
+        };
+
+        if (btnPostGigEl) {
+            btnPostGigEl.addEventListener('click', () => {
+                modalTitleEl.textContent = "Post a Verified Gig";
+                modalBodyEl.innerHTML = `
+                    <form id="postGigForm">
+                        <div class="form-group">
+                            <label>Gig Title</label>
+                            <input type="text" id="postTitle" required placeholder="e.g. Social Media Manager">
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="postCategory">
+                                <option value="Writing">Writing</option>
+                                <option value="Design">Design</option>
+                                <option value="Tech">Tech / Dev</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Budget (e.g. ₦30,000)</label>
+                            <input type="text" id="postBudget" required placeholder="₦30,000">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" id="postDuration" required placeholder="e.g. 5 days">
+                        </div>
+                        <div class="form-group">
+                            <label>Google Form Lead Capture URL</label>
+                            <input type="url" id="postFormUrl" required placeholder="https://forms.gle/...">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="postDesc" rows="3" required placeholder="Details about the task..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Publish Gig</button>
+                    </form>
+                `;
+                modalOverlayEl.classList.add('open');
+
+                const postGigFormEl = document.getElementById('postGigForm');
+                if (postGigFormEl) {
+                    postGigFormEl.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const newGig = {
+                            id: Date.now(),
+                            title: document.getElementById('postTitle').value,
+                            category: document.getElementById('postCategory').value,
+                            budget: document.getElementById('postBudget').value,
+                            duration: document.getElementById('postDuration').value,
+                            source: "Direct Employer",
+                            desc: document.getElementById('postDesc').value,
+                            highlighted: false,
+                            formUrl: document.getElementById('postFormUrl').value
+                        };
+
+                        gigs.unshift(newGig);
+                        try {
+                            localStorage.setItem('naijawork_gigs', JSON.stringify(gigs));
+                        } catch(err) {}
+
+                        modalOverlayEl.classList.remove('open');
+                        showToast('Gig published successfully!');
+                        renderGigs();
+                    });
+                }
+            });
+        }
+
+        if (closeModalEl) {
+            closeModalEl.addEventListener('click', () => {
+                modalOverlayEl.classList.remove('open');
+            });
+        }
+
+        if (modalOverlayEl) {
+            modalOverlayEl.addEventListener('click', (e) => {
+                if (e.target === modalOverlayEl) {
+                    modalOverlayEl.classList.remove('open');
+                }
+            });
+        }
+
+        // Navigation handling
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(n => n.classList.remove('active'));
+                tabContents.forEach(t => t.classList.remove('active'));
+
+                item.classList.add('active');
+                const targetId = item.getAttribute('data-target');
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) targetEl.classList.add('active');
+            });
+        });
+
+        if (searchInputEl) searchInputEl.addEventListener('input', renderGigs);
+        if (categoryFilterEl) categoryFilterEl.addEventListener('change', renderGigs);
+
+        if (btnAdClickEl) {
+            btnAdClickEl.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast('Sponsored slot: Contact admin on WhatsApp to place your ad here.');
+            });
+        }
+
+        if (btnHighlightProfileEl) {
+            btnHighlightProfileEl.addEventListener('click', () => {
+                showToast('Redirecting to secure payment for profile boost (₦1,500)...');
+            });
+        }
+
+        if (btnDownloadGuideEl) {
+            btnDownloadGuideEl.addEventListener('click', () => {
+                showToast('Downloading Naija Freelance PDF guide...');
+            });
+        }
+
+        // Initial render
+        renderGigs();
+        renderContracts();
+    </script>
+</body>
+</html>
