@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NaijaMarket USSD *123# - Low-Data Price Tracker</title>
+<meta name="description" content="Low‑Data Market Price Tracker for Rural Traders (USSD *123#). This should help: Small‑scale traders in markets across Nigeria can dial a free USSD code to ">
+<link rel="icon" href="🌾">
+<style>
+:root {
+  --primary: #15803d;
+  --primary-dark: #166534;
+  --accent: #ca8a04;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --ussd-screen: #0f172a;
+  --ussd-text: #22c55e;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
+header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+header p {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  font-size: 1rem;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* USSD Simulator */
+.ussd-container {
+  background: var(--ussd-screen);
+  color: var(--ussd-text);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: monospace;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  border: 2px solid #334155;
+}
+
+.ussd-screen-text {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.ussd-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ussd-input {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-accent {
+  background: var(--accent);
+}
+
+.ussd-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.key-btn {
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid #334155;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.key-btn:active {
+  background: #334155;
+}
+
+/* Price List */
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.price-table th, .price-table td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.price-table th {
+  background: #f1f5f9;
+  color: var(--text-muted);
+}
+
+.trend-up {
+  color: #dc2626;
+}
+
+.trend-down {
+  color: #16a34a;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-item span:first-child {
+  font-size: 1.2rem;
+  margin-bottom: 2px;
+}
+
+/* Views */
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.badge {
+  background: #fef08a;
+  color: #854d0e;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.ad-banner {
+  background: #fdf4ff;
+  border: 1px dashed #d946ef;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #86198f;
+  text-align: center;
+  margin-top: 12px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NaijaMarket USSD *123#</h1>
+  <p id="live-datetime">Loading live time...</p>
+</header>
+
+<div class="container">
+
+  <!-- VIEW 1: USSD SIMULATOR & LIVE PRICES -->
+  <div id="view-ussd" class="view-section active">
+    
+    <div class="card">
+      <h2>📱 USSD Simulator (*123#)</h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Experience how rural traders access market prices offline with zero mobile data.</p>
+      
+      <div class="ussd-container">
+        <div id="ussd-screen-text" class="ussd-screen-text">Welcome to NaijaMarket *123#
+1. Check Commodity Price
+2. Market Trends
+3. Agro Loan Referral
+4. Subscribe Analytics (₦200)
+Reply with option:</div>
+        
+        <div class="ussd-input-row">
+          <input type="text" id="ussd-user-input" class="ussd-input" placeholder="Enter option..." maxlength="5">
+          <button id="ussd-send-btn" class="btn">Send</button>
+        </div>
+      </div>
+
+      <div class="ussd-keypad">
+        <button class="key-btn" data-key="1">1</button>
+        <button class="key-btn" data-key="2">2</button>
+        <button class="key-btn" data-key="3">3</button>
+        <button class="key-btn" data-key="4">4</button>
+        <button class="key-btn" data-key="0">0</button>
+        <button class="key-btn" data-key="BACK">Back</button>
+      </div>
+
+      <div class="ad-banner" id="ussd-ad-banner">
+        📢 SMS Ad: Get NPK Fertilizer at ₦22,000/bag from AgroCorp! Dial *123*2# for depot locations.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📈 Live Staple Prices (Web Mirror)</h2>
+      <div style="overflow-x: auto;">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>Commodity</th>
+              <th>Unit</th>
+              <th>Price (₦)</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody id="price-table-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- VIEW 2: LOAN REFERRALS (Commission Revenue) -->
+  <div id="view-loans" class="view-section">
+    <div class="card">
+      <h2>🤝 Partner Micro-Finance Loan</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Connect rural traders to verified micro-finance loans up to ₦250,000 for stocking goods. Earn 2.5% commission on disbursement.</p>
+      
+      <form id="loan-form">
+        <div class="form-group">
+          <label for="trader-name">Trader Full Name</label>
+          <input type="text" id="trader-name" class="form-control" placeholder="e.g. Aliyu Mohammed" required>
+        </div>
+        <div class="form-group">
+          <label for="trader-phone">Phone Number (USSD Enabled)</label>
+          <input type="tel" id="trader-phone" class="form-control" placeholder="08030000000" required>
+        </div>
+        <div class="form-group">
+          <label for="trader-market">Market Location & State</label>
+          <input type="text" id="trader-market" class="form-control" placeholder="e.g. Bodija Market, Ibadan" required>
+        </div>
+        <div class="form-group">
+          <label for="loan-amount">Requested Loan Amount (₦)</label>
+          <select id="loan-amount" class="form-control">
+            <option value="50000">₦50,000 (Staking Stock)</option>
+            <option value="100000">₦100,000 (Bulk Purchase)</option>
+            <option value="250000">₦250,000 (Expansion)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Submit Referral Application</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📋 Referral Ledger & Earnings</h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Total Commission Earned: <strong id="total-commission" style="color: var(--primary);">₦0</strong></p>
+      <div id="referrals-list" style="font-size: 0.85rem; color: var(--text-muted);">
+        No referrals logged yet. Submit a trader application above.
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 3: SUBSCRIPTIONS & ADS -->
+  <div id="view-monetize" class="view-section">
+    <div class="card">
+      <h2>⭐ Analytics Subscription <span class="badge">₦200/mo</span></h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Get advanced 7-day price forecasts, inflation alerts, and best-time-to-buy insights sent via SMS/USSD.</p>
+      
+      <div id="sub-status-box" style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem;">
+        Status: <strong id="sub-status-text" style="color: #dc2626;">Inactive</strong>
+      </div>
+      
+      <button id="subscribe-btn" class="btn btn-accent" style="width: 100%;">Activate Subscription (₦200/mo)</button>
+    </div>
+
+    <div class="card">
+      <h2>📢 Agro-Input SMS Ad Manager</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Simulate broadcast ad insertion for seed companies and fertilizer distributors reaching 45,000+ active rural traders.</p>
+      
+      <form id="ad-form">
+        <div class="form-group">
+          <label for="ad-company">Company Name</label>
+          <input type="text" id="ad-company" class="form-control" placeholder="e.g. Savannah Seeds Ltd" required>
+        </div>
+        <div class="form-group">
+          <label for="ad-text">SMS Ad Copy (Max 140 chars)</label>
+          <textarea id="ad-text" class="form-control" rows="3" maxlength="140" placeholder="High yield maize seeds now available at Kano central depot. Call 080..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="ad-slots">Broadcast Slots</label>
+          <select id="ad-slots" class="form-control">
+            <option value="5000">5,000 USSD Sessions (₦5,000)</option>
+            <option value="15000">15,000 USSD Sessions (₦12,000)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Launch SMS Ad Campaign</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- VIEW 4: BOSS DASHBOARD / REVENUE -->
+  <div id="view-dashboard" class="view-section">
+    <div class="card">
+      <h2>📊 Boss Revenue & Fleet Status</h2>
+      <div style="font-size: 0.9rem; margin-bottom: 12px;">
+        <p><strong>Total Revenue:</strong> <span id="dash-total-rev" style="color: var(--primary); font-size: 1.2rem;">₦0</span></p>
+        <p><strong>Active USSD Users:</strong> 1,420 traders</p>
+        <p><strong>Pending Loan Comm.:</strong> <span id="dash-pending-comm">₦0</span></p>
+      </div>
+      <button id="clear-data-btn" class="btn" style="background: #dc2626; width: 100%; font-size: 0.8rem;">Reset App Storage</button>
+    </div>
+
+    <div class="card">
+      <h2>🛡️ System Logs</h2>
+      <div id="system-logs" style="font-family: monospace; font-size: 0.75rem; background: #0f172a; color: #38bdf8; padding: 10px; border-radius: 6px; max-height: 150px; overflow-y: auto;">
+        [10:54 AM] System initialized successfully.<br>
+        [10:54 AM] USSD *123# gateway armed.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="view-ussd">
+    <span>🌾</span>
+    <span>USSD & Prices</span>
+  </button>
+  <button class="nav-item" data-target="view-loans">
+    <span>🤝</span>
+    <span>Trader Loans</span>
+  </button>
+  <button class="nav-item" data-target="view-monetize">
+    <span>⭐</span>
+    <span>Monetize</span>
+  </button>
+  <button class="nav-item" data-target="view-dashboard">
+    <span>📊</span>
+    <span>Dashboard</span>
+  </button>
+</nav>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Live Clock & Date in Nigeria Time
+  function updateLiveTime() {
+    const now = new Date();
+    const options = { 
+      timeZone: 'Africa/Lagos', 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    };
+    const timeString = now.toLocaleString('en-US', options);
+    const timeEl = document.getElementById("live-datetime");
+    if (timeEl) timeEl.textContent = timeString;
+  }
+  setInterval(updateLiveTime, 1000);
+  updateLiveTime();
+
+  // State Management with localStorage
+  let appState = {
+    revenue: 0,
+    subscribed: false,
+    referrals: [],
+    ads: []
+  };
+
+  try {
+    const saved = localStorage.getItem("ussd_market_state");
+    if (saved) {
+      appState = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error("Storage error:", e);
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem("ussd_market_state", JSON.stringify(appState));
+    } catch (e) {
+      console.error("Storage save error:", e);
+    }
+    updateUI();
+  }
+
+  // Commodities Data
+  const commodities = [
+    { name: "Local Rice (50kg)", unit: "Bag", price: 78000, trend: "up", change: "+2.5%" },
+    { name: "White Garri", unit: "Paint bucket", price: 2800, trend: "down", change: "-1.2%" },
+    { name: "Brown Beans", unit: "Paint bucket", price: 4500, trend: "up", change: "+4.0%" },
+    { name: "Yellow Maize", unit: "Bag", price: 42000, trend: "up", change: "+1.8%" },
+    { name: "Red Palm Oil", unit: "25L Keg", price: 35000, trend: "down", change: "-0.5%" },
+    { name: "Yam Tuber (Large)", unit: "Tuber", price: 3500, trend: "up", change: "+5.1%" }
+  ];
+
+  function renderPrices() {
+    const tbody = document.getElementById("price-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    commodities.forEach(c => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${c.name}</strong></td>
+        <td>${c.unit}</td>
+        <td>₦${c.price.toLocaleString()}</td>
+        <td class="${c.trend === 'up' ? 'trend-up' : 'trend-down'}">${c.change}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  renderPrices();
+
+  // USSD Simulator Logic
+  let ussdState = "MAIN"; // MAIN, PRICE_LIST, LOAN_INFO, SUB
+  const screenText = document.getElementById("ussd-screen-text");
+  const userInput = document.getElementById("ussd-user-input");
+  const sendBtn = document.getElementById("ussd-send-btn");
+
+  const adsPool = [
+    "📢 SMS Ad: Get NPK Fertilizer at ₦22,000/bag from AgroCorp! Dial *123*2#",
+    "📢 SMS Ad: High yield maize seeds available at Savannah Seeds. Call 0803000",
+    "📢 SMS Ad: Quick Trader Loans from AgriFinance with 0% collateral!"
+  ];
+
+  function rotateAd() {
+    const adBanner = document.getElementById("ussd-ad-banner");
+    if (adBanner) {
+      const randomAd = adsPool[Math.floor(Math.random() * adsPool.length)];
+      adBanner.textContent = randomAd;
+    }
+  }
+  setInterval(rotateAd, 10000);
+
+  function handleUSSDInput(input) {
+    input = input.trim();
+    if (!screenText) return;
+
+    if (ussdState === "MAIN") {
+      if (input === "1") {
+        ussdState = "PRICE_LIST";
+        let text = "Select Commodity:\n";
+        commodities.forEach((c, idx) => {
+          text += `${idx + 1}. ${c.name} (₦${c.price.toLocaleString()})\n`;
+        });
+        text += "0. Back";
+        screenText.textContent = text;
+      } else if (input === "2") {
+        ussdState = "MARKET_TRENDS";
+        screenText.textContent = "Market Trends (North vs South):\n- Rice rising due to transport costs.\n- Garri stable in major markets.\n\n0. Back";
+      } else if (input === "3") {
+        ussdState = "LOAN_INFO";
+        screenText.textContent = "Agro Loan Partner:\nGet up to ₦250,000 instant stock loan. Visit 'Trader Loans' tab in web app to apply.\n\n0. Back";
+      } else if (input === "4") {
+        ussdState = "SUB";
+        screenText.textContent = "Analytics Sub (₦200/mo):\nConfirm subscription?\n1. Yes, charge airtime/wallet\n\n0. Back";
+      } else {
+        screenText.textContent = "Invalid option. Try again:\n1. Check Commodity Price\n2. Market Trends\n3. Agro Loan Referral\n4. Subscribe Analytics (₦200)";
+      }
+    } else if (ussdState === "PRICE_LIST") {
+      if (input === "0") {
+        resetUSSDMain();
+      } else {
+        const idx = parseInt(input) - 1;
+        if (commodities[idx]) {
+          const com = commodities[idx];
+          screenText.textContent = `${com.name}\nPrice: ₦${com.price.toLocaleString()} per ${com.unit}\nTrend: ${com.change}\n\n0. Back to Menu`;
+          ussdState = "MAIN_BACK";
+        } else {
+          screenText.textContent = "Invalid selection. Enter 0 for Main Menu.";
+        }
+      }
+    } else if (ussdState === "SUB") {
+      if (input === "1") {
+        appState.subscribed = true;
+        appState.revenue += 200;
+        saveState();
+        screenText.textContent = "Success! Your ₦200 analytics subscription is active.\n\n0. Main Menu";
+        ussdState = "MAIN_BACK";
+        logSystem("USSD Analytics Subscription purchased (+₦200)");
+      } else {
+        resetUSSDMain();
+      }
+    } else if (ussdState === "MARKET_TRENDS" || ussdState === "LOAN_INFO" || ussdState === "MAIN_BACK") {
+      resetUSSDMain();
+    }
+    if (userInput) userInput.value = "";
+  }
+
+  function resetUSSDMain() {
+    ussdState = "MAIN";
+    if (screenText) {
+      screenText.textContent = `Welcome to NaijaMarket *123#
+1. Check Commodity Price
+2. Market Trends
+3. Agro Loan Referral
+4. Subscribe Analytics (₦200)
+Reply with option:`;
+    }
+  }
+
+  if (sendBtn && userInput) {
+    sendBtn.addEventListener("click", () => {
+      handleUSSDInput(userInput.value);
+    });
+    userInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        handleUSSDInput(userInput.value);
+      }
+    });
+  }
+
+  // Keypad clicks
+  document.querySelectorAll(".key-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.getAttribute("data-key");
+      if (key === "BACK") {
+        resetUSSDMain();
+      } else {
+        if (userInput) {
+          userInput.value += key;
+          handleUSSDInput(userInput.value);
+        }
+      }
+    });
+  });
+
+  // Navigation Switching
+  const navItems = document.querySelectorAll(".nav-item");
+  const views = document.querySelectorAll(".view-section");
+
+  navItems.forEach(item => {
+    item.addEventListener("click", () => {
+      navItems.forEach(n => n.classList.remove("active"));
+      views.forEach(v => v.classList.remove("active"));
+
+      item.classList.add("active");
+      const targetId = item.getAttribute("data-target");
+      const targetView = document.getElementById(targetId);
+      if (targetView) targetView.classList.add("active");
+      window.scrollTo(0, 0);
+    });
+  });
+
+  // Loan Form Submission
+  const loanForm = document.getElementById("loan-form");
+  if (loanForm) {
+    loanForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("trader-name").value;
+      const phone = document.getElementById("trader-phone").value;
+      const market = document.getElementById("trader-market").value;
+      const amount = parseInt(document.getElementById("loan-amount").value);
+      
+      const commission = amount * 0.025; // 2.5% commission
+      appState.revenue += commission;
+      appState.referrals.push({ name, phone, market, amount, commission, date: new Date().toLocaleDateString() });
+      
+      saveState();
+      loanForm.reset();
+      alert(`Loan referral submitted successfully for ${name}! Estimated Commission: ₦${commission.toLocaleString()}`);
+      logSystem(`New loan referral: ${name} (${market}) - Comm: ₦${commission}`);
+      updateUI();
+    });
+  }
+
+  // Subscribe Web Button
+  const subscribeBtn = document.getElementById("subscribe-btn");
+  if (subscribeBtn) {
+    subscribeBtn.addEventListener("click", () => {
+      appState.subscribed = true;
+      appState.revenue += 200;
+      saveState();
+      alert("Subscription activated successfully!");
+      logSystem("Web Analytics Subscription activated (+₦200)");
+      updateUI();
+    });
+  }
+
+  // Ad Form Submission
+  const adForm = document.getElementById("ad-form");
+  if (adForm) {
+    adForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const company = document.getElementById("ad-company").value;
+      const text = document.getElementById("ad-text").value;
+      const slotsCost = parseInt(document.getElementById("ad-slots").value);
+
+      appState.revenue += slotsCost;
+      appState.ads.push({ company, text, cost: slotsCost });
+      saveState();
+      adForm.reset();
+      alert(`SMS Ad Campaign launched for ${company}! Added to USSD broadcast rotation.`);
+      logSystem(`SMS ad purchased by ${company} (+₦${slotsCost})`);
+      updateUI();
+    });
+  }
+
+  // Clear Storage Button
+  const clearBtn = document.getElementById("clear-data-btn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      if (confirm("Reset all app memory and revenue?")) {
+        localStorage.removeItem("ussd_market_state");
+        appState = { revenue: 0, subscribed: false, referrals: [], ads: [] };
+        saveState();
+        alert("App storage cleared.");
+        logSystem("App storage reset by user.");
+      }
+    });
+  }
+
+  function logSystem(msg) {
+    const logs = document.getElementById("system-logs");
+    if (logs) {
+      const time = new Date().toLocaleTimeString();
+      logs.innerHTML += `<br>[${time}] ${msg}`;
+      logs.scrollTop = logs.scrollHeight;
+    }
+  }
+
+  function updateUI() {
+    // Total Revenue
+    const totalRevEls = document.querySelectorAll("#dash-total-rev, #total-commission");
+    totalRevEls.forEach(el => {
+      if (el) el.textContent = `₦${appState.revenue.toLocaleString()}`;
+    });
+
+    // Sub Status
+    const subStatusText = document.getElementById("sub-status-text");
+    if (subStatusText) {
+      if (appState.subscribed) {
+        subStatusText.textContent = "Active (Pro Trader)";
+        subStatusText.style.color = "var(--primary)";
+      } else {
+        subStatusText.textContent = "Inactive";
+        subStatusText.style.color = "#dc2626";
+      }
+    }
+
+    // Referrals List
+    const refList = document.getElementById("referrals-list");
+    if (refList) {
+      if (appState.referrals.length === 0) {
+        refList.innerHTML = "No referrals logged yet. Submit a trader application above.";
+      } else {
+        refList.innerHTML = appState.referrals.map(r => `
+          <div style="background:#f8fafc; padding:8px; border-radius:6px; margin-bottom:6px; border:1px solid var(--border);">
+            <strong>${r.name}</strong> (${r.market})<br>
+            Loan: ₦${r.amount.toLocaleString()} | Commission: <span style="color:var(--primary); font-weight:bold;">₦${r.commission.toLocaleString()}</span>
+          </div>
+        `).join("");
+      }
+    }
+  }
+
+  updateUI();
+});
+</script>
+</body>
+</html>
