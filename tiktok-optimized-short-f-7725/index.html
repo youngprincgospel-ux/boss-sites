@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaAI Pidgin Explainer | TikTok Creator Suite</title>
+<meta name="description" content="TikTok‑Optimized Short‑Form ‘AI‑In‑Pidgin’ Explainer Series. This should help: Delivers bite‑size, 30‑second videos explaining AI concepts in Nigerian Pidg">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --tiktok: #fe2c55;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: calc(80px + var(--safe-bottom));
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-title span {
+            color: var(--tiktok);
+        }
+
+        .live-clock {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-variant-numeric: tabular-nums;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard & Stats Card */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .metric-sub {
+            font-size: 11px;
+            color: var(--accent);
+        }
+
+        /* Video Feed Styles */
+        .feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .script-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .script-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--tiktok);
+        }
+
+        .script-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .script-badge {
+            background: rgba(254, 44, 85, 0.15);
+            color: var(--tiktok);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .script-duration {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .script-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .dialogue-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .dialogue-box p {
+            margin-bottom: 8px;
+        }
+        .dialogue-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .speaker-ai {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .speaker-crowd {
+            color: #f472b6;
+            font-weight: 600;
+        }
+
+        .script-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .btn {
+            flex: 1;
+            background: var(--bg-card-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            min-height: 44px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0f172a;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-tiktok {
+            background: var(--tiktok);
+            border-color: var(--tiktok);
+            color: #fff;
+        }
+
+        /* PDF E-Book Section */
+        .ebook-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .ebook-icon {
+            font-size: 48px;
+            margin-bottom: -8px;
+        }
+
+        .ebook-title {
+            font-size: 20px;
+            font-weight: 750;
+        }
+
+        .ebook-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .price-tag {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Sponsors Section */
+        .sponsors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sponsor-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sponsor-info h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .sponsor-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .badge-status {
+            font-size: 11px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Fixed Bottom Navigation */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 8px calc(10px + var(--safe-bottom)) 8px;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            padding: 6px 0;
+            transition: color 0.2s;
+            min-height: 44px;
+            justify-content: center;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .checkout-details {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkout-row {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+        }
+
+        .checkout-row.total {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span class="logo-icon">🇳🇬</span>
+            <div class="logo-title">Naija<span>AI</span></div>
+        </div>
+        <div class="live-clock" id="liveClock">Loading time...</div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: DASHBOARD & REVENUE -->
+        <section id="view-dashboard" class="view-section active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-label">Creator Fund Est.</span>
+                    <span class="metric-value" id="statCreatorFund">₦0</span>
+                    <span class="metric-sub">TikTok views payout</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Sponsored Deals</span>
+                    <span class="metric-value" id="statSponsors">₦150,000</span>
+                    <span class="metric-sub">2 active fintech spots</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">PDF Guide Sales</span>
+                    <span class="metric-value" id="statPdfSales">₦0</span>
+                    <span class="metric-sub">0 copies sold (₦300/ea)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Total Revenue</span>
+                    <span class="metric-value" id="statTotalRev">₦150,000</span>
+                    <span class="metric-sub">All monetization streams</span>
+                </div>
+            </div>
+
+            <div class="ebook-banner">
+                <div class="ebook-icon">📘</div>
+                <div class="ebook-title">Top 50 AI Terms Explained in Pidgin</div>
+                <div class="ebook-desc">The ultimate pocket guide for Nigerian creators, students, and tech enthusiasts. Clear, funny, and straight to the point.</div>
+                <div class="price-tag">₦300 Only</div>
+                <button class="btn btn-primary" id="btnOpenCheckout">Buy PDF Guide (Link in Bio)</button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: TIKTOK SHORT SCRIPTS -->
+        <section id="view-scripts" class="view-section">
+            <div style="margin-bottom: 16px;">
+                <h3 style="font-size: 18px; margin-bottom: 4px;">Bite-Size Explainer Series</h3>
+                <p style="font-size: 13px; color: var(--text-muted);">Ready-to-record 30-second scripts in pure Nigerian Pidgin.</p>
+            </div>
+            <div class="feed-container" id="scriptFeed">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: SPONSORS & PARTNERS -->
+        <section id="view-sponsors" class="view-section">
+            <div style="margin-bottom: 16px;">
+                <h3 style="font-size: 18px; margin-bottom: 4px;">Local Fintech Sponsors</h3>
+                <p style="font-size: 13px; color: var(--text-muted);">Active shout-out partnerships driving platform sustainability.</p>
+            </div>
+            <div class="sponsors-list">
+                <div class="sponsor-card">
+                    <div class="sponsor-info">
+                        <h4>KoloPay Africa</h4>
+                        <p>Automated savings & target locks</p>
+                    </div>
+                    <div class="badge-status">₦75,000 / deal</div>
+                </div>
+                <div class="sponsor-card">
+                    <div class="sponsor-info">
+                        <h4>SwiftSend Remittance</h4>
+                        <p>Instant cross-border crypto/fiat</p>
+                    </div>
+                    <div class="badge-status">₦75,000 / deal</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-dashboard">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-target="view-scripts">
+            <span class="nav-icon">🎬</span>
+            <span>Scripts</span>
+        </button>
+        <button class="nav-item" data-target="view-sponsors">
+            <span class="nav-icon">🤝</span>
+            <span>Sponsors</span>
+        </button>
+    </nav>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Secure PDF Checkout</div>
+                <button class="close-modal" id="btnCloseModal">&times;</button>
+            </div>
+            <div class="checkout-details">
+                <div class="checkout-row">
+                    <span>Item</span>
+                    <span>Top 50 AI Terms (PDF)</span>
+                </div>
+                <div class="checkout-row">
+                    <span>Format</span>
+                    <span>Instant WhatsApp/Email Delivery</span>
+                </div>
+                <div class="checkout-row total">
+                    <span>Total Amount</span>
+                    <span>₦300</span>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 12px; color: var(--text-muted);" for="buyerEmail">Where should we send the PDF?</label>
+                <input type="text" id="buyerEmail" placeholder="Enter phone number or email" style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 14px; outline: none;">
+            </div>
+            <button class="btn btn-primary" id="btnCompletePayment">Confirm & Download (Simulated)</button>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            pdfSalesCount: 0,
+            creatorFundEarnings: 45000,
+            sponsorEarnings: 150000
+        };
+
+        // Load saved state from localStorage
+        try {
+            const saved = localStorage.getItem('naija_ai_state');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state.pdfSalesCount = parsed.pdfSalesCount || 0;
+            }
+        } catch (e) {
+            console.error('Storage access failed', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('naija_ai_state', JSON.stringify({ pdfSalesCount: state.pdfSalesCount }));
+            } catch (e) {
+                console.error('Storage save failed', e);
+            }
+        }
+
+        // Live Clock (Thursday 26 Nov 2026, 12:54 PM Nigeria time reference)
+        function updateClock() {
+            const clockEl = document.getElementById('liveClock');
+            if (!clockEl) return;
+            const now = new Date();
+            const options = { 
+                timeZone: 'Africa/Lagos', 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: true,
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short'
+            };
+            clockEl.textContent = new Intl.DateTimeFormat('en-US', options).format(now);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Render Dashboard Metrics
+        function updateMetrics() {
+            const pdfRevenue = state.pdfSalesCount * 300;
+            const totalRev = state.creatorFundEarnings + state.sponsorEarnings + pdfRevenue;
+
+            const statCreatorFund = document.getElementById('statCreatorFund');
+            const statSponsors = document.getElementById('statSponsors');
+            const statPdfSales = document.getElementById('statPdfSales');
+            const statTotalRev = document.getElementById('statTotalRev');
+
+            if (statCreatorFund) statCreatorFund.textContent = `₦${state.creatorFundEarnings.toLocaleString()}`;
+            if (statSponsors) statSponsors.textContent = `₦${state.sponsorEarnings.toLocaleString()}`;
+            if (statPdfSales) statPdfSales.textContent = `₦${pdfRevenue.toLocaleString()} (${state.pdfSalesCount} sold)`;
+            if (statTotalRev) statTotalRev.textContent = `₦${totalRev.toLocaleString()}`;
+        }
+        updateMetrics();
+
+        // Navigation Switching
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                viewSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // TikTok Scripts Data
+        const scriptsData = [
+            {
+                title: "1. Wetin be Artificial Intelligence (AI)?",
+                duration: "30 secs",
+                badge: "Basic Concept",
+                dialogue: `
+                    <p><span class="speaker-ai">AI Host:</span> My brother, make I explain AI give you like person wey dey explain football match. AI no be spirit o!</p>
+                    <p><span class="speaker-crowd">Viewer:</span> Ehn? Ehn? Abeg talk am make I hear.</p>
+                    <p><span class="speaker-ai">AI Host:</span> Na just computer program wey dem teach plenty data make e sabi think, learn, and do work like human being. E fit write letter, draw picture, and even help you reply your girlfriend text when you busy!</p>
+                    <p><span class="speaker-crowd">Viewer:</span> Chai! Make I go download am sharp sharp!</p>
+                `
+            },
+            {
+                title: "2. Wetin be Large Language Model (LLM)?",
+                duration: "30 secs",
+                badge: "Advanced Tech",
+                dialogue: `
+                    <p><span class="speaker-ai">AI Host:</span> You don ever hear word like ChatGPT or Claude? Na LLM be that.</p>
+                    <p><span class="speaker-crowd">Viewer:</span> Na which kind grammar be that one again?</p>
+                    <p><span class="speaker-ai">AI Host:</span> Think about am like person wey don read all the book for library, plus all internet gist from Lagos to London. When you ask am question, e dey use all that grammar arrange correct answer give you for split second!</p>
+                    <p><span class="speaker-crowd">Viewer:</span> Omo, library wey human being go take ten years read, e don finish am overnight!</p>
+                `
+            },
+            {
+                title: "3. How AI take dey 'Hallucinate'?",
+                duration: "30 secs",
+                badge: "Funny Truth",
+                dialogue: `
+                    <p><span class="speaker-ai">AI Host:</span> Make una know say AI sometimes dey lie with full confidence o!</p>
+                    <p><span class="speaker-crowd">Viewer:</span> Ah! Computer self dey tell lie?</p>
+                    <p><span class="speaker-ai">AI Host:</span> We dey call am 'Hallucination'. E fit answer question with correct grammar, but the fact na pure cooked lie. Na like person wey chop expired food for party wey start to dey talk anyhow!</p>
+                    <p><span class="speaker-crowd">Viewer:</span> Haha! So person still need use brain check wetin AI write!</p>
+                `
+            }
+        ];
+
+        const scriptFeed = document.getElementById('scriptFeed');
+        if (scriptFeed) {
+            scriptsData.forEach((s, idx) => {
+                const card = document.createElement('div');
+                card.className = 'script-card';
+                card.innerHTML = `
+                    <div class="script-header">
+                        <span class="script-badge">${s.badge}</span>
+                        <span class="script-duration">⏱ ${s.duration}</span>
+                    </div>
+                    <div class="script-title">${s.title}</div>
+                    <div class="dialogue-box">${s.dialogue}</div>
+                    <div class="script-actions">
+                        <button class="btn btn-tiktok copy-script-btn" data-index="${idx}">📋 Copy Script</button>
+                        <a href="https://www.tiktok.com" target="_blank" rel="noopener" class="btn">🚀 Open TikTok</a>
+                    </div>
+                `;
+                scriptFeed.appendChild(card);
+            });
+        }
+
+        // Copy Script Handler
+        document.querySelectorAll('.copy-script-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = e.currentTarget.getAttribute('data-index');
+                const script = scriptsData[index];
+                const cleanText = `${script.title}\n\n${script.dialogue.replace(/<[^>]*>/g, '')}`;
+                
+                navigator.clipboard.writeText(cleanText).then(() => {
+                    const originalText = e.currentTarget.textContent;
+                    e.currentTarget.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        e.currentTarget.textContent = originalText;
+                    }, 2000);
+                }).catch(() => {
+                    alert('Copy failed, please select manually.');
+                });
+            });
+        });
+
+        // Checkout Modal Elements
+        const checkoutModal = document.getElementById('checkoutModal');
+        const btnOpenCheckout = document.getElementById('btnOpenCheckout');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const btnCompletePayment = document.getElementById('btnCompletePayment');
+        const buyerEmail = document.getElementById('buyerEmail');
+
+        if (btnOpenCheckout && checkoutModal) {
+            btnOpenCheckout.addEventListener('click', () => {
+                checkoutModal.classList.add('open');
+            });
+        }
+
+        if (btnCloseModal && checkoutModal) {
+            btnCloseModal.addEventListener('click', () => {
+                checkoutModal.classList.remove('open');
+            });
+        }
+
+        if (checkoutModal) {
+            checkoutModal.addEventListener('click', (e) => {
+                if (e.target === checkoutModal) {
+                    checkoutModal.classList.remove('open');
+                }
+            });
+        }
+
+        if (btnCompletePayment && checkoutModal) {
+            btnCompletePayment.addEventListener('click', () => {
+                const val = buyerEmail ? buyerEmail.value.trim() : '';
+                if (!val) {
+                    alert('Please enter your email or phone number to receive the PDF.');
+                    if (buyerEmail) buyerEmail.focus();
+                    return;
+                }
+
+                state.pdfSalesCount += 1;
+                saveState();
+                updateMetrics();
+
+                checkoutModal.classList.remove('open');
+                if (buyerEmail) buyerEmail.value = '';
+                alert('🎉 Payment successful! PDF compilation has been sent to your destination.');
+            });
+        }
+    </script>
+</body>
+</html>
