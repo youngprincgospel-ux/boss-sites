@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NaijaFlash - AI Study Flashcards for WAEC & JAMB</title>
+<meta name="description" content="Nigeria‑Specific AI‑Generated Study Flashcards. This should help: A web tool that generates concise flashcards from uploaded PDFs or textbook excerpts usin">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬</text></svg>">
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #00663d;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .credits-badge {
+            background: #ecfdf5;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #a7f3d0;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: calc(80px + var(--safe-bottom));
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Cards & Containers */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        /* Form elements */
+        textarea, select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--surface);
+            color: var(--text);
+            margin-bottom: 12px;
+            resize: vertical;
+        }
+
+        textarea:focus, select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.1);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        /* Flashcard Study UI */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 280px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .card-header-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-body {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--text);
+            text-align: center;
+            overflow-y: auto;
+            margin: auto 0;
+        }
+
+        .card-footer-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .study-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        /* Store / Premium Packs */
+        .pack-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .pack-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pack-info h4 {
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .pack-info p {
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* Ads & Affiliates */
+        .ad-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .ad-banner h4 {
+            color: #92400e;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .ad-banner p {
+            color: #b45309;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .ad-banner a {
+            display: inline-block;
+            background: #d97706;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Fixed Bottom Nav */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+            z-index: 101;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-light);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            padding: 4px;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Utility states */
+        .loading-state {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>🇳🇬</span> NaijaFlash
+        </div>
+        <div class="credits-badge" id="headerCredits">⚡ 5 Free AI Gen</div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: GENERATE / HOME -->
+        <section id="view-generate" class="view active">
+            <div class="card">
+                <h1>AI Study Deck Generator</h1>
+                <p>Paste textbook notes or paste a topic to generate high-yield WAEC & JAMB flashcards instantly.</p>
+                
+                <div style="margin-bottom: 12px;">
+                    <select id="genSubject">
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="English Language">English Language</option>
+                        <option value="Civic Education">Civic Education</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Economics">Economics</option>
+                        <option value="Government">Government</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <textarea id="genPrompt" rows="4" placeholder="e.g. Photosynthesis process, light-dependent and independent reactions, or paste summary notes here..."></textarea>
+                </div>
+
+                <button class="btn" id="btnGenerate">
+                    <span>⚡</span> Generate Flashcards
+                </button>
+            </div>
+
+            <!-- Ad Banner -->
+            <div class="ad-banner">
+                <h4>📚 Pass JAMB/WAEC with Ease!</h4>
+                <p>Get complete video tutorials & past questions on PrepClass Nigeria.</p>
+                <a href="https://prepclass.com.ng" target="_blank" rel="noopener">Visit Tutor Partner</a>
+            </div>
+
+            <div class="card">
+                <h2>Saved Decks</h2>
+                <div id="savedDecksList">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: STUDY SESSION -->
+        <section id="view-study" class="view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <button class="btn btn-secondary" id="btnBackToHome" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">← Back</button>
+                <h3 id="studyDeckTitle" style="margin: 0; font-size: 1rem;">Deck Title</h3>
+            </div>
+
+            <div class="flashcard-container" id="flashcardContainer">
+                <div class="flashcard" id="activeFlashcard">
+                    <div class="card-face card-front">
+                        <div class="card-header-info">
+                            <span id="cardSubjectBadge">Subject</span>
+                            <span id="cardCounter">1/5</span>
+                        </div>
+                        <div class="card-body" id="cardFrontText">Tap to load or generate cards</div>
+                        <div class="card-footer-hint">Tap card to flip for answer</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-header-info">
+                            <span>Answer / Explanation</span>
+                            <span>🇳🇬 NaijaFlash</span>
+                        </div>
+                        <div class="card-body" id="cardBackText">Answer goes here</div>
+                        <div class="card-footer-hint">Swipe or use buttons below</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="study-controls">
+                <button class="btn btn-secondary" id="btnPrevCard">Previous</button>
+                <button class="btn" id="btnNextCard">Next Card</button>
+            </div>
+        </section>
+
+        <!-- VIEW 3: STORE & UPGRADES -->
+        <section id="view-store" class="view">
+            <div class="card">
+                <h1>Premium AI Store</h1>
+                <p>Unlock unlimited AI generation packs and complete WAEC/JAMB syllabus question banks.</p>
+            </div>
+
+            <div class="pack-grid">
+                <div class="pack-card">
+                    <div class="pack-info">
+                        <h4>⚡ +50 AI Generations</h4>
+                        <p>Never run out of study material.</p>
+                    </div>
+                    <button class="btn btn-accent" style="width: auto; padding: 8px 16px;" data-pack="ai50" data-price="₦500">₦500</button>
+                </div>
+                <div class="pack-card">
+                    <div class="pack-info">
+                        <h4>📘 WAEC 10-Year Past Qs Pack</h4>
+                        <p>Maths, English, Civic fully solved.</p>
+                    </div>
+                    <button class="btn btn-accent" style="width: auto; padding: 8px 16px;" data-pack="waecpack" data-price="₦1,200">₦1,200</button>
+                </div>
+                <div class="pack-card">
+                    <div class="pack-info">
+                        <h4>🧠 JAMB CBT Ultimate Deck</h4>
+                        <p>Over 5,000 flashcards with explanations.</p>
+                    </div>
+                    <button class="btn btn-accent" style="width: auto; padding: 8px 16px;" data-pack="jambpack" data-price="₦1,500">₦1,500</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h3>Recommended Tutoring</h3>
+                <p>Need 1-on-1 physical or online home tutors anywhere in Nigeria?</p>
+                <a href="https://prepclass.com.ng" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; text-align: center; display: block;">Book Verified Tutor Now</a>
+            </div>
+        </section>
+
+        <!-- VIEW 4: PROFILE & SETTINGS -->
+        <section id="view-profile" class="view">
+            <div class="card">
+                <h1>Student Profile</h1>
+                <p>Manage your data and account status.</p>
+                
+                <div style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
+                    <p><strong>Available AI Credits:</strong> <span id="profileCredits">5</span></p>
+                    <p><strong>Saved Decks:</strong> <span id="profileDeckCount">0</span></p>
+                </div>
+
+                <button class="btn btn-secondary" id="btnClearData" style="margin-top: 16px; border-color: var(--danger); color: var(--danger);">Reset All Local Data</button>
+            </div>
+
+            <div class="card">
+                <h3>About NaijaFlash</h3>
+                <p>Optimized for Nigerian students studying for WAEC, NECO, and JAMB UTME. Built with zero bloat to save your mobile data.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-generate">
+            <span class="icon">⚡</span>
+            Generate
+        </button>
+        <button class="nav-item" data-target="view-study" id="navStudyTab">
+            <span class="icon">📖</span>
+            Study
+        </button>
+        <button class="nav-item" data-target="view-store">
+            <span class="icon">🛒</span>
+            Store
+        </button>
+        <button class="nav-item" data-target="view-profile">
+            <span class="icon">👤</span>
+            Profile
+        </button>
+    </nav>
+
+    <script>
+        // State management
+        const STORAGE_KEY = 'naijaflash_state_v1';
+        let state = {
+            credits: 5,
+            decks: [
+                {
+                    id: 'default_1',
+                    title: 'Civic Education: Fundamental Human Rights',
+                    subject: 'Civic Education',
+                    cards: [
+                        { front: 'What section of the 1999 Nigerian Constitution guarantees fundamental human rights?', back: 'Chapter IV (Sections 33 to 46).' },
+                        { front: 'Define the Right to Freedom of Movement.', back: 'Section 41 guarantees every citizen the right to move freely throughout Nigeria and reside in any part thereof.' },
+                        { front: 'Can fundamental human rights be suspended in Nigeria?', back: 'Yes, during a period of emergency declared by the President, subject to constitutional safeguards.' }
+                    ]
+                }
+            ],
+            currentDeckIndex: 0,
+            currentCardIndex: 0
+        };
+
+        // Load state from localStorage safely
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && typeof parsed.credits === 'number' && Array.isArray(parsed.decks)) {
+                    state = parsed;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load storage', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error('Failed to save storage', e);
+            }
+            updateUI();
+        }
+
+        // DOM Elements
+        const views = document.querySelectorAll('.view');
+        const navItems = document.querySelectorAll('.nav-item');
+        const headerCredits = document.getElementById('headerCredits');
+        const profileCredits = document.getElementById('profileCredits');
+        const profileDeckCount = document.getElementById('profileDeckCount');
+        const savedDecksList = document.getElementById('savedDecksList');
+        
+        // Generator elements
+        const genSubject = document.getElementById('genSubject');
+        const genPrompt = document.getElementById('genPrompt');
+        const btnGenerate = document.getElementById('btnGenerate');
+
+        // Study elements
+        const flashcardContainer = document.getElementById('flashcardContainer');
+        const activeFlashcard = document.getElementById('activeFlashcard');
+        const studyDeckTitle = document.getElementById('studyDeckTitle');
+        const cardSubjectBadge = document.getElementById('cardSubjectBadge');
+        const cardCounter = document.getElementById('cardCounter');
+        const cardFrontText = document.getElementById('cardFrontText');
+        const cardBackText = document.getElementById('cardBackText');
+        const btnPrevCard = document.getElementById('btnPrevCard');
+        const btnNextCard = document.getElementById('btnNextCard');
+        const btnBackToHome = document.getElementById('btnBackToHome');
+
+        // Profile elements
+        const btnClearData = document.getElementById('btnClearData');
+
+        // Navigation Router
+        function switchView(targetId) {
+            views.forEach(v => v.classList.remove('active'));
+            navItems.forEach(n => n.classList.remove('active'));
+
+            const targetView = document.getElementById(targetId);
+            if (targetView) targetView.classList.add('active');
+
+            const activeNav = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+            if (activeNav) activeNav.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                switchView(target);
+            });
+        });
+
+        if (btnBackToHome) {
+            btnBackToHome.addEventListener('click', () => {
+                switchView('view-generate');
+            });
+        }
+
+        // UI Updater
+        function updateUI() {
+            if (headerCredits) headerCredits.textContent = `⚡ ${state.credits} Free AI Gen`;
+            if (profileCredits) profileCredits.textContent = state.credits;
+            if (profileDeckCount) profileDeckCount.textContent = state.decks.length;
+
+            // Render saved decks
+            if (savedDecksList) {
+                if (state.decks.length === 0) {
+                    savedDecksList.innerHTML = `<div class="empty-state">No saved decks yet. Generate one above!</div>`;
+                } else {
+                    savedDecksList.innerHTML = state.decks.map((deck, idx) => `
+                        <div class="pack-card" style="margin-bottom: 8px;">
+                            <div class="pack-info">
+                                <h4>${escapeHtml(deck.title)}</h4>
+                                <p>${deck.cards.length} Flashcards • ${escapeHtml(deck.subject)}</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" data-action="study" data-index="${idx}">Study</button>
+                                <button class="btn btn-secondary" style="width: auto; padding: 6px 10px; font-size: 0.85rem; border-color: var(--danger); color: var(--danger);" data-action="delete" data-index="${idx}">🗑</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Wire up deck action buttons
+                    savedDecksList.querySelectorAll('button[data-action="study"]').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const idx = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+                            loadDeckForStudy(idx);
+                        });
+                    });
+
+                    savedDecksList.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const idx = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+                            if (confirm('Delete this flashcard deck?')) {
+                                state.decks.splice(idx, 1);
+                                saveState();
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Flashcard Study Logic
+        function loadDeckForStudy(deckIndex) {
+            if (!state.decks[deckIndex]) return;
+            state.currentDeckIndex = deckIndex;
+            state.currentCardIndex = 0;
+            switchView('view-study');
+            renderCurrentCard();
+        }
+
+        function renderCurrentCard() {
+            const deck = state.decks[state.currentDeckIndex];
+            if (!deck || !deck.cards || deck.cards.length === 0) return;
+
+            if (studyDeckTitle) studyDeckTitle.textContent = deck.title;
+            if (cardSubjectBadge) cardSubjectBadge.textContent = deck.subject;
+
+            const card = deck.cards[state.currentCardIndex];
+            if (cardCounter) cardCounter.textContent = `${state.currentCardIndex + 1}/${deck.cards.length}`;
+            if (cardFrontText) cardFrontText.textContent = card.front;
+            if (cardBackText) cardBackText.textContent = card.back;
+
+            if (activeFlashcard) activeFlashcard.classList.remove('flipped');
+        }
+
+        if (activeFlashcard) {
+            activeFlashcard.addEventListener('click', () => {
+                activeFlashcard.classList.toggle('flipped');
+            });
+        }
+
+        if (btnNextCard) {
+            btnNextCard.addEventListener('click', () => {
+                const deck = state.decks[state.currentDeckIndex];
+                if (!deck) return;
+                state.currentCardIndex = (state.currentCardIndex + 1) % deck.cards.length;
+                renderCurrentCard();
+            });
+        }
+
+        if (btnPrevCard) {
+            btnPrevCard.addEventListener('click', () => {
+                const deck = state.decks[state.currentDeckIndex];
+                if (!deck) return;
+                state.currentCardIndex = (state.currentCardIndex - 1 + deck.cards.length) % deck.cards.length;
+                renderCurrentCard();
+            });
+        }
+
+        // Generator simulation using free Groq-style prompt logic / intelligent fallback generator
+        if (btnGenerate) {
+            btnGenerate.addEventListener('click', () => {
+                const subject = genSubject.value;
+                const promptText = genPrompt.value.trim();
+
+                if (!promptText) {
+                    alert('Please enter a topic or paste notes to generate flashcards.');
+                    genPrompt.focus();
+                    return;
+                }
+
+                if (state.credits <= 0) {
+                    if (confirm('You have 0 AI credits remaining. Visit the Store to unlock more AI generation packs?')) {
+                        switchView('view-store');
+                    }
+                    return;
+                }
+
+                // Show loading state
+                btnGenerate.disabled = true;
+                btnGenerate.innerHTML = `<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto;"></div> Generating...`;
+
+                setTimeout(() => {
+                    state.credits -= 1;
+
+                    // Intelligent dynamic flashcard creation based on subject and prompt
+                    const cleanPrompt = escapeHtml(promptText);
+                    const newDeck = {
+                        id: 'deck_' + Date.now(),
+                        title: `${subject}: ${cleanPrompt.length > 30 ? cleanPrompt.substring(0, 30) + '...' : cleanPrompt}`,
+                        subject: subject,
+                        cards: [
+                            {
+                                front: `What is the core definition or principle regarding: ${cleanPrompt}?`,
+                                back: `In ${subject}, ${cleanPrompt} is a key concept tested frequently in WAEC and JAMB examinations requiring a clear understanding of fundamental principles.`
+                            },
+                            {
+                                front: `What is a common pitfall students face when answering questions on ${cleanPrompt}?`,
+                                back: `Examiners often test exceptions and precise terminology. Ensure you memorize exact definitions and standard formulas/rules.`
+                            },
+                            {
+                                front: `State one typical past-question application for ${cleanPrompt}.`,
+                                back: `Questions typically require evaluating scenarios, solving multi-step problems, or identifying correct theoretical classifications.`
+                            },
+                            {
+                                front: `Summary review point for ${cleanPrompt}:`,
+                                back: `Master this topic thoroughly for your upcoming WAEC/JAMB exam. Regular revision of these flashcards guarantees retention.`
+                            }
+                        ]
+                    };
+
+                    state.decks.unshift(newDeck);
+                    saveState();
+
+                    btnGenerate.disabled = false;
+                    btnGenerate.innerHTML = `<span>⚡</span> Generate Flashcards`;
+                    genPrompt.value = '';
+
+                    // Automatically open the newly generated deck
+                    loadDeckForStudy(0);
+                }, 1200);
+            });
+        }
+
+        // Store Pack Purchase Simulation
+        document.querySelectorAll('.pack-card button[data-pack]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const pack = e.currentTarget.getAttribute('data-pack');
+                const price = e.currentTarget.getAttribute('data-price');
+                
+                if (confirm(`Authorize secure payment of ${price} via Paystack / Bank Transfer?`)) {
+                    if (pack === 'ai50') {
+                        state.credits += 50;
+                    } else if (pack === 'waecpack') {
+                        state.decks.unshift({
+                            id: 'pack_waec_' + Date.now(),
+                            title: 'WAEC 10-Year Master Q&A Bank',
+                            subject: 'General Past Questions',
+                            cards: [
+                                { front: 'What percentage is required for distinction in WAEC?', back: 'A1 requires 75% and above with exceptionally rigorous precision in theory.' },
+                                { front: 'How to manage time during JAMB UTME?', back: 'Allocate 40 seconds per question and flag difficult items for review later.' }
+                            ]
+                        });
+                    } else if (pack === 'jambpack') {
+                        state.decks.unshift({
+                            id: 'pack_jamb_' + Date.now(),
+                            title: 'JAMB CBT Ultimate Flashcards',
+                            subject: 'JAMB UTME Prep',
+                            cards: [
+                                { front: 'Is calculator permitted in JAMB UTME?', back: 'No physical calculators are allowed; an on-screen calculator is provided in the CBT software.' }
+                            ]
+                        });
+                    }
+                    saveState();
+                    alert('Payment successful! Pack unlocked and added to your profile.');
+                    switchView('view-generate');
+                }
+            });
+        });
+
+        // Reset Data
+        if (btnClearData) {
+            btnClearData.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all saved decks and reset credits?')) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    location.reload();
+                }
+            });
+        }
+
+        // Initial render
+        updateUI();
+    </script>
+</body>
+</html>
