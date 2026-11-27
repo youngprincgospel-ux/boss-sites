@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaBizGen - AI Business Name & Logo Generator</title>
+<meta name="description" content="Nigeria‑Focused AI‑Generated Business Name & Logo Generator. This should help: A free web app where users input industry and keywords; the tool uses a free">
+    <link rel="icon" href="🇳🇬">
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #00663d;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+            color: var(--text);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            gap: 8px;
+        }
+
+        .btn:active {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:active {
+            background: #e2e8f0;
+        }
+
+        .results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .name-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .name-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .business-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+        }
+
+        .badge {
+            background: #e6f4ed;
+            color: var(--primary);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .name-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .logo-preview-box {
+            width: 100%;
+            height: 160px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .logo-preview-box::after {
+            content: 'Low-Res Free Preview';
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-size: 0.65rem;
+            background: rgba(0,0,0,0.6);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .action-row button {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
+        .upsell-banner {
+            background: linear-gradient(135deg, #008751, #00663d);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .upsell-banner h3 {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+
+        .upsell-banner p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .affiliate-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .affiliate-box h4 {
+            font-size: 0.85rem;
+            color: #92400e;
+            margin-bottom: 4px;
+        }
+
+        .affiliate-box p {
+            font-size: 0.75rem;
+            color: #b45309;
+            margin-bottom: 8px;
+        }
+
+        .affiliate-link {
+            color: #d97706;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Fixed Bottom Nav Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 10px calc(10px + var(--safe-bottom)) 10px;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .saved-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(0,0,0,0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: white;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .modal-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🇳🇬 NaijaBizGen</h1>
+        <p>AI Business Names, Logos & Startup Tools</p>
+    </header>
+
+    <main>
+        <!-- GENERATOR VIEW -->
+        <section id="view-generator" class="view-section active">
+            <div class="card">
+                <h2>✨ Generate Business Identity</h2>
+                <form id="gen-form">
+                    <div class="form-group">
+                        <label for="industry">Industry / Sector</label>
+                        <select id="industry" required>
+                            <option value="Tech & Fintech">Tech & Fintech</option>
+                            <option value="Agric & Farming">Agric & Farming</option>
+                            <option value="Fashion & Tailoring">Fashion & Tailoring</option>
+                            <option value="Logistics & Delivery">Logistics & Delivery</option>
+                            <option value="Food & Restaurant">Food & Restaurant</option>
+                            <option value="E-commerce & Retail">E-commerce & Retail</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords">Keywords or Vibe</label>
+                        <input type="text" id="keywords" placeholder="e.g. fast, reliable, eko, swift" required>
+                    </div>
+                    <button type="submit" class="btn" id="generate-btn">
+                        <span>Generate Ideas & Logos</span>
+                    </button>
+                </form>
+            </div>
+
+            <div id="results-container" style="display: none;">
+                <div class="card">
+                    <h2>🚀 Generated Results</h2>
+                    <div class="results-list" id="results-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SAVED VIEW -->
+        <section id="view-saved" class="view-section">
+            <div class="card">
+                <h2>📂 Saved Concepts</h2>
+                <div id="saved-list" class="saved-grid">
+                    <div class="empty-state">No saved business concepts yet. Generate and save your favorites!</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- UPSELL / TOOLS VIEW -->
+        <section id="view-tools" class="view-section">
+            <div class="upsell-banner">
+                <h3>👑 Pro Branding Package</h3>
+                <p>Get high-resolution vector logo files (SVG/PNG), CAC registration assistance guides, and custom brand identity manuals for only ₦5,000.</p>
+                <button class="btn" id="upgrade-btn" style="background: white; color: var(--primary);">Unlock Pro Package</button>
+            </div>
+
+            <div class="card">
+                <h2>🛠 Recommended Startup Partners</h2>
+                
+                <div class="affiliate-box">
+                    <h4>Domain Registration & Hosting</h4>
+                    <p>Secure your .ng or .com.ng domain instantly with verified Nigerian registrars.</p>
+                    <a href="https://www.whogohost.com" target="_blank" rel="noopener" class="affiliate-link">Register Domain on WhoGoHost →</a>
+                </div>
+
+                <div class="affiliate-box" style="margin-top: 12px;">
+                    <h4>Free Website Builders</h4>
+                    <p>Build a professional business website without writing code using WordPress.</p>
+                    <a href="https://wordpress.com" target="_blank" rel="noopener" class="affiliate-link">Start WordPress Site →</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-generator">
+            <span class="icon">✨</span>
+            <span>Generator</span>
+        </button>
+        <button class="nav-item" data-target="view-saved">
+            <span class="icon">📂</span>
+            <span>Saved (<span id="saved-count">0</span>)</span>
+        </button>
+        <button class="nav-item" data-target="view-tools">
+            <span class="icon">👑</span>
+            <span>Pro & Tools</span>
+        </button>
+    </nav>
+
+    <!-- UPGRADE MODAL -->
+    <div class="modal" id="upgrade-modal">
+        <div class="modal-content">
+            <div class="modal-title">Unlock Pro Branding</div>
+            <div class="modal-body">
+                Pay ₦5,000 via bank transfer or card to receive full vector logo packages, CAC registration support, and priority domain setup.
+            </div>
+            <button class="btn" id="pay-now-btn">Pay ₦5,000 Now</button>
+            <button class="btn btn-secondary" id="close-modal-btn" style="margin-top: 8px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+        const genForm = document.getElementById('gen-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const resultsList = document.getElementById('results-list');
+        const savedList = document.getElementById('saved-list');
+        const savedCount = document.getElementById('saved-count');
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        const upgradeModal = document.getElementById('upgrade-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const payNowBtn = document.getElementById('pay-now-btn');
+
+        let savedItems = [];
+        try {
+            const stored = localStorage.getItem('naijabiz_saved');
+            if (stored) savedItems = JSON.parse(stored);
+        } catch (e) {
+            console.error('Storage error', e);
+        }
+
+        // Navigation Switcher
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                if (!target) return;
+
+                navItems.forEach(nav => nav.classList.remove('active'));
+                viewSections.forEach(sec => sec.classList.remove('active'));
+
+                item.classList.add('active');
+                const targetSec = document.getElementById(target);
+                if (targetSec) targetSec.classList.add('active');
+            });
+        });
+
+        // Generator Logic
+        if (genForm) {
+            genForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const industry = document.getElementById('industry').value;
+                const keywords = document.getElementById('keywords').value.trim();
+
+                if (!keywords) return;
+
+                generateBtn.innerHTML = '<div class="spinner"></div> Generating Names & Logos...';
+                generateBtn.disabled = true;
+
+                setTimeout(() => {
+                    generateBtn.innerHTML = '<span>Generate Ideas & Logos</span>';
+                    generateBtn.disabled = false;
+                    resultsContainer.style.display = 'block';
+                    renderResults(industry, keywords);
+                }, 1000);
+            });
+        }
+
+        function renderResults(industry, keywords) {
+            if (!resultsList) return;
+            resultsList.innerHTML = '';
+
+            const prefixes = ['Naija', 'Prime', 'Swift', 'Apex', 'Vanguard', 'Alpha'];
+            const suffixes = ['Hub', 'Tech', 'Ventures', 'Solutions', 'Global', 'Network'];
+            
+            const results = [];
+            for (let i = 0; i < 3; i++) {
+                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                const cleanKeyword = keywords.split(' ')[0] || 'Biz';
+                const name = `${prefix} ${capitalise(cleanKeyword)} ${suffix}`;
+                const tag = `Built for ${industry} using "${keywords}"`;
+                
+                const bgColors = ['#008751', '#2563eb', '#9333ea', '#dc2626', '#d97706'];
+                const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+                results.push({ id: Date.now() + i, name, tag, bgColor });
+            }
+
+            results.forEach(res => {
+                const card = document.createElement('div');
+                card.className = 'name-card';
+                card.innerHTML = `
+                    <div class="logo-preview-box" style="background-color: ${res.bgColor};">
+                        <span>${res.name}</span>
+                    </div>
+                    <div class="name-header">
+                        <span class="business-title">${res.name}</span>
+                        <span class="badge">Available Idea</span>
+                    </div>
+                    <div class="name-desc">${res.tag}</div>
+                    <div class="action-row">
+                        <button class="btn btn-secondary save-btn" data-id="${res.id}" data-name="${res.name}" data-tag="${res.tag}" data-color="${res.bgColor}">Save Concept</button>
+                        <button class="btn upsell-trigger">Get HD Logo (₦5k)</button>
+                    </div>
+                `;
+                resultsList.appendChild(card);
+            });
+
+            // Bind save buttons
+            document.querySelectorAll('.save-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const dataset = e.currentTarget.dataset;
+                    saveItem({
+                        id: dataset.id,
+                        name: dataset.name,
+                        tag: dataset.tag,
+                        bgColor: dataset.color
+                    });
+                });
+            });
+
+            document.querySelectorAll('.upsell-trigger').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (upgradeModal) upgradeModal.classList.add('open');
+                });
+            });
+        }
+
+        function capitalise(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function saveItem(item) {
+            if (savedItems.some(i => i.name === item.name)) {
+                alert('Concept already saved!');
+                return;
+            }
+            savedItems.push(item);
+            try {
+                localStorage.setItem('naijabiz_saved', JSON.stringify(savedItems));
+            } catch (e) {}
+            updateSavedUI();
+            alert('Concept saved successfully!');
+        }
+
+        function updateSavedUI() {
+            if (savedCount) savedCount.textContent = savedItems.length;
+            if (!savedList) return;
+
+            if (savedItems.length === 0) {
+                savedList.innerHTML = '<div class="empty-state">No saved business concepts yet. Generate and save your favorites!</div>';
+                return;
+            }
+
+            savedList.innerHTML = '';
+            savedItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'name-card';
+                card.innerHTML = `
+                    <div class="logo-preview-box" style="background-color: ${item.bgColor};">
+                        <span>${item.name}</span>
+                    </div>
+                    <div class="name-header">
+                        <span class="business-title">${item.name}</span>
+                        <span class="badge">Saved</span>
+                    </div>
+                    <div class="name-desc">${item.tag}</div>
+                    <div class="action-row">
+                        <button class="btn btn-secondary delete-btn" data-id="${item.id}">Delete</button>
+                        <button class="btn upsell-trigger">Get HD Logo (₦5k)</button>
+                    </div>
+                `;
+                savedList.appendChild(card);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    savedItems = savedItems.filter(i => i.id != id);
+                    try {
+                        localStorage.setItem('naijabiz_saved', JSON.stringify(savedItems));
+                    } catch (e) {}
+                    updateSavedUI();
+                });
+            });
+
+            document.querySelectorAll('.upsell-trigger').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (upgradeModal) upgradeModal.classList.add('open');
+                });
+            });
+        }
+
+        // Modal Controls
+        if (upgradeBtn && upgradeModal) {
+            upgradeBtn.addEventListener('click', () => upgradeModal.classList.add('open'));
+        }
+        if (closeModalBtn && upgradeModal) {
+            closeModalBtn.addEventListener('click', () => upgradeModal.classList.remove('open'));
+        }
+        if (payNowBtn && upgradeModal) {
+            payNowBtn.addEventListener('click', () => {
+                alert('Redirecting to secure payment gateway for ₦5,000 Pro Branding Package...');
+                upgradeModal.classList.remove('open');
+            });
+        }
+
+        updateSavedUI();
+    </script>
+</body>
+</html>
