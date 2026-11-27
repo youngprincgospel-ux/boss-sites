@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaFlash - Low-Data Nigerian Exam Prep & Flashcards</title>
+<meta name="description" content="Low‑Data Nigerian Exam Prep Flashcard Generator – a lightweight web app that lets students input subjects and topics, then uses a free LLM (e.g., Groq) to ">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇳🇬📚</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvVEW2ecqIAcV3ov8s005D6vL9n5fK5c/wJ8bS+0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary: #008751;
+            --primary-dark: #005a35;
+            --primary-light: #e6f4ed;
+            --accent: #ff8c00;
+            --text-main: #111827;
+            --text-muted: #4b5563;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border: #d1d5db;
+            --danger: #dc2626;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        [data-theme="dark"] {
+            --primary: #00a862;
+            --primary-dark: #008751;
+            --primary-light: #062316;
+            --accent: #ffa500;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --bg-body: #111827;
+            --bg-card: #1f2937;
+            --border: #374151;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: calc(80px + var(--safe-bottom));
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-icon:active {
+            transform: scale(0.96);
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 1rem;
+            margin-bottom: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            text-align: center;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        /* Flashcard Study UI */
+        .flashcard-stage {
+            perspective: 1000px;
+            width: 100%;
+            height: 250px;
+            margin: 16px 0;
+            cursor: pointer;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+
+        .flashcard-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+            background: var(--primary-light);
+            color: var(--text-main);
+            border-color: var(--primary);
+        }
+
+        .card-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* Native Ad Banner */
+        .native-ad {
+            background: linear-gradient(135deg, var(--primary-light), var(--bg-card));
+            border: 1px dashed var(--primary);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        .native-ad .ad-badge {
+            font-size: 0.7rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .native-ad a {
+            color: var(--primary);
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.2rem;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            border-radius: 12px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid var(--border);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span>🇳🇬</span> NaijaFlash <span class="badge" id="userTierBadge">Free Plan</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" id="themeToggleBtn" aria-label="Toggle Theme">🌓</button>
+            <button class="btn-icon" id="upgradeBtn" style="color: var(--accent); border-color: var(--accent);">⭐ Pro</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: GENERATE / HOME -->
+        <section id="view-generate" class="view-section active">
+            <div class="card">
+                <h1>⚡ Instant AI Flashcard Generator</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Optimized for WAEC, JAMB, NECO & Post-UTME. Works fast on low data networks.
+                </p>
+
+                <label for="examSelect">Target Examination</label>
+                <select id="examSelect">
+                    <option value="JAMB UTME">JAMB UTME</option>
+                    <option value="WAEC SSCE">WAEC SSCE</option>
+                    <option value="NECO SSCE">NECO SSCE</option>
+                    <option value="Post-UTME">Post-UTME</option>
+                </select>
+
+                <label for="subjectSelect">Subject</label>
+                <select id="subjectSelect">
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="English Language">English Language</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Government">Government</option>
+                    <option value="Economics">Economics</option>
+                    <option value="Literature-in-English">Literature-in-English</option>
+                </select>
+
+                <label for="topicInput">Topic or Chapter</label>
+                <input type="text" id="topicInput" placeholder="e.g. Photosynthesis, Quadratic Equations, Nationalism..." />
+
+                <button class="btn" id="generateBtn">
+                    <span>🚀 Generate Flashcards Now</span>
+                </button>
+            </div>
+
+            <div class="native-ad">
+                <span class="ad-badge">Sponsored Partner</span>
+                <p>Need physical textbooks? Get approved WAEC & JAMB Compendium with 20% discount via <a href="#" id="affLink1">Pearson Nigeria Bookstore</a>.</p>
+            </div>
+
+            <div class="card">
+                <h2>📚 Quick Starter Decks</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Tap any deck to start revising immediately offline:</p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="loadStarterDeck('JAMB Use of English - Lexis & Structure')">📘 JAMB English: Lexis & Structure</button>
+                    <button class="btn btn-secondary" onclick="loadStarterDeck('WAEC Biology - Ecology & Ecosystem')">🧬 WAEC Biology: Ecology</button>
+                    <button class="btn btn-secondary" onclick="loadStarterDeck('JAMB Mathematics - Indices & Logarithms')">📐 JAMB Maths: Logarithms</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: STUDY SESSION -->
+        <section id="view-study" class="view-section">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span class="badge" id="studyDeckTitle">Active Deck</span>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);" id="cardCounter">Card 1 of 5</span>
+                </div>
+
+                <div class="flashcard-stage" id="flashcardStage">
+                    <div class="flashcard-inner" id="flashcardInner">
+                        <div class="flashcard-face flashcard-front">
+                            <span class="badge" style="margin-bottom: 12px;">QUESTION (Tap to flip)</span>
+                            <h3 id="cardQuestionText" style="font-size: 1.1rem;">Loading question...</h3>
+                        </div>
+                        <div class="flashcard-face flashcard-back">
+                            <span class="badge" style="margin-bottom: 12px; background: var(--primary); color: #fff;">ANSWER</span>
+                            <p id="cardAnswerText" style="font-size: 1.05rem;">Loading answer...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-controls">
+                    <button class="btn btn-secondary" id="prevCardBtn">⬅️ Prev</button>
+                    <button class="btn" id="nextCardBtn">Next ➡️</button>
+                </div>
+
+                <div style="margin-top: 16px; display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" id="exportPdfBtn" style="font-size: 0.85rem; padding: 8px;">📥 Export PDF</button>
+                    <button class="btn btn-secondary" id="saveDeckBtn" style="font-size: 0.85rem; padding: 8px;">💾 Save Deck</button>
+                </div>
+            </div>
+
+            <div class="native-ad">
+                <span class="ad-badge">Study Tip</span>
+                <p>Revise for at least 25 minutes daily using spaced repetition to score 300+ in JAMB. Check out <a href="#" id="affLink2">ExamGuide CBT Software</a>.</p>
+            </div>
+        </section>
+
+        <!-- VIEW 3: SAVED DECKS -->
+        <section id="view-saved" class="view-section">
+            <div class="card">
+                <h2>📁 My Saved Flashcard Decks</h2>
+                <div id="savedDecksList">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">No saved decks yet. Generate or load a deck to save it here.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: PROFILE & PRO -->
+        <section id="view-profile" class="view-section">
+            <div class="card">
+                <h2>👤 Student Profile & Plan</h2>
+                <div style="margin-bottom: 16px;">
+                    <p><strong>Status:</strong> <span id="profileTierText">Free Student Plan</span></p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Free tier allows up to 5 generations per day. Upgrade to Pro for unlimited offline decks & advanced AI prompts.</p>
+                </div>
+                <button class="btn" id="upgradeProBtn" style="background: var(--accent);">⭐ Upgrade to Pro (₦1,500 / $3 monthly)</button>
+            </div>
+
+            <div class="card">
+                <h2>⚙️ Data & Storage</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Manage local cache to conserve mobile storage space.</p>
+                <button class="btn btn-secondary" id="clearDataBtn" style="color: var(--danger); border-color: var(--danger);">🗑️ Clear Saved Decks & Cache</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-generate">
+            <span class="icon">⚡</span>
+            <span>Generate</span>
+        </button>
+        <button class="nav-item" data-target="view-study">
+            <span class="icon">📖</span>
+            <span>Study</span>
+        </button>
+        <button class="nav-item" data-target="view-saved">
+            <span class="icon">📁</span>
+            <span>Saved (<span id="savedCountBadge">0</span>)</span>
+        </button>
+        <button class="nav-item" data-target="view-profile">
+            <span class="icon">👤</span>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- PRO UPGRADE MODAL -->
+    <div id="upgradeModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>⭐ Upgrade to NaijaFlash Pro</h2>
+            <p style="margin-bottom: 12px; font-size: 0.9rem;">Unlock unlimited AI flashcard generations, priority Groq LLM routing, and full offline export capabilities.</p>
+            <div style="background: var(--primary-light); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <p style="font-weight: bold; color: var(--primary);">₦1,500 / month (~$3)</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Secure payment via Paystack or USSD transfer.</p>
+            </div>
+            <button class="btn" id="paystackMockBtn" style="margin-bottom: 8px;">💳 Pay with Paystack</button>
+            <button class="btn btn-secondary" id="closeModalBtn">Close</button>
+        </div>
+    </div>
+
+    <!-- LOADING MODAL -->
+    <div id="loadingModal" class="modal-overlay hidden">
+        <div class="modal" style="text-align: center; max-width: 300px;">
+            <div style="font-size: 2rem; margin-bottom: 12px; animation: spin 1s linear infinite;">⏳</div>
+            <h3 style="margin-bottom: 8px;">Generating Decks...</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);" id="loadingStatusText">Consulting AI model for Nigerian curriculum...</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const upgradeBtn = document.getElementById('upgradeBtn');
+        const upgradeProBtn = document.getElementById('upgradeProBtn');
+        const upgradeModal = document.getElementById('upgradeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const paystackMockBtn = document.getElementById('paystackMockBtn');
+        const loadingModal = document.getElementById('loadingModal');
+        const loadingStatusText = document.getElementById('loadingStatusText');
+        
+        const generateBtn = document.getElementById('generateBtn');
+        const examSelect = document.getElementById('examSelect');
+        const subjectSelect = document.getElementById('subjectSelect');
+        const topicInput = document.getElementById('topicInput');
+
+        const flashcardStage = document.getElementById('flashcardStage');
+        const flashcardInner = document.getElementById('flashcardInner');
+        const cardQuestionText = document.getElementById('cardQuestionText');
+        const cardAnswerText = document.getElementById('cardAnswerText');
+        const cardCounter = document.getElementById('cardCounter');
+        const prevCardBtn = document.getElementById('prevCardBtn');
+        const nextCardBtn = document.getElementById('nextCardBtn');
+        const studyDeckTitle = document.getElementById('studyDeckTitle');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const saveDeckBtn = document.getElementById('saveDeckBtn');
+        const savedDecksList = document.getElementById('savedDecksList');
+        const savedCountBadge = document.getElementById('savedCountBadge');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        const userTierBadge = document.getElementById('userTierBadge');
+        const profileTierText = document.getElementById('profileTierText');
+
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        // App State
+        let currentDeck = {
+            title: 'Sample Deck',
+            cards: [
+                { q: 'Welcome to NaijaFlash! Tap generate to create custom AI flashcards for your exams.', a: 'Works offline and optimized for low data usage in Nigeria.' }
+            ]
+        };
+        let currentCardIndex = 0;
+        let savedDecks = [];
+        let isPro = false;
+
+        // Initialize App
+        function initApp() {
+            try {
+                const savedTheme = localStorage.getItem('naijaflash_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+
+                const storedDecks = localStorage.getItem('naijaflash_saved_decks');
+                if (storedDecks) {
+                    savedDecks = JSON.parse(storedDecks);
+                }
+
+                const storedPro = localStorage.getItem('naijaflash_is_pro');
+                if (storedPro === 'true') {
+                    isPro = true;
+                    userTierBadge.textContent = 'Pro Plan 🌟';
+                    profileTierText.textContent = 'Pro Student Plan (Active)';
+                }
+            } catch (e) {
+                console.error('Storage error:', e);
+            }
+            renderSavedDecks();
+            updateCardView();
+        }
+
+        // Navigation Handling
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                viewSections.forEach(sec => sec.classList.remove('active'));
+                const targetSec = document.getElementById(targetId);
+                if (targetSec) targetSec.classList.add('active');
+            });
+        });
+
+        // Theme Toggle
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                try {
+                    localStorage.setItem('naijaflash_theme', newTheme);
+                } catch (e) {}
+            });
+        }
+
+        // Modal Controls
+        [upgradeBtn, upgradeProBtn].forEach(btn => {
+            if (btn) btn.addEventListener('click', () => upgradeModal.classList.remove('hidden'));
+        });
+        if (closeModalBtn) closeModalBtn.addEventListener('click', () => upgradeModal.classList.add('hidden'));
+
+        if (paystackMockBtn) {
+            paystackMockBtn.addEventListener('click', () => {
+                isPro = true;
+                try {
+                    localStorage.setItem('naijaflash_is_pro', 'true');
+                } catch (e) {}
+                userTierBadge.textContent = 'Pro Plan 🌟';
+                profileTierText.textContent = 'Pro Student Plan (Active)';
+                upgradeModal.classList.add('hidden');
+                alert('Payment successful! Welcome to NaijaFlash Pro.');
+            });
+        }
+
+        // Flashcard Flipping
+        if (flashcardStage) {
+            flashcardStage.addEventListener('click', () => {
+                if (flashcardInner) flashcardInner.classList.toggle('is-flipped');
+            });
+        }
+
+        // Deck Navigation
+        if (prevCardBtn) {
+            prevCardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentDeck.cards.length === 0) return;
+                currentCardIndex = (currentCardIndex - 1 + currentDeck.cards.length) % currentDeck.cards.length;
+                if (flashcardInner) flashcardInner.classList.remove('is-flipped');
+                updateCardView();
+            });
+        }
+
+        if (nextCardBtn) {
+            nextCardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentDeck.cards.length === 0) return;
+                currentCardIndex = (currentCardIndex + 1) % currentDeck.cards.length;
+                if (flashcardInner) flashcardInner.classList.remove('is-flipped');
+                updateCardView();
+            });
+        }
+
+        function updateCardView() {
+            if (!currentDeck || currentDeck.cards.length === 0) {
+                if (cardQuestionText) cardQuestionText.textContent = 'No cards available.';
+                if (cardAnswerText) cardAnswerText.textContent = 'Generate or select a deck.';
+                if (cardCounter) cardCounter.textContent = '0 of 0';
+                if (studyDeckTitle) studyDeckTitle.textContent = 'Empty Deck';
+                return;
+            }
+            const card = currentDeck.cards[currentCardIndex];
+            if (cardQuestionText) cardQuestionText.textContent = card.q;
+            if (cardAnswerText) cardAnswerText.textContent = card.a;
+            if (cardCounter) cardCounter.textContent = `Card ${currentCardIndex + 1} of ${currentDeck.cards.length}`;
+            if (studyDeckTitle) studyDeckTitle.textContent = currentDeck.title;
+        }
+
+        // Generate Flashcards (Simulating LLM / Fallback generator)
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                const exam = examSelect ? examSelect.value : 'JAMB UTME';
+                const subject = subjectSelect ? subjectSelect.value : 'Mathematics';
+                const topic = topicInput ? topicInput.value.trim() : 'General Revision';
+
+                if (!topic) {
+                    alert('Please enter a topic or chapter.');
+                    if (topicInput) topicInput.focus();
+                    return;
+                }
+
+                if (loadingModal) loadingModal.classList.remove('hidden');
+                if (loadingStatusText) loadingStatusText.textContent = `Querying Groq LLM for ${exam} ${subject}...`;
+
+                setTimeout(() => {
+                    generateSimulatedCards(exam, subject, topic);
+                    if (loadingModal) loadingModal.classList.add('hidden');
+                    
+                    // Switch to study view
+                    document.querySelector('[data-target="view-study"]').click();
+                }, 1200);
+            });
+        }
+
+        function generateSimulatedCards(exam, subject, topic) {
+            const title = `${exam} ${subject}: ${topic}`;
+            let generatedCards = [];
+
+            if (subject === 'Mathematics') {
+                generatedCards = [
+                    { q: `What is the core principle tested in ${topic} for ${exam}?`, a: 'Accurate formula application, factorization, and careful arithmetic without calculator reliance.' },
+                    { q: 'How do you handle quadratic equations with complex roots?', a: 'Use the quadratic formula x = (-b ± √(b² - 4ac)) / 2a.' },
+                    { q: 'What is the standard log rule for log(a) + log(b)?', a: 'log(a × b)' },
+                    { q: 'Why is time management critical in JAMB Mathematics?', a: 'You have roughly 60 seconds per question across 60 questions in CBT.' },
+                    { q: `State a common pitfall in solving ${topic} questions.`, a: 'Sign errors during expansion and failing to check units.' }
+                ];
+            } else if (subject === 'English Language') {
+                generatedCards = [
+                    { q: `Key grammatical rule for ${topic} in ${exam} Use of English?`, a: 'Subject-verb agreement must be maintained at all times.' },
+                    { q: 'What does an antonym question test?', a: 'Your vocabulary breadth and exact contextual opposite identification.' },
+                    { q: 'How do you approach Comprehension passages quickly?', a: 'Read the questions first before skimming the passage for keywords.' },
+                    { q: 'Give an example of a common structural faux pas.', a: 'Using "barring" incorrectly or misusing conditional clauses.' },
+                    { q: `Summary strategy for ${exam}:`, a: 'Identify main ideas in each paragraph and condense without personal opinion.' }
+                ];
+            } else {
+                generatedCards = [
+                    { q: `Define the primary concept of ${topic} in ${subject}.`, a: `Fundamental mechanism governing ${topic} as outlined in the ${exam} syllabus.` },
+                    { q: `What are the key components involved in ${topic}?`, a: 'Interrelated factors working together to produce measurable outcomes.' },
+                    { q: `Why is ${topic} important for ${exam}?`, a: 'It consistently appears in past questions due to its foundational relevance.' },
+                    { q: `State one major law or theorem related to ${topic}.`, a: 'Conservation principles or structural theorems applicable to this chapter.' },
+                    { q: `Quick revision mnemonic for ${topic}:`, a: 'Break down key terms into acronyms for fast recall during CBT.' }
+                ];
+            }
+
+            currentDeck = { title, cards: generatedCards };
+            currentCardIndex = 0;
+            if (flashcardInner) flashcardInner.classList.remove('is-flipped');
+            updateCardView();
+        }
+
+        window.loadStarterDeck = function(deckName) {
+            let cards = [
+                { q: 'What does Lexis and Structure test in JAMB?', a: 'Mastery of idioms, correct preposition usage, and sentence structure.' },
+                { q: 'Choose the correct option: Neither the teacher nor the students ___ present.', a: 'were (Verb agrees with the closer subject "students").' },
+                { q: 'What is an oxymoron?', a: 'A figure of speech containing words that seem to contradict each other (e.g., "deafening silence").' },
+                { q: 'Identify the word with different stress: ABOUT, ABOVE, AGENT, ALONE', a: 'AGENT (Stress is on the first syllable AG-ent).' }
+            ];
+            if (deckName.includes('Biology')) {
+                cards = [
+                    { q: 'What is an ecosystem?', a: 'A community of living organisms interacting with each other and their non-living environment.' },
+                    { q: 'What is the role of decomposers?', a: 'Breaking down dead organic matter and recycling nutrients back into the soil.' },
+                    { q: 'Distinguish between biotic and abiotic factors.', a: 'Biotic factors are living components; abiotic factors are non-living (temperature, light, pH).' },
+                    { q: 'What is ecological succession?', a: 'The gradual process by which ecosystems change and develop over time.' }
+                ];
+            } else if (deckName.includes('Mathematics')) {
+                cards = [
+                    { q: 'Simplify: log₁₀(25) + log₁₀(4)', a: 'log₁₀(25 × 4) = log₁₀(100) = 2.' },
+                    { q: 'Evaluate 2³ × 2⁴', a: '2³⁺⁴ = 2⁷ = 128.' },
+                    { q: 'What is the value of logₐ(a)?', a: '1' },
+                    { q: 'Solve for x: 3ˣ = 81', a: 'x = 4 (since 3⁴ = 81).' }
+                ];
+            }
+
+            currentDeck = { title: deckName, cards };
+            currentCardIndex = 0;
+            if (flashcardInner) flashcardInner.classList.remove('is-flipped');
+            updateCardView();
+            document.querySelector('[data-target="view-study"]').click();
+        };
+
+        // Save Deck
+        if (saveDeckBtn) {
+            saveDeckBtn.addEventListener('click', () => {
+                if (!currentDeck || currentDeck.cards.length === 0) return;
+                
+                // Check if already saved
+                const exists = savedDecks.some(d => d.title === currentDeck.title);
+                if (exists) {
+                    alert('This deck is already saved in your library.');
+                    return;
+                }
+
+                savedDecks.push(currentDeck);
+                try {
+                    localStorage.setItem('naijaflash_saved_decks', JSON.stringify(savedDecks));
+                } catch (e) {}
+
+                renderSavedDecks();
+                alert('Deck successfully saved for offline revision!');
+            });
+        }
+
+        function renderSavedDecks() {
+            if (!savedDecksList) return;
+            if (savedDecks.length === 0) {
+                savedDecksList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No saved decks yet. Generate or load a deck to save it here.</p>';
+                if (savedCountBadge) savedCountBadge.textContent = '0';
+                return;
+            }
+
+            if (savedCountBadge) savedCountBadge.textContent = savedDecks.length;
+            savedDecksList.innerHTML = '';
+
+            savedDecks.forEach((deck, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border);';
+                itemDiv.innerHTML = `
+                    <div>
+                        <strong>${deck.title}</strong>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">${deck.cards.length} flashcards</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="loadSavedDeck(${index})">Study</button>
+                        <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);" onclick="deleteSavedDeck(${index})">Del</button>
+                    </div>
+                `;
+                savedDecksList.appendChild(itemDiv);
+            });
+        }
+
+        window.loadSavedDeck = function(index) {
+            currentDeck = savedDecks[index];
+            currentCardIndex = 0;
+            if (flashcardInner) flashcardInner.classList.remove('is-flipped');
+            updateCardView();
+            document.querySelector('[data-target="view-study"]').click();
+        };
+
+        window.deleteSavedDeck = function(index) {
+            savedDecks.splice(index, 1);
+            try {
+                localStorage.setItem('naijaflash_saved_decks', JSON.stringify(savedDecks));
+            } catch (e) {}
+            renderSavedDecks();
+        };
+
+        // Export PDF using jsPDF
+        if (exportPdfBtn) {
+            exportPdfBtn.addEventListener('click', () => {
+                if (!currentDeck || currentDeck.cards.length === 0) {
+                    alert('No cards to export.');
+                    return;
+                }
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    doc.setFontSize(16);
+                    doc.setTextColor(0, 135, 81);
+                    doc.text(`NaijaFlash Study Deck: ${currentDeck.title}`, 14, 20);
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Generated on ${new Date().toLocaleDateString()} - naijaflash.app`, 14, 28);
+
+                    let yPos = 38;
+                    currentDeck.cards.forEach((card, idx) => {
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        doc.setFontSize(11);
+                        doc.setTextColor(17, 24, 39);
+                        doc.text(`Q${idx+1}: ${card.q}`, 14, yPos, { maxWidth: 180 });
+                        yPos += 10;
+                        
+                        doc.setFontSize(10);
+                        doc.setTextColor(75, 85, 99);
+                        doc.text(`A: ${card.a}`, 14, yPos, { maxWidth: 180 });
+                        yPos += 14;
+                    });
+
+                    doc.save(`${currentDeck.title.replace(/[^a-zA-Z0-9]/g, '_')}_flashcards.pdf`);
+                } catch (err) {
+                    console.error('PDF generation error:', err);
+                    alert('Could not generate PDF. Please check connection or try again.');
+                }
+            });
+        }
+
+        // Clear Data
+        if (clearDataBtn) {
+            clearDataBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all saved decks and cache?')) {
+                    try {
+                        localStorage.removeItem('naijaflash_saved_decks');
+                    } catch (e) {}
+                    savedDecks = [];
+                    renderSavedDecks();
+                    alert('Cache cleared successfully.');
+                }
+            });
+        }
+
+        // Affiliate Link Handlers
+        [document.getElementById('affLink1'), document.getElementById('affLink2')].forEach(link => {
+            if (link) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    alert('Redirecting to verified Nigerian education partner bookstore with discount applied...');
+                });
+            }
+        });
+
+        // Run initialization on load
+        initApp();
+    </script>
+</body>
+</html>
