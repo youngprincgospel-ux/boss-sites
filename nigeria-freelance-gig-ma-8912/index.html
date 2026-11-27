@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NaijaGigMatch - Nigerian Freelance Gig Matcher & Skill Validation</title>
+<meta name="description" content="Nigeria Freelance Gig Matcher with Skill Validation. This should help: Matches Nigerian freelancers to vetted short‑term gigs from global platforms, using ">
+<link rel="icon" href="🇳🇬">
+<style>
+:root {
+  --primary: #008751;
+  --primary-dark: #00663d;
+  --secondary: #2c3e50;
+  --accent: #f1c40f;
+  --bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --border: #dee2e6;
+  --danger: #dc3545;
+  --success: #28a745;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: 90px;
+}
+
+header {
+  background-color: var(--primary);
+  color: white;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wallet-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.search-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  background: white;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #000;
+}
+
+.btn-danger {
+  background: var(--danger);
+}
+
+.gig-item {
+  border-left: 4px solid var(--primary);
+  position: relative;
+}
+
+.gig-item.sponsored {
+  border-left-color: var(--accent);
+  background: linear-gradient(to right, #fffdf4, #ffffff);
+}
+
+.gig-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.gig-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.gig-budget {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-sponsored {
+  background: var(--accent);
+  color: #000;
+}
+
+.badge-skill {
+  background: #e9ecef;
+  color: var(--text);
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.gig-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  gap: 16px;
+}
+
+.fixed-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 calc(8px + var(--safe-bottom));
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item span.icon {
+  font-size: 1.4rem;
+  margin-bottom: 2px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  display: none;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.quiz-option {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.quiz-option:hover {
+  background: #f8f9fa;
+  border-color: var(--primary);
+}
+
+.quiz-option.selected {
+  background: #e8f5e9;
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <h1>🇳🇬 NaijaGigMatch</h1>
+    <div class="wallet-badge" id="headerWallet">₦0.00</div>
+  </div>
+</header>
+
+<main>
+  <!-- VIEW 1: GIG FEED -->
+  <section id="view-gigs" class="view active">
+    <div class="search-filter-bar">
+      <input type="text" id="gigSearch" placeholder="Search gigs by title or skill...">
+      <select id="gigFilter" style="width: 140px;">
+        <option value="all">All Gigs</option>
+        <option value="sponsored">Sponsored</option>
+        <option value="verified">Verified Only</option>
+      </select>
+    </div>
+
+    <div id="gigList"></div>
+  </section>
+
+  <!-- VIEW 2: SKILL VALIDATION -->
+  <section id="view-skills" class="view">
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-bottom:8px;">🎯 Skill Verification Center</h2>
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Pass quick tests to unlock high-paying global gigs and build trust with international clients.</p>
+      
+      <div id="skillsList"></div>
+    </div>
+  </section>
+
+  <!-- VIEW 3: PROFILE & FAST TRACK -->
+  <section id="view-profile" class="view">
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+        <div style="width:60px; height:60px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700;" id="userInitial">F</div>
+        <div>
+          <h3 id="userNameDisplay">Nigerian Freelancer</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted);" id="userStatusDisplay">Standard Profile</p>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statCompleted">0</div>
+          <div class="stat-label">Gigs Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statEarnings">₦0</div>
+          <div class="stat-label">Total Earned</div>
+        </div>
+      </div>
+
+      <div style="background:#fffdf4; border:1px solid var(--accent); border-radius:8px; padding:16px; margin-top:16px;">
+        <h4 style="font-size:1rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">⚡ Fast-Track Profile Boost</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">Get 5x more visibility from global clients for 7 days. Verified badge included.</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:1.1rem;">₦2,500</span>
+          <button class="btn btn-accent" id="btnFastTrack" style="width:auto; padding:8px 16px;">Activate Boost</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:1rem; margin-bottom:12px;">🚀 Post Sponsored Agency Gig</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">Reach thousands of top vetted Nigerian tech and creative talents instantly (₦5,000 fee).</p>
+      <button class="btn btn-secondary" id="btnPostAgencyGig">Create Sponsored Gig</button>
+    </div>
+  </section>
+
+  <!-- VIEW 4: MY GIGS -->
+  <section id="view-mygigs" class="view">
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-bottom:12px;">📋 Active & Completed Gigs</h2>
+      <div id="myGigsList"></div>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="fixed-bottom">
+  <button class="nav-item active" data-target="view-gigs">
+    <span class="icon">💼</span>
+    <span>Gigs</span>
+  </button>
+  <button class="nav-item" data-target="view-skills">
+    <span class="icon">🎯</span>
+    <span>Skills</span>
+  </button>
+  <button class="nav-item" data-target="view-mygigs">
+    <span class="icon">📋</span>
+    <span>My Gigs</span>
+  </button>
+  <button class="nav-item" data-target="view-profile">
+    <span class="icon">👤</span>
+    <span>Profile</span>
+  </button>
+</nav>
+
+<!-- QUIZ MODAL -->
+<div class="modal-overlay" id="quizModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="quizModalTitle">Skill Quiz</h3>
+      <button class="modal-close" id="closeQuizModal">&times;</button>
+    </div>
+    <div id="quizContent"></div>
+  </div>
+</div>
+
+<!-- GIG SUBMISSION MODAL -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Submit Deliverable</h3>
+      <button class="modal-close" id="closeSubmitModal">&times;</button>
+    </div>
+    <div id="submitContent">
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;">Provide your GitHub repo link, Google Drive link, or work notes for client review.</p>
+      <textarea id="deliverableText" rows="4" placeholder="Paste link or details here..." style="margin-bottom:12px;"></textarea>
+      <button class="btn" id="confirmSubmitBtn">Submit for Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- SPONSORED GIG MODAL -->
+<div class="modal-overlay" id="agencyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Post Sponsored Gig</h3>
+      <button class="modal-close" id="closeAgencyModal">&times;</button>
+    </div>
+    <form id="agencyForm">
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Gig Title</label>
+        <input type="text" id="agencyTitle" required placeholder="e.g. Senior React Developer">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Budget (NGN)</label>
+        <input type="number" id="agencyBudget" required placeholder="e.g. 150000">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Required Skill</label>
+        <input type="text" id="agencySkill" required placeholder="e.g. React">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Description</label>
+        <textarea id="agencyDesc" rows="3" required placeholder="Gig requirements..."></textarea>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Posting fee: <strong>₦5,000</strong> (Deducted from internal balance or simulated payment)</p>
+      <button type="submit" class="btn">Pay ₦5,000 & Publish</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// --- APP STATE & STORAGE ---
+const DEFAULT_GIGS = [
+  { id: '1', title: 'React Frontend for FinTech Dashboard', budget: 120000, skill: 'React', client: 'Lagos Pay Ltd', desc: 'Build responsive components for our transaction dashboard using Tailwind and React.', sponsored: false, verifiedOnly: true },
+  { id: '2', title: 'Python Web Scraper for E-commerce Prices', budget: 85000, skill: 'Python', client: 'Abuja Retail Hub', desc: 'Scrape daily product pricing from open retail directories.', sponsored: true, verifiedOnly: false },
+  { id: '3', title: 'UI/UX Redesign for Mobile Banking App', budget: 200000, skill: 'UI/UX Design', client: 'Zenith Global', desc: 'Create clean, intuitive Figma screens optimized for low-bandwidth users.', sponsored: false, verifiedOnly: true },
+  { id: '4', title: 'Content Writer for AI Tech Blog', budget: 45000, skill: 'Content Writing', client: 'Silicon Delta', desc: 'Write 5 SEO-optimized articles about artificial intelligence in Africa.', sponsored: false, verifiedOnly: false },
+  { id: '5', title: 'Flutter Mobile App Bug Fixes', budget: 150000, skill: 'Flutter', client: 'Ibadan Logistics', desc: 'Resolve state management bugs in our delivery rider app.', sponsored: true, verifiedOnly: true }
+];
+
+const SKILLS_DATA = [
+  { id: 'React', name: 'React Frontend Development', questions: [
+    { q: 'What hook is used to manage state in functional components?', options: ['useEffect', 'useState', 'useContext', 'useReducer'], answer: 1 },
+    { q: 'How do you pass data from parent to child component?', options: ['State', 'Redux', 'Props', 'API'], answer: 2 }
+  ]},
+  { id: 'Python', name: 'Python Backend & Automation', questions: [
+    { q: 'Which library is commonly used for web scraping in Python?', options: ['BeautifulSoup', 'Pandas', 'NumPy', 'Matplotlib'], answer: 0 },
+    { q: 'How do you define a function in Python?', options: ['function myFunc()', 'def myFunc():', 'func myFunc()', 'define myFunc()'], answer: 1 }
+  ]},
+  { id: 'UI/UX Design', name: 'UI/UX Design & Figma', questions: [
+    { q: 'What tool is industry standard for collaborative interface design?', options: ['Photoshop', 'Figma', 'Word', 'Excel'], answer: 1 },
+    { q: 'What does UX stand for?', options: ['User Xperiment', 'User Experience', 'Universal X', 'User Extension'], answer: 1 }
+  ]},
+  { id: 'Content Writing', name: 'SEO Content Writing', questions: [
+    { q: 'What does SEO stand for?', options: ['Search Engine Optimization', 'Simple Economic Output', 'Site Engineering Order', 'Secure Email Operation'], answer: 0 },
+    { q: 'Where should primary keywords primarily appear?', options: ['Only in footer', 'Title and headings', 'Nowhere', 'Hidden text'], answer: 1 }
+  ]},
+  { id: 'Flutter', name: 'Flutter Mobile Development', questions: [
+    { q: 'What language is used to write Flutter apps?', options: ['Java', 'Kotlin', 'Dart', 'Swift'], answer: 2 },
+    { q: 'Are everything in Flutter considered as what?', options: ['Objects', 'Widgets', 'Classes', 'Modules'], answer: 1 }
+  ]}
+];
+
+let state = {
+  wallet: 15000, // starting demo balance
+  verifiedSkills: [], // array of skill ids
+  appliedGigs: [], // { gigId, status: 'in-progress' | 'completed', deliverable }
+  gigs: DEFAULT_GIGS,
+  isBoosted: false,
+  boostExpiry: null,
+  completedCount: 0,
+  totalEarned: 0
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('naijagig_state');
+    if (saved) {
+      state = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Storage load error', e);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('naijagig_state', JSON.stringify(state));
+  } catch (e) {
+    console.error('Storage save error', e);
+  }
+}
+
+// --- DOM ELEMENTS ---
+const headerWallet = document.getElementById('headerWallet');
+const gigSearch = document.getElementById('gigSearch');
+const gigFilter = document.getElementById('gigFilter');
+const gigList = document.getElementById('gigList');
+const skillsList = document.getElementById('skillsList');
+const myGigsList = document.getElementById('myGigsList');
+const navItems = document.querySelectorAll('.nav-item');
+const views = document.querySelectorAll('.view');
+
+// Modals
+const quizModal = document.getElementById('quizModal');
+const closeQuizModal = document.getElementById('closeQuizModal');
+const quizModalTitle = document.getElementById('quizModalTitle');
+const quizContent = document.getElementById('quizContent');
+
+const submitModal = document.getElementById('submitModal');
+const closeSubmitModal = document.getElementById('closeSubmitModal');
+const deliverableText = document.getElementById('deliverableText');
+const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+
+const agencyModal = document.getElementById('agencyModal');
+const btnPostAgencyGig = document.getElementById('btnPostAgencyGig');
+const closeAgencyModal = document.getElementById('closeAgencyModal');
+const agencyForm = document.getElementById('agencyForm');
+const btnFastTrack = document.getElementById('btnFastTrack');
+const statCompleted = document.getElementById('statCompleted');
+const statEarnings = document.getElementById('statEarnings');
+const userStatusDisplay = document.getElementById('userStatusDisplay');
+
+let activeGigForSubmission = null;
+let currentQuizSkill = null;
+let currentQuizIndex = 0;
+let userQuizAnswers = [];
+
+// --- INITIALIZATION ---
+function init() {
+  loadState();
+  renderWallet();
+  renderGigs();
+  renderSkills();
+  renderMyGigs();
+  renderProfileStats();
+  setupEventListeners();
+}
+
+function renderWallet() {
+  if (headerWallet) {
+    headerWallet.textContent = '₦' + state.wallet.toLocaleString();
+  }
+}
+
+function renderProfileStats() {
+  if (statCompleted) statCompleted.textContent = state.completedCount;
+  if (statEarnings) statEarnings.textContent = '₦' + state.totalEarned.toLocaleString();
+  if (userStatusDisplay) {
+    if (state.isBoosted) {
+      userStatusDisplay.textContent = '⚡ Fast-Track Boost Active';
+      userStatusDisplay.style.color = 'var(--accent)';
+      if (btnFastTrack) {
+        btnFastTrack.textContent = 'Boosted Active';
+        btnFastTrack.disabled = true;
+        btnFastTrack.style.opacity = '0.6';
+      }
+    } else {
+      userStatusDisplay.textContent = 'Standard Profile';
+      userStatusDisplay.style.color = 'var(--text-muted)';
+      if (btnFastTrack) {
+        btnFastTrack.textContent = 'Activate Boost';
+        btnFastTrack.disabled = false;
+        btnFastTrack.style.opacity = '1';
+      }
+    }
+  }
+}
+
+// --- RENDER GIGS ---
+function renderGigs() {
+  if (!gigList) return;
+  const search = gigSearch ? gigSearch.value.toLowerCase() : '';
+  const filter = gigFilter ? gigFilter.value : 'all';
+
+  let filtered = state.gigs.filter(g => {
+    const matchSearch = g.title.toLowerCase().includes(search) || g.skill.toLowerCase().includes(search) || g.client.toLowerCase().includes(search);
+    if (!matchSearch) return false;
+    if (filter === 'sponsored') return g.sponsored;
+    if (filter === 'verified') return g.verifiedOnly;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    gigList.innerHTML = `<div class="empty-state">No matching gigs found. Try adjusting your search or filter.</div>`;
+    return;
+  }
+
+  gigList.innerHTML = filtered.map(g => {
+    const isApplied = state.appliedGigs.find(item => item.gigId === g.id);
+    const userHasSkill = state.verifiedSkills.includes(g.skill);
+    const canApply = !g.verifiedOnly || userHasSkill;
+
+    return `
+      <div class="card gig-item ${g.sponsored ? 'sponsored' : ''}">
+        <div class="gig-header">
+          <div>
+            ${g.sponsored ? '<span class="badge badge-sponsored">Sponsored Agency</span>' : ''}
+            <div class="gig-title">${g.title}</div>
+          </div>
+          <div class="gig-budget">₦${g.budget.toLocaleString()}</div>
+        </div>
+        <div class="gig-meta">
+          <span>🏢 ${g.client}</span>
+          <span>🎯 Skill: <strong>${g.skill}</strong></span>
+        </div>
+        <p style="font-size:0.9rem; margin-bottom:12px; color:var(--text);">${g.desc}</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            ${g.verifiedOnly && !userHasSkill ? '<span style="font-size:0.75rem; color:var(--danger); font-weight:600;">🔒 Skill verification required</span>' : '<span style="font-size:0.75rem; color:var(--success); font-weight:600;">✓ Ready to apply</span>'}
+          </div>
+          <div>
+            ${isApplied ? 
+              `<button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" disabled>${isApplied.status === 'completed' ? 'Completed' : 'In Progress'}</button>` :
+              canApply ? 
+                `<button class="btn" style="padding:6px 16px; font-size:0.85rem;" data-action="apply" data-id="${g.id}">Accept Gig</button>` :
+                `<button class="btn btn-accent" style="padding:6px 16px; font-size:0.85rem;" data-action="verify-prompt" data-skill="${g.skill}">Verify Skill First</button>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// --- RENDER SKILLS ---
+function renderSkills() {
+  if (!skillsList) return;
+
+  skillsList.innerHTML = SKILLS_DATA.map(s => {
+    const isVerified = state.verifiedSkills.includes(s.id);
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border);">
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:600;">${s.name}</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">${isVerified ? 'Verified & Badge Active' : 'Take 2-min quiz to verify'}</p>
+        </div>
+        <div>
+          ${isVerified ? 
+            '<span class="badge" style="background:#d4edda; color:#155724;">Verified ✓</span>' : 
+            `<button class="btn" style="padding:6px 12px; font-size:0.85rem;" data-action="start-quiz" data-skill="${s.id}">Take Quiz</button>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// --- RENDER MY GIGS ---
+function renderMyGigs() {
+  if (!myGigsList) return;
+
+  if (state.appliedGigs.length === 0) {
+    myGigsList.innerHTML = `<div class="empty-state">You have not accepted any gigs yet. Browse the feed to start earning.</div>`;
+    return;
+  }
+
+  myGigsList.innerHTML = state.appliedGigs.map(item => {
+    const gig = state.gigs.find(g => g.id === item.gigId);
+    if (!gig) return '';
+
+    return `
+      <div class="card" style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div style="font-weight:700; font-size:1rem;">${gig.title}</div>
+          <div style="font-weight:700; color:var(--primary);">₦${gig.budget.toLocaleString()}</div>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">Client: ${gig.client} | Status: <strong style="text-transform:capitalize; color:${item.status === 'completed' ? 'var(--success)' : 'var(--primary)'};">${item.status}</strong></div>
+        ${item.deliverable ? `<p style="font-size:0.85rem; background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:8px;"><strong>Deliverable:</strong> ${item.deliverable}</p>` : ''}
+        <div>
+          ${item.status === 'in-progress' ? 
+            `<button class="btn" style="padding:6px 12px; font-size:0.85rem;" data-action="open-submit" data-id="${gig.id}">Submit Work</button>` :
+            `<span style="font-size:0.85rem; color:var(--success); font-weight:600;">✓ Completed & Commission Settled</span>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// --- QUIZ LOGIC ---
+function startQuiz(skillId) {
+  const skillObj = SKILLS_DATA.find(s => s.id === skillId);
+  if (!skillObj) return;
+
+  currentQuizSkill = skillObj;
+  currentQuizIndex = 0;
+  userQuizAnswers = [];
+  if (quizModalTitle) quizModalTitle.textContent = `Quiz: ${skillObj.name}`;
+  renderQuizQuestion();
+  if (quizModal) quizModal.style.display = 'flex';
+}
+
+function renderQuizQuestion() {
+  const q = currentQuizSkill.questions[currentQuizIndex];
+  if (!q) return;
+
+  quizContent.innerHTML = `
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">Question ${currentQuizIndex + 1} of ${currentQuizSkill.questions.length}</p>
+    <h4 style="font-size:1rem; margin-bottom:16px;">${q.q}</h4>
+    <div style="margin-bottom:16px;">
+      ${q.options.map((opt, idx) => `
+        <button class="quiz-option" data-option-idx="${idx}">${opt}</button>
+      `).join('')}
+    </div>
+  `;
+
+  // Attach listeners to options
+  quizContent.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      quizContent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      e.currentTarget.classList.add('selected');
+      const selectedOptIdx = parseInt(e.currentTarget.getAttribute('data-option-idx'));
+      userQuizAnswers[currentQuizIndex] = selectedOptIdx;
+
+      setTimeout(() => {
+        if (currentQuizIndex < currentQuizSkill.questions.length - 1) {
+          currentQuizIndex++;
+          renderQuizQuestion();
+        } else {
+          evaluateQuiz();
+        }
+      }, 300);
+    });
+  });
+}
+
+function evaluateQuiz() {
+  let score = 0;
+  currentQuizSkill.questions.forEach((q, idx) => {
+    if (userQuizAnswers[idx] === q.answer) score++;
+  });
+
+  const passed = score >= Math.ceil(currentQuizSkill.questions.length / 2);
+
+  if (passed) {
+    if (!state.verifiedSkills.includes(currentQuizSkill.id)) {
+      state.verifiedSkills.push(currentQuizSkill.id);
+      saveState();
+    }
+    quizContent.innerHTML = `
+      <div style="text-align:center; padding:20px;">
+        <div style="font-size:3rem; margin-bottom:12px;">🎉</div>
+        <h3 style="color:var(--success); margin-bottom:8px;">Quiz Passed!</h3>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">You scored ${score}/${currentQuizSkill.questions.length}. Your profile is now verified for ${currentQuizSkill.name}.</p>
+        <button class="btn" id="closeQuizSuccess">Awesome</button>
+      </div>
+    `;
+    document.getElementById('closeQuizSuccess').addEventListener('click', () => {
+      quizModal.style.display = 'none';
+      renderGigs();
+      renderSkills();
+    });
+  } else {
+    quizContent.innerHTML = `
+      <div style="text-align:center; padding:20px;">
+        <div style="font-size:3rem; margin-bottom:12px;">❌</div>
+        <h3 style="color:var(--danger); margin-bottom:8px;">Not Quite</h3>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">You scored ${score}/${currentQuizSkill.questions.length}. Review your concepts and try again.</p>
+        <button class="btn" id="retryQuiz">Try Again</button>
+      </div>
+    `;
+    document.getElementById('retryQuiz').addEventListener('click', () => {
+      startQuiz(currentQuizSkill.id);
+    });
+  }
+}
+
+// --- EVENT LISTENERS & NAVIGATION ---
+function setupEventListeners() {
+  // Navigation
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      const targetViewId = e.currentTarget.getAttribute('data-target');
+      navItems.forEach(n => n.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+
+      views.forEach(v => {
+        v.classList.remove('active');
+        if (v.id === targetViewId) {
+          v.classList.add('active');
+        }
+      });
+    });
+  });
+
+  // Search & Filter
+  if (gigSearch) gigSearch.addEventListener('input', renderGigs);
+  if (gigFilter) gigFilter.addEventListener('change', renderGigs);
+
+  // Global click delegations for dynamic buttons
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('button');
+    if (!target) return;
+
+    const action = target.getAttribute('data-action');
+    if (action === 'apply') {
+      const gigId = target.getAttribute('data-id');
+      const gig = state.gigs.find(g => g.id === gigId);
+      if (gig) {
+        state.appliedGigs.push({ gigId: gig.id, status: 'in-progress', deliverable: '' });
+        saveState();
+        renderGigs();
+        renderMyGigs();
+      }
+    } else if (action === 'verify-prompt') {
+      const skillId = target.getAttribute('data-skill');
+      // Switch view to skills
+      navItems.forEach(n => n.classList.remove('active'));
+      document.querySelector('[data-target="view-skills"]').classList.add('active');
+      views.forEach(v => v.classList.remove('active'));
+      document.getElementById('view-skills').classList.add('active');
+      startQuiz(skillId);
+    } else if (action === 'start-quiz') {
+      const skillId = target.getAttribute('data-skill');
+      startQuiz(skillId);
+    } else if (action === 'open-submit') {
+      activeGigForSubmission = target.getAttribute('data-id');
+      if (deliverableText) deliverableText.value = '';
+      if (submitModal) submitModal.style.display = 'flex';
+    }
+  });
+
+  // Quiz Modal Close
+  if (closeQuizModal) {
+    closeQuizModal.addEventListener('click', () => {
+      quizModal.style.display = 'none';
+      renderGigs();
+      renderSkills();
+    });
+  }
+
+  // Submit Work Modal Close & Confirm
+  if (closeSubmitModal) {
+    closeSubmitModal.addEventListener('click', () => {
+      submitModal.style.display = 'none';
+    });
+  }
+
+  if (confirmSubmitBtn) {
+    confirmSubmitBtn.addEventListener('click', () => {
+      const text = deliverableText ? deliverableText.value.trim() : '';
+      if (!text) {
+        alert('Please provide your deliverable link or details.');
+        return;
+      }
+
+      const item = state.appliedGigs.find(i => i.gigId === activeGigForSubmission);
+      const gig = state.gigs.find(g => g.id === activeGigForSubmission);
+      if (item && gig) {
+        item.status = 'completed';
+        item.deliverable = text;
+
+        // Calculate earnings after 5% platform commission
+        const commission = gig.budget * 0.05;
+        const netEarnings = gig.budget - commission;
+
+        state.wallet += netEarnings;
+        state.completedCount += 1;
+        state.totalEarned += netEarnings;
+
+        saveState();
+        renderWallet();
+        renderProfileStats();
+        renderMyGigs();
+        renderGigs();
+      }
+
+      submitModal.style.display = 'none';
+      alert('Deliverable submitted & approved! 5% commission deducted, earnings added to your wallet.');
+    });
+  }
+
+  // Fast-Track Boost
+  if (btnFastTrack) {
+    btnFastTrack.addEventListener('click', () => {
+      const cost = 2500;
+      if (state.wallet < cost) {
+        alert('Insufficient wallet balance to activate Fast-Track Boost.');
+        return;
+      }
+      state.wallet -= cost;
+      state.isBoosted = true;
+      saveState();
+      renderWallet();
+      renderProfileStats();
+      alert('⚡ Fast-Track profile visibility boost successfully activated for 7 days!');
+    });
+  }
+
+  // Agency Gig Modal
+  if (btnPostAgencyGig) {
+    btnPostAgencyGig.addEventListener('click', () => {
+      if (agencyModal) agencyModal.style.display = 'flex';
+    });
+  }
+
+  if (closeAgencyModal) {
+    closeAgencyModal.addEventListener('click', () => {
+      agencyModal.style.display = 'none';
+    });
+  }
+
+  if (agencyForm) {
+    agencyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const cost = 5000;
+      if (state.wallet < cost) {
+        alert('Insufficient wallet balance to post a sponsored gig (Fee: ₦5,000).');
+        return;
+      }
+
+      const title = document.getElementById('agencyTitle').value;
+      const budget = parseFloat(document.getElementById('agencyBudget').value);
+      const skill = document.getElementById('agencySkill').value;
+      const desc = document.getElementById('agencyDesc').value;
+
+      state.wallet -= cost;
+      const newGig = {
+        id: 'agency-' + Date.now(),
+        title,
+        budget,
+        skill,
+        client: 'Sponsored Agency',
+        desc,
+        sponsored: true,
+        verifiedOnly: false
+      };
+
+      state.gigs.unshift(newGig);
+      saveState();
+      renderWallet();
+      renderGigs();
+      agencyModal.style.display = 'none';
+      agencyForm.reset();
+      alert('Sponsored gig successfully published to the live feed!');
+    });
+  }
+}
+
+// Run init on load
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
