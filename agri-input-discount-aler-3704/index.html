@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AgriDash - Agri-Input Discount Alert Service</title>
+<meta name="description" content="Agri‑Input Discount Alert Service. This should help: Sends free SMS/WhatsApp alerts to smallholder farmers about government‑backed zero‑rated or discounted">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    <style>
+        :root {
+            --primary: #1b5e20;
+            --primary-light: #4c8c4a;
+            --primary-dark: #003300;
+            --accent: #ffb300;
+            --bg: #f4f6f3;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --text-light: #6c757d;
+            --border: #dee2e6;
+            --danger: #c62828;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 1.5rem 1rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-live {
+            background: var(--accent);
+            color: #000;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .time-display {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary-dark);
+        }
+
+        main {
+            max-width: 600px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .alert-card {
+            border-left: 5px solid var(--accent);
+            position: relative;
+        }
+
+        .alert-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .tag {
+            background: #e8f5e9;
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        .filter-pill {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-pill.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .stat-box p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        .fixed-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 1rem calc(0.75rem + var(--safe-bottom));
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            cursor: pointer;
+            gap: 0.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 2000;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .price-tag {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .old-price {
+            text-decoration: line-through;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast" class="toast">Action successful</div>
+
+    <header>
+        <div class="header-top">
+            <div class="logo">
+                <span>🌱 AgriDash Nigeria</span>
+                <span class="badge-live">Live</span>
+            </div>
+            <div id="liveTime" class="time-display">Loading time...</div>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" data-target="alertsView">Discount Alerts</button>
+            <button class="tab-btn" data-target="registerView">Farmer Registry</button>
+            <button class="tab-btn" data-target="dealersView">Agro-Dealers</button>
+            <button class="tab-btn" data-target="premiumView">VIP Access</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- ALERTS VIEW -->
+        <section id="alertsView" class="view-section active">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3 id="statSubscribers">1,420</h3>
+                    <p>Registered Farmers</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="statDealers">₦450k</h3>
+                    <p>Dealer Lead Pool</p>
+                </div>
+            </div>
+
+            <div class="filter-bar" id="filterBar">
+                <div class="filter-pill active" data-filter="all">All Items</div>
+                <div class="filter-pill" data-filter="Fertilizer">Fertilizers</div>
+                <div class="filter-pill" data-filter="Seeds">Seeds</div>
+                <div class="filter-pill" data-filter="Equipment">Equipment</div>
+            </div>
+
+            <div id="alertsContainer">
+                <!-- Populated via JS -->
+            </div>
+        </section>
+
+        <!-- REGISTER VIEW -->
+        <section id="registerView" class="view-section">
+            <div class="card">
+                <h2><span>📱</span> Free Alert Registration</h2>
+                <p>Get instant SMS/WhatsApp notifications when zero-rated or discounted inputs drop in your state.</p>
+                <form id="farmerForm">
+                    <div class="form-group">
+                        <label for="farmerName">Full Name</label>
+                        <input type="text" id="farmerName" class="form-control" placeholder="e.g. Musa Ibrahim" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="farmerPhone">WhatsApp / Phone Number</label>
+                        <input type="tel" id="farmerPhone" class="form-control" placeholder="e.g. 08030000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="farmerState">State</label>
+                        <select id="farmerState" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="Kaduna">Kaduna State</option>
+                            <option value="Kano">Kano State</option>
+                            <option value="Oyo">Oyo State</option>
+                            <option value="Benue">Benue State</option>
+                            <option value="Niger">Niger State</option>
+                            <option value="Ogun">Ogun State</option>
+                            <option value="Plateau">Plateau State</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="farmerCrop">Primary Crop Grown</label>
+                        <input type="text" id="farmerCrop" class="form-control" placeholder="e.g. Maize, Rice, Cassava" required>
+                    </div>
+                    <button type="submit" class="btn">Register For Free Alerts</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- DEALERS VIEW -->
+        <section id="dealersView" class="view-section">
+            <div class="card">
+                <h2><span>🤝</span> Agro-Dealer Portal</h2>
+                <p>Monetization backend: Reach verified smallholder farmers directly. Pay per verified lead contact.</p>
+                <form id="dealerForm">
+                    <div class="form-group">
+                        <label for="dealerCompany">Company / Agro-Dealer Name</label>
+                        <input type="text" id="dealerCompany" class="form-control" placeholder="e.g. GreenYield Inputs Ltd" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dealerInput">Input Product Offered</label>
+                        <input type="text" id="dealerInput" class="form-control" placeholder="e.g. NPK 20:10:10 @ ₦18,000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dealerBudget">Campaign Budget (₦)</label>
+                        <input type="number" id="dealerBudget" class="form-control" placeholder="e.g. 25000" required>
+                    </div>
+                    <button type="submit" class="btn btn-accent">Launch Lead Campaign</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Active Dealer Leads Pool</h2>
+                <div id="dealerLeadsList" style="font-size: 0.90rem;">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PREMIUM VIEW -->
+        <section id="premiumView" class="view-section">
+            <div class="card" style="border: 2px solid var(--accent);">
+                <h2><span>⭐</span> VIP Early-Access Tier</h2>
+                <p>Get 48-hour advance alerts before public broadcasts, plus quarterly commodity market price forecasts.</p>
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary);">₦2,500 <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-light);">/ season</span></div>
+                </div>
+                <ul style="list-style: none; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <li style="margin-bottom: 0.5rem;">✅ 48-Hour Priority WhatsApp Alerts</li>
+                    <li style="margin-bottom: 0.5rem;">✅ Direct Supplier Direct-Dial Access</li>
+                    <li style="margin-bottom: 0.5rem;">✅ Regional Market Pricing PDF Insights</li>
+                </ul>
+                <button type="button" id="btnSubscribeVIP" class="btn btn-accent">Upgrade to VIP Now</button>
+            </div>
+        </section>
+    </main>
+
+    <nav class="fixed-bottom">
+        <button class="nav-item active" data-target="alertsView">
+            <span class="icon">📢</span>
+            <span>Alerts</span>
+        </button>
+        <button class="nav-item" data-target="registerView">
+            <span class="icon">📝</span>
+            <span>Register</span>
+        </button>
+        <button class="nav-item" data-target="dealersView">
+            <span class="icon">💼</span>
+            <span>Dealers</span>
+        </button>
+        <button class="nav-item" data-target="premiumView">
+            <span class="icon">⭐</span>
+            <span>VIP Pass</span>
+        </button>
+    </nav>
+
+    <!-- Modal for VIP Payment Simulation -->
+    <div id="vipModal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="font-size: 1.2rem; color: var(--primary-dark); margin-bottom: 0.5rem;">Secure VIP Checkout</h2>
+            <p style="font-size: 0.85rem; margin-bottom: 1rem;">Powered by Paystack Sandbox Simulation</p>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="vipEmail" class="form-control" placeholder="farmer@gmail.com" required>
+            </div>
+            <button type="button" id="confirmVipBtn" class="btn" style="margin-bottom: 0.5rem;">Pay ₦2,500</button>
+            <button type="button" id="closeVipModal" class="btn" style="background: var(--text-light);">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Live Time in Nigeria
+            function updateClock() {
+                const now = new Date();
+                const options = { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, weekday: 'short', month: 'short', day: 'numeric' };
+                const timeString = now.toLocaleString('en-US', options);
+                const timeEl = document.getElementById('liveTime');
+                if (timeEl) timeEl.textContent = timeString;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Toast helper
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Initial Mock Data
+            const defaultAlerts = [
+                { id: 1, title: "Federal Gov 50% Subsidized NPK Fertilizer", category: "Fertilizer", state: "Kaduna", oldPrice: 38000, newPrice: 19000, desc: "Available at Kaduna ADP offices for registered smallholder cooperative members.", date: "Today, 8:30 AM" },
+                { id: 2, title: "Certified Hybrid Maize Seeds (SC 719)", category: "Seeds", state: "Oyo", oldPrice: 12000, newPrice: 6500, desc: "High yielding, drought resistant seeds courtesy Oyo State Agricultural Development Programme.", date: "Yesterday" },
+                { id: 3, title: "Knapsack Sprayers & Solar Irrigation Pumps", category: "Equipment", state: "Kano", oldPrice: 65000, newPrice: 40000, desc: "Zero-interest equipment financing supported by Bank of Agriculture.", date: "2 days ago" },
+                { id: 4, title: "Urea Fertilizer Special Intervention batch", category: "Fertilizer", state: "Benue", oldPrice: 42000, newPrice: 21000, desc: "Direct distribution at Makurdi Township Stadium for rice & yam farmers.", date: "3 days ago" }
+            ];
+
+            const defaultLeads = [
+                { company: "GreenYield Inputs Ltd", input: "NPK 20:10:10", budget: "₦25,000", leadsGenerated: 14 },
+                { company: "Prime Agro Seeds", input: "Certified Rice Seeds", budget: "₦18,000", leadsGenerated: 9 }
+            ];
+
+            // LocalStorage State Management
+            let alerts = JSON.parse(localStorage.getItem('agri_alerts')) || defaultAlerts;
+            let farmers = JSON.parse(localStorage.getItem('agri_farmers')) || [];
+            let dealers = JSON.parse(localStorage.getItem('agri_dealers')) || defaultLeads;
+            let currentFilter = 'all';
+
+            // Tab Navigation wiring
+            const tabButtons = document.querySelectorAll('.tab-btn, .nav-item');
+            const sections = document.querySelectorAll('.view-section');
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const target = btn.getAttribute('data-target');
+                    if (!target) return;
+
+                    sections.forEach(sec => sec.classList.remove('active'));
+                    const targetSec = document.getElementById(target);
+                    if (targetSec) targetSec.classList.add('active');
+
+                    tabButtons.forEach(b => {
+                        if (b.getAttribute('data-target') === target) {
+                            b.classList.add('active');
+                        } else {
+                            b.classList.remove('active');
+                        }
+                    });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            // Render Alerts
+            function renderAlerts() {
+                const container = document.getElementById('alertsContainer');
+                if (!container) return;
+
+                const filtered = currentFilter === 'all' 
+                    ? alerts 
+                    : alerts.filter(a => a.category.toLowerCase() === currentFilter.toLowerCase());
+
+                if (filtered.length === 0) {
+                    container.innerHTML = `<div class="card" style="text-align:center; padding:2rem;"><p>No discount alerts found for this category.</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = filtered.map(item => `
+                    <div class="card alert-card">
+                        <div class="alert-meta">
+                            <span class="tag">${item.category} • ${item.state} State</span>
+                            <span>${item.date}</span>
+                        </div>
+                        <h2>${item.title}</h2>
+                        <p>${item.desc}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                            <div>
+                                <span class="old-price">₦${item.oldPrice.toLocaleString()}</span>
+                                <span class="price-tag">₦${item.newPrice.toLocaleString()}</span>
+                            </div>
+                            <button class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;" data-claim-id="${item.id}">Claim Deal</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Wire claim buttons
+                container.querySelectorAll('button[data-claim-id]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.target.getAttribute('data-claim-id');
+                        const item = alerts.find(a => a.id == id);
+                        if (item) {
+                            showToast(`Success! Alert code sent to your registered WhatsApp for "${item.title}".`);
+                        }
+                    });
+                });
+            }
+
+            // Filter Pills
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.getAttribute('data-filter');
+                    renderAlerts();
+                });
+            });
+
+            // Render Dealer Leads
+            function renderDealers() {
+                const listEl = document.getElementById('dealerLeadsList');
+                const subEl = document.getElementById('statSubscribers');
+                const dealerStatEl = document.getElementById('statDealers');
+                if (!listEl) return;
+
+                listEl.innerHTML = dealers.map(d => `
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                        <div><strong>${d.company}</strong><br><small style="color:var(--text-light);">${d.input}</small></div>
+                        <div style="text-align: right;"><span style="color:var(--primary); font-weight:700;">${d.budget}</span><br><small>${d.leadsGenerated} verified leads</small></div>
+                    </div>
+                `).join('');
+
+                if (subEl) subEl.textContent = (1420 + farmers.length).toLocaleString();
+                if (dealerStatEl) dealerStatEl.textContent = `₦${(450000 + dealers.reduce((acc, curr) => acc + parseInt(curr.budget.replace(/[^0-9]/g, '') || 0), 0)).toLocaleString()}`;
+            }
+
+            // Farmer Registration Form
+            const farmerForm = document.getElementById('farmerForm');
+            if (farmerForm) {
+                farmerForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('farmerName').value.trim();
+                    const phone = document.getElementById('farmerPhone').value.trim();
+                    const state = document.getElementById('farmerState').value;
+                    const crop = document.getElementById('farmerCrop').value.trim();
+
+                    if (!name || !phone || !state || !crop) {
+                        showToast("Please fill all required fields.");
+                        return;
+                    }
+
+                    const newFarmer = { name, phone, state, crop, date: new Date().toISOString() };
+                    farmers.push(newFarmer);
+                    try {
+                        localStorage.setItem('agri_farmers', JSON.stringify(farmers));
+                    } catch(err) {}
+
+                    showToast("Registration successful! Free alerts activated.");
+                    farmerForm.reset();
+                    renderDealers();
+                });
+            }
+
+            // Dealer Form
+            const dealerForm = document.getElementById('dealerForm');
+            if (dealerForm) {
+                dealerForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const company = document.getElementById('dealerCompany').value.trim();
+                    const input = document.getElementById('dealerInput').value.trim();
+                    const budgetVal = document.getElementById('dealerBudget').value.trim();
+
+                    if (!company || !input || !budgetVal) {
+                        showToast("Please complete all fields.");
+                        return;
+                    }
+
+                    const newDealer = {
+                        company,
+                        input,
+                        budget: `₦${parseInt(budgetVal).toLocaleString()}`,
+                        leadsGenerated: Math.floor(Math.random() * 15) + 5
+                    };
+
+                    dealers.unshift(newDealer);
+                    try {
+                        localStorage.setItem('agri_dealers', JSON.stringify(dealers));
+                    } catch(err) {}
+
+                    showToast("Campaign launched! Connecting verified farmers...");
+                    dealerForm.reset();
+                    renderDealers();
+                });
+            }
+
+            // VIP Modal Handling
+            const vipModal = document.getElementById('vipModal');
+            const btnSubscribeVIP = document.getElementById('btnSubscribeVIP');
+            const closeVipModal = document.getElementById('closeVipModal');
+            const confirmVipBtn = document.getElementById('confirmVipBtn');
+
+            if (btnSubscribeVIP && vipModal) {
+                btnSubscribeVIP.addEventListener('click', () => {
+                    vipModal.classList.add('open');
+                });
+            }
+
+            if (closeVipModal && vipModal) {
+                closeVipModal.addEventListener('click', () => {
+                    vipModal.classList.remove('open');
+                });
+            }
+
+            if (confirmVipBtn && vipModal) {
+                confirmVipBtn.addEventListener('click', () => {
+                    const email = document.getElementById('vipEmail').value.trim();
+                    if (!email) {
+                        showToast("Please enter a valid email address.");
+                        return;
+                    }
+                    vipModal.classList.remove('open');
+                    showToast("Payment confirmed! VIP 48-hour early access activated.");
+                });
+            }
+
+            // Initial Render
+            renderAlerts();
+            renderDealers();
+        })();
+    </script>
+</body>
+</html>
