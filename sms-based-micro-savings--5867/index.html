@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KoboSafe - SMS Micro-Savings & USSD Tracker</title>
+<meta name="description" content="SMS‑Based Micro‑Savings Reminder Service. This should help: Sends daily or weekly SMS prompts to informal workers reminding them to set aside a small amoun">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪙</text></svg>">
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --accent: #F59E0B;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --danger: #EF4444;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+
+        header {
+            background: linear-gradient(135deg, #065F46 0%, #047857 100%);
+            color: white;
+            padding: 20px 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .savings-overview {
+            background: linear-gradient(135deg, #047857 0%, #10B981 100%);
+            color: white;
+            border: none;
+        }
+
+        .savings-overview h2 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .balance-display {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-container {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            background: #FBBF24;
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #F8FAFC;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            background: #FFFFFF;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #1E293B;
+        }
+
+        .ussd-box {
+            background: #1E293B;
+            color: #38BDF8;
+            padding: 16px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 1px;
+            margin: 12px 0;
+            border: 1px dashed #475569;
+        }
+
+        .ussd-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .ussd-action-btn {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .ussd-action-btn:hover {
+            background: #475569;
+        }
+
+        .tip-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 14px;
+            border-radius: 0 12px 12px 0;
+            font-size: 0.95rem;
+            color: #064E3B;
+            margin-bottom: 14px;
+        }
+
+        .history-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-info .title {
+            font-weight: 600;
+        }
+
+        .history-info .date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .history-amount {
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .partners-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .partner-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #FAFAFA;
+        }
+
+        .partner-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .partner-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .partner-btn {
+            background: #EFF6FF;
+            color: #2563EB;
+            border: 1px solid #BFDBFE;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Fixed Bottom Nav Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            flex: 1;
+            padding: 4px 0;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item span.icon {
+            font-size: 1.25rem;
+            margin-bottom: 2px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .premium-tag {
+            background: #FEF3C7;
+            color: #D97706;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span>🪙</span> KoboSafe
+            </div>
+            <div class="badge" id="live-time-badge">Sat, 12:54 PM</div>
+        </div>
+    </header>
+
+    <main>
+        <!-- VIEW 1: HOME / DASHBOARD -->
+        <section id="view-home" class="view-section active">
+            <div class="card savings-overview">
+                <h1>Total Safe Balance</h2>
+                <div class="balance-display" id="total-balance">₦0.00</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="savings-progress-bar"></div>
+                </div>
+                <div class="progress-stats">
+                    <span id="progress-saved-text">Saved: ₦0</span>
+                    <span id="progress-goal-text">Goal: ₦50,000</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💡 Daily Savings Tip</h3>
+                <div class="tip-box" id="daily-tip-text">
+                    "Loading tip of the day..."
+                </div>
+                <button class="btn btn-accent" id="btn-trigger-sms">
+                    📲 Simulate Daily SMS Reminder
+                </button>
+            </div>
+
+            <div class="card">
+                <h3>⚡ USSD Quick Actions</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Dial offline without internet:</p>
+                <div class="ussd-box" id="ussd-code-display">*347*88#</div>
+                <div class="ussd-grid">
+                    <button class="ussd-action-btn" data-ussd="deposit">Quick Deposit</button>
+                    <button class="ussd-action-btn" data-ussd="balance">Check Balance</button>
+                    <button class="ussd-action-btn" data-ussd="target">Set New Goal</button>
+                    <button class="ussd-action-btn" data-ussd="loan">Micro-Loan Offer</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: SAVINGS & USSD SIMULATOR -->
+        <section id="view-savings" class="view-section">
+            <div class="card">
+                <h3>🏦 Manual Savings Entry</h3>
+                <div class="form-group">
+                    <label for="deposit-amount">Amount to Save (₦)</label>
+                    <input type="number" id="deposit-amount" placeholder="e.g. 500" min="50">
+                </div>
+                <div class="form-group">
+                    <label for="deposit-source">Funding Source</label>
+                    <select id="deposit-source">
+                        <option value="USSD Transfer">USSD (*966# / *737#)</option>
+                        <option value="Mobile Money">Opay / Moniepoint Agent</option>
+                        <option value="Daily Contribution (Ajo)">Ajo / Esusu Collector</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="btn-save-money">Save Now</button>
+            </div>
+
+            <div class="card">
+                <h3>📋 Savings History</h3>
+                <div class="history-list" id="savings-history-container">
+                    <div class="empty-state">No savings recorded yet. Start small today!</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: PREMIUM & GOALS -->
+        <section id="view-premium" class="view-section">
+            <div class="card" style="border: 2px solid var(--accent);">
+                <h3>⭐ KoboSafe Premium <span class="premium-tag">PRO</span></h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 14px;">
+                    Unlock personalized multi-goal tracking, automated weekly PDF summaries, and direct micro-finance credit scoring.
+                </p>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 14px;">
+                    ₦500 <span style="font-size: 0.85rem; font-weight: 400; color: var(--text-muted);">/ month</span>
+                </div>
+                <button class="btn btn-accent" id="btn-upgrade-pro">Upgrade to Pro Now</button>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Set Savings Goal</h3>
+                <div class="form-group">
+                    <label for="goal-title">Goal Name</label>
+                    <input type="text" id="goal-title" placeholder="e.g. Shop Rent / New Stock">
+                </div>
+                <div class="form-group">
+                    <label for="goal-target">Target Amount (₦)</label>
+                    <input type="number" id="goal-target" placeholder="e.g. 100000">
+                </div>
+                <button class="btn btn-primary" id="btn-set-goal">Update Goal</button>
+            </div>
+        </section>
+
+        <!-- VIEW 4: PARTNERS & LOANS -->
+        <section id="view-partners" class="view-section">
+            <div class="card">
+                <h3>🤝 Partner Micro-Finance Offers</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+                    Built your savings habit? Access low-interest working capital loans from our vetted Nigerian financial partners.
+                </p>
+                <div class="partners-grid">
+                    <div class="partner-card">
+                        <div class="partner-info">
+                            <h4>Moniepoint Microfinance</h4>
+                            <p>Up to ₦200,000 inventory loan</p>
+                        </div>
+                        <button class="partner-btn" data-partner="Moniepoint">Apply</button>
+                    </div>
+                    <div class="partner-card">
+                        <div class="partner-info">
+                            <h4>FairMoney Business</h4>
+                            <p>5-minute instant disbursement</p>
+                        </div>
+                        <button class="partner-btn" data-partner="FairMoney">Apply</button>
+                    </div>
+                    <div class="partner-card">
+                        <div class="partner-info">
+                            <h4>Lapo MFB</h4>
+                            <p>Trader cooperative loans</p>
+                        </div>
+                        <button class="partner-btn" data-partner="Lapo">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-home">
+            <span class="icon">🏠</span>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" data-target="view-savings">
+            <span class="icon">💰</span>
+            <span>Save</span>
+        </button>
+        <button class="nav-item" data-target="view-premium">
+            <span class="icon">⭐</span>
+            <span>Pro / Goal</span>
+        </button>
+        <button class="nav-item" data-target="view-partners">
+            <span class="icon">🤝</span>
+            <span>Loans</span>
+        </button>
+    </nav>
+
+    <!-- MODAL FOR USSD & SMS SIMULATION -->
+    <div class="modal" id="app-modal">
+        <div class="modal-content">
+            <h3 id="modal-title" style="margin-bottom: 10px;">Notification</h3>
+            <p id="modal-message" style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 20px;"></p>
+            <button class="btn btn-primary" id="modal-close-btn">Okay</button>
+        </div>
+    </div>
+
+    <script>
+        // State Management with LocalStorage
+        const STORAGE_KEY = 'kobosafe_app_state_v1';
+        
+        let state = {
+            balance: 1500,
+            goal: 50000,
+            goalTitle: 'Shop Stock Restock',
+            isPro: false,
+            history: [
+                { id: 1, title: 'USSD Transfer (*966#)', amount: 1000, date: '27 Nov, 08:30 AM' },
+                { id: 2, title: 'Daily Ajo Contribution', amount: 500, date: '28 Nov, 10:15 AM' }
+            ]
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    state = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Failed to load storage', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error('Failed to save storage', e);
+            }
+        }
+
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'short', hour: 'numeric', minute: '2-digit', hour12: true };
+            const timeStr = now.toLocaleTimeString('en-US', options);
+            const badge = document.getElementById('live-time-badge');
+            if (badge) badge.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Tips array
+        const tips = [
+            "Setting aside just ₦200 daily builds over ₦70,000 in a year for your business emergencies!",
+            "Small drops make a mighty ocean. Keep your daily savings streak alive!",
+            "Avoid dipping into your capital. Lock your savings with KoboSafe USSD codes.",
+            "Traders who save consistently qualify for quick micro-loans without collateral stress."
+        ];
+
+        function setDailyTip() {
+            const tipEl = document.getElementById('daily-tip-text');
+            if (tipEl) {
+                const dayIndex = new Date().getDate() % tips.length;
+                tipEl.textContent = `"${tips[dayIndex]}"`;
+            }
+        }
+
+        // UI Renderer
+        function renderUI() {
+            const totalBalanceEl = document.getElementById('total-balance');
+            if (totalBalanceEl) {
+                totalBalanceEl.textContent = '₦' + state.balance.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+            }
+
+            const progressSavedText = document.getElementById('progress-saved-text');
+            const progressGoalText = document.getElementById('progress-goal-text');
+            const progressBar = document.getElementById('savings-progress-bar');
+
+            if (progressSavedText && progressGoalText && progressBar) {
+                progressSavedText.textContent = `Saved: ₦${state.balance.toLocaleString()}`;
+                progressGoalText.textContent = `Goal (${state.goalTitle}): ₦${state.goal.toLocaleString()}`;
+                const pct = Math.min(100, Math.round((state.balance / state.goal) * 100));
+                progressBar.style.width = pct + '%';
+            }
+
+            const historyContainer = document.getElementById('savings-history-container');
+            if (historyContainer) {
+                if (state.history.length === 0) {
+                    historyContainer.innerHTML = '<div class="empty-state">No savings recorded yet. Start small today!</div>';
+                } else {
+                    historyContainer.innerHTML = state.history.map(item => `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="title">${item.title}</div>
+                                <div class="date">${item.date}</div>
+                            </div>
+                            <div class="history-amount">+₦${item.amount.toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // Modal Controller
+        function showModal(title, message) {
+            const modal = document.getElementById('app-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            if (modal && modalTitle && modalMessage) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modal.classList.add('open');
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('app-modal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        // Navigation Switching
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        navItems.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                
+                navItems.forEach(n => n.classList.remove('active'));
+                btn.classList.add('active');
+
+                viewSections.forEach(sec => {
+                    sec.classList.remove('active');
+                    if (sec.id === targetId) {
+                        sec.classList.add('active');
+                    }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // App Event Handlers
+        const btnSaveMoney = document.getElementById('btn-save-money');
+        if (btnSaveMoney) {
+            btnSaveMoney.addEventListener('click', () => {
+                const amountInput = document.getElementById('deposit-amount');
+                const sourceSelect = document.getElementById('deposit-source');
+                
+                const amt = parseFloat(amountInput.value);
+                if (isNaN(amt) || amt <= 0) {
+                    showModal('Invalid Amount', 'Please enter a valid savings amount greater than zero.');
+                    return;
+                }
+
+                state.balance += amt;
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ', ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                
+                state.history.unshift({
+                    id: Date.now(),
+                    title: sourceSelect.value,
+                    amount: amt,
+                    date: dateStr
+                });
+
+                saveState();
+                renderUI();
+                amountInput.value = '';
+                showModal('Savings Successful! 🎉', `You successfully added ₦${amt.toLocaleString()} to your KoboSafe vault.`);
+            });
+        }
+
+        const btnTriggerSms = document.getElementById('btn-trigger-sms');
+        if (btnTriggerSms) {
+            btnTriggerSms.addEventListener('click', () => {
+                showModal('📲 Simulated Incoming SMS', 'KoboSafe Alert: "Oga/Madam, remember your future! Drop at least ₦200 into your savings today. Dial *347*88# to save instantly."');
+            });
+        }
+
+        const ussdActionBtns = document.querySelectorAll('.ussd-action-btn');
+        ussdActionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.getAttribute('data-ussd');
+                if (action === 'deposit') {
+                    showModal('USSD Session (*347*88#)', 'Welcome to KoboSafe.\n1. Quick Deposit ₦200\n2. Quick Deposit ₦500\n3. Quick Deposit ₦1,000\n(Simulated via offline USSD menu)');
+                } else if (action === 'balance') {
+                    showModal('USSD Balance Check', `Your current KoboSafe balance is ₦${state.balance.toLocaleString()}. Thank you for saving with us!`);
+                } else if (action === 'target') {
+                    showModal('USSD Goal Menu', `Active Goal: ${state.goalTitle} (Target: ₦${state.goal.toLocaleString()}). Dial *347*88*2# to modify.`);
+                } else if (action === 'loan') {
+                    showModal('USSD Loan Offer', 'You are eligible for up to ₦15,000 KoboSafe Trader Advance at 5% monthly interest. Dial *347*88*9# to accept.');
+                }
+            });
+        });
+
+        const btnUpgradePro = document.getElementById('btn-upgrade-pro');
+        if (btnUpgradePro) {
+            btnUpgradePro.addEventListener('click', () => {
+                state.isPro = true;
+                saveState();
+                showModal('⭐ Pro Activated!', 'You are now on KoboSafe Pro! Unlimited goals, weekly PDF financial summaries, and zero-fee partner loans unlocked.');
+            });
+        }
+
+        const btnSetGoal = document.getElementById('btn-set-goal');
+        if (btnSetGoal) {
+            btnSetGoal.addEventListener('click', () => {
+                const titleInput = document.getElementById('goal-title');
+                const targetInput = document.getElementById('goal-target');
+
+                const title = titleInput.value.trim();
+                const target = parseFloat(targetInput.value);
+
+                if (title) state.goalTitle = title;
+                if (!isNaN(target) && target > 0) state.goalTarget = target; // handled via goal property
+
+                if (!isNaN(target) && target > 0) {
+                    state.goal = target;
+                }
+
+                saveState();
+                renderUI();
+                titleInput.value = '';
+                targetInput.value = '';
+                showModal('Goal Updated!', `Your savings target has been updated to "${state.goalTitle}" (₦${state.goal.toLocaleString()}).`);
+            });
+        }
+
+        const partnerBtns = document.querySelectorAll('.partner-btn');
+        partnerBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const partnerName = btn.getAttribute('data-partner');
+                showModal(`${partnerName} Loan Request`, `Your savings profile has been submitted to ${partnerName}. A loan officer will reach out via SMS/WhatsApp within 24 hours.`);
+            });
+        });
+
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', closeModal);
+        }
+
+        // Initialize App
+        loadState();
+        setDailyTip();
+        renderUI();
+    </script>
+</body>
+</html>
