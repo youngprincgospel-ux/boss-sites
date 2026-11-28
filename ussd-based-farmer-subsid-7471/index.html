@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NaijaGrow - USSD Subsidy Checker</title>
+<meta name="description" content="USSD‑based farmer subsidy eligibility checker. This should help: Allows smallholder farmers to quickly verify eligibility for government fertilizer, seed, ">
+    <link rel="icon" href="🌾">
+    <style>
+        :root {
+            --primary: #15803d;
+            --primary-dark: #166534;
+            --primary-light: #dcfce7;
+            --accent: #ca8a04;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #dc2626;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: calc(70px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+        }
+
+        .brand span {
+            font-size: 1.4rem;
+        }
+
+        .badge {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        /* USSD Simulator Box */
+        .ussd-container {
+            background: #1e293b;
+            color: #22c55e;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: monospace;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 16px;
+        }
+
+        .ussd-screen {
+            min-height: 120px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #334155;
+            padding-bottom: 12px;
+        }
+
+        .ussd-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ussd-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .ussd-input:focus {
+            border-color: #22c55e;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+        .btn-accent:hover {
+            background: #a16207;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            background: var(--bg);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Quick actions & tabs */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .banner-ad {
+            background: linear-gradient(135deg, #fef9c3, #fef08a);
+            border: 1px solid #fde047;
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .banner-content h4 {
+            font-size: 0.95rem;
+            color: #713f12;
+            margin-bottom: 2px;
+        }
+
+        .banner-content p {
+            font-size: 0.8rem;
+            color: #854d0e;
+        }
+
+        /* History items */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-eligible { background: #dcfce7; color: #166534; }
+        .status-pending { background: #fef9c3; color: #854d0e; }
+        .status-ineligible { background: #fee2e2; color: #991b1b; }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 450px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background: var(--surface);
+            color: var(--text);
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Fixed Bottom Nav */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + var(--safe-bottom)) 0;
+            z-index: 40;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item span {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 200;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <span>🌾</span> NaijaGrow USSD
+        </div>
+        <div class="badge" id="live-time-badge">Sat, 2:54 PM</div>
+    </header>
+
+    <div class="toast" id="toast">Action completed successfully</div>
+
+    <main>
+        <!-- VIEW 1: USSD SIMULATOR -->
+        <section id="view-ussd" class="view-section active">
+            <div class="card">
+                <h1>Interactive USSD Simulation</h2>
+                <p class="subtitle">Experience the farmer subsidy code directly on mobile or web. Dial <strong style="color:var(--primary);">*347*88#</strong> on your phone or test below.</p>
+                
+                <div class="ussd-container">
+                    <div class="ussd-screen" id="ussd-screen">Welcome to FG Agric Subsidy Portal.
+Select service:
+1. Check Fertilizer Eligibility
+2. Improved Seed Request
+3. Tractor & Equipment Loan
+4. Premium SMS Alerts Setup</div>
+                    <div class="ussd-input-group">
+                        <input type="text" id="ussd-input" class="ussd-input" placeholder="Enter option (e.g. 1)" inputmode="numeric">
+                        <button class="btn btn-primary" id="ussd-send-btn">Send</button>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <button class="btn btn-outline" id="ussd-back-btn">⬅ Back / 0</button>
+                    <button class="btn btn-outline" id="ussd-reset-btn">🔄 Reset Session</button>
+                </div>
+            </div>
+
+            <!-- Banner Ad for Agribusiness -->
+            <div class="banner-ad">
+                <div class="banner-content">
+                    <h4>Sponsored: Hybrid Maize Seeds</h4>
+                    <p>Get 40% discount on Drought-Tolerant seeds via Olam Agribusiness.</p>
+                </div>
+                <button class="btn btn-accent" id="ad-cta-btn" style="padding: 6px 12px; font-size: 0.8rem;">Claim</button>
+            </div>
+
+            <div class="card">
+                <h2>Recent Subsidy Checks</h2>
+                <p class="subtitle">Quick overview of your verified farm profiles.</p>
+                <div class="history-list" id="history-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: VERIFICATION FORM (WEB APP) -->
+        <section id="view-form" class="view-section">
+            <div class="card">
+                <h2>Fast Subsidy Eligibility Form</h2>
+                <p class="subtitle">Fill out your farm details for instant eligibility matching across federal & state intervention programs.</p>
+                
+                <form id="subsidy-form">
+                    <div class="form-group">
+                        <label class="form-label" for="farmer-name">Full Name (As on NIN)</label>
+                        <input type="text" id="farmer-name" class="form-input" placeholder="e.g. Musa Ibrahim" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="farmer-phone">WhatsApp / Phone Number</label>
+                        <input type="tel" id="farmer-phone" class="form-input" placeholder="e.g. 08031234567" inputmode="tel" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="farmer-state">State Location</label>
+                        <select id="farmer-state" class="form-select" required>
+                            <option value="">Select State</option>
+                            <option value="Kaduna">Kaduna State</option>
+                            <option value="Kano">Kano State</option>
+                            <option value="Niger">Niger State</option>
+                            <option value="Oyo">Oyo State</option>
+                            <option value="Benue">Benue State</option>
+                            <option value="Ogun">Ogun State</option>
+                            <option value="Delta">Delta State</option>
+                            <option value="Enugu">Enugu State</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="farm-size">Farm Size (in Hectares)</label>
+                        <input type="number" step="0.5" id="farm-size" class="form-input" placeholder="e.g. 2.5" min="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="crop-type">Primary Crop</label>
+                        <select id="crop-type" class="form-select" required>
+                            <option value="Maize">Maize / Corn</option>
+                            <option value="Rice">Rice</option>
+                            <option value="Cassava">Cassava</option>
+                            <option value="Sorghum">Sorghum</option>
+                            <option value="Soybeans">Soybeans</option>
+                            <option value="Cocoa">Cocoa</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Verify Eligibility Now</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- VIEW 3: PREMIUM SMS ALERTS & MONETIZATION -->
+        <section id="view-monetize" class="view-section">
+            <div class="card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-color: #bbf7d0;">
+                <span style="font-size: 2rem;">🔔</span>
+                <h2 style="margin-top: 8px; color: var(--primary-dark);">Premium SMS Window Alerts</h2>
+                <p class="subtitle">Never miss fertilizer distribution windows or input grants. Receive instant SMS alerts direct to your phone when your local LGA center opens.</p>
+                <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.9rem;">
+                    <strong>Cost:</strong> ₦300 / month (Charged via airtime or bank transfer)<br>
+                    <strong>Status:</strong> <span id="sms-status-label" style="color: var(--danger); font-weight: 600;">Not Subscribed</span>
+                </div>
+                <button class="btn btn-accent btn-full" id="subscribe-sms-btn">Activate Premium SMS Alerts (₦300/mo)</button>
+            </div>
+
+            <div class="card">
+                <h2>Agribusiness Partner Referrals</h2>
+                <p class="subtitle">Connect directly with vetted agricultural input dealers for bulk fertilizer and certified tractor rentals.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="font-size: 0.95rem;">Notore NPK Fertilizer 50kg</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);">Subsidy Price: ₦18,500 (Save ₦7,000)</p>
+                        </div>
+                        <button class="btn btn-outline lead-btn" data-item="Notore NPK Fertilizer" style="font-size: 0.8rem; padding: 6px 12px;">Order Lead</button>
+                    </div>
+
+                    <div style="border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="font-size: 0.95rem;">John Deere Tractor Rental</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);">Subsidized rate per hectare</p>
+                        </div>
+                        <button class="btn btn-outline lead-btn" data-item="Tractor Rental" style="font-size: 0.8rem; padding: 6px 12px;">Order Lead</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Lead Generation / Success -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Subsidy Result</h3>
+                <button class="close-btn" id="modal-close">✕</button>
+            </div>
+            <div id="modal-body">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="view-ussd">
+            <span>📱</span> USSD Code
+        </button>
+        <button class="nav-item" data-target="view-form">
+            <span>📝</span> Web Form
+        </button>
+        <button class="nav-item" data-target="view-monetize">
+            <span>💼</span> SMS & Partners
+        </button>
+    </nav>
+
+    <script>
+        // State Management & LocalStorage
+        const STORAGE_KEY = 'naijagrow_ussd_state_v1';
+        let appState = {
+            history: [
+                { id: 1, name: 'Musa Ibrahim', state: 'Kaduna', crop: 'Maize', size: '2.5 ha', status: 'Eligible', date: '27 Nov' },
+                { id: 2, name: 'Chukwuma Okafor', state: 'Enugu', crop: 'Cassava', size: '1.0 ha', status: 'Pending', date: '26 Nov' }
+            ],
+            smsSubscribed: false
+        };
+
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                appState = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('Storage load failed', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error('Storage save failed', e);
+            }
+        }
+
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'short', hour: 'numeric', minute: '2-digit', hour12: true };
+            const timeBadge = document.getElementById('live-time-badge');
+            if (timeBadge) {
+                timeBadge.textContent = now.toLocaleDateString('en-US', options);
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toast Notification helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Navigation switching
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                viewSections.forEach(sec => sec.classList.remove('active'));
+                const targetSec = document.getElementById(target);
+                if (targetSec) targetSec.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // USSD Simulator Logic
+        let ussdStep = 0;
+        let ussdData = { service: null, state: null, crop: null, size: null };
+
+        const ussdScreen = document.getElementById('ussd-screen');
+        const ussdInput = document.getElementById('ussd-input');
+        const ussdSendBtn = document.getElementById('ussd-send-btn');
+        const ussdBackBtn = document.getElementById('ussd-back-btn');
+        const ussdResetBtn = document.getElementById('ussd-reset-btn');
+
+        function renderUssdScreen(text) {
+            if (ussdScreen) {
+                ussdScreen.textContent = text;
+                ussdScreen.scrollTop = ussdScreen.scrollHeight;
+            }
+        }
+
+        function handleUssdInput(val) {
+            val = val.trim();
+            if (!val) return;
+
+            ussdInput.value = '';
+
+            if (ussdStep === 0) {
+                if (val === '1' || val === '2' || val === '3') {
+                    ussdData.service = val === '1' ? 'Fertilizer' : (val === '2' ? 'Improved Seeds' : 'Tractor Loan');
+                    ussdStep = 1;
+                    renderUssdScreen(`Select State:\n1. Kaduna\n2. Kano\n3. Niger\n4. Oyo\n5. Benue`);
+                } else if (val === '4') {
+                    ussdStep = 10;
+                    renderUssdScreen(`Premium SMS Alerts (₦300/mo):\n1. Confirm Activation\n0. Back`);
+                } else {
+                    renderUssdScreen(`Invalid option.\n\nWelcome to FG Agric Subsidy Portal.\nSelect service:\n1. Check Fertilizer\n2. Seeds\n3. Tractor\n4. SMS Alerts`);
+                }
+            } else if (ussdStep === 1) {
+                const states = ['Kaduna', 'Kano', 'Niger', 'Oyo', 'Benue'];
+                const idx = parseInt(val) - 1;
+                if (idx >= 0 && idx < states.length) {
+                    ussdData.state = states[idx];
+                    ussdStep = 2;
+                    renderUssdScreen(`Select Crop Type:\n1. Maize\n2. Rice\n3. Cassava\n4. Sorghum`);
+                } else {
+                    renderUssdScreen(`Invalid State selection.\nSelect State:\n1. Kaduna\n2. Kano\n3. Niger\n4. Oyo\n5. Benue`);
+                }
+            } else if (ussdStep === 2) {
+                const crops = ['Maize', 'Rice', 'Cassava', 'Sorghum'];
+                const idx = parseInt(val) - 1;
+                if (idx >= 0 && idx < crops.length) {
+                    ussdData.crop = crops[idx];
+                    ussdStep = 3;
+                    renderUssdScreen(`Enter Farm Size (Hectares):\n(e.g. 2 or 1.5)`);
+                } else {
+                    renderUssdScreen(`Invalid Crop.\nSelect Crop Type:\n1. Maize\n2. Rice\n3. Cassava\n4. Sorghum`);
+                }
+            } else if (ussdStep === 3) {
+                const size = parseFloat(val);
+                if (!isNaN(size) && size > 0) {
+                    ussdData.size = size + ' ha';
+                    ussdStep = 4;
+                    // Result logic
+                    const isEligible = size <= 10;
+                    const statusText = isEligible ? 'ELIGIBLE 🎉 (Subsidy Approved)' : 'PENDING AUDIT (Large Scale)';
+                    
+                    // Add to history
+                    appState.history.unshift({
+                        id: Date.now(),
+                        name: 'USSD Farmer (' + ussdData.state + ')',
+                        state: ussdData.state,
+                        crop: ussdData.crop,
+                        size: ussdData.size,
+                        status: isEligible ? 'Eligible' : 'Pending',
+                        date: 'Today'
+                    });
+                    saveState();
+                    renderHistory();
+
+                    renderUssdScreen(`Result for ${ussdData.service}:\nStatus: ${statusText}\nLocation: ${ussdData.state}\nCrop: ${ussdData.crop} (${ussdData.size})\n\nCollect code at LGA office.\n0. Main Menu`);
+                } else {
+                    renderUssdScreen(`Invalid size. Enter valid number in hectares:`);
+                }
+            } else if (ussdStep === 4) {
+                resetUssd();
+            } else if (ussdStep === 10) {
+                if (val === '1') {
+                    appState.smsSubscribed = true;
+                    saveState();
+                    updateSmsUI();
+                    renderUssdScreen(`Success! Premium SMS alert activated. You will be billed ₦300 on next recharge.\n\n0. Main Menu`);
+                    ussdStep = 4;
+                } else {
+                    resetUssd();
+                }
+            }
+        }
+
+        function resetUssd() {
+            ussdStep = 0;
+            ussdData = { service: null, state: null, crop: null, size: null };
+            renderUssdScreen(`Welcome to FG Agric Subsidy Portal.\nSelect service:\n1. Check Fertilizer Eligibility\n2. Improved Seed Request\n3. Tractor & Equipment Loan\n4. Premium SMS Alerts Setup`);
+        }
+
+        if (ussdSendBtn && ussdInput) {
+            ussdSendBtn.addEventListener('click', () => handleUssdInput(ussdInput.value));
+            ussdInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleUssdInput(ussdInput.value);
+            });
+        }
+
+        if (ussdBackBtn) {
+            ussdBackBtn.addEventListener('click', () => {
+                resetUssd();
+                showToast('USSD Session Reset');
+            });
+        }
+
+        if (ussdResetBtn) {
+            ussdResetBtn.addEventListener('click', () => {
+                resetUssd();
+                showToast('New USSD Session Started');
+            });
+        }
+
+        // Render History List
+        function renderHistory() {
+            const listEl = document.getElementById('history-list');
+            if (!listEl) return;
+
+            listEl.innerHTML = '';
+            appState.history.forEach(item => {
+                const badgeClass = item.status === 'Eligible' ? 'status-eligible' : (item.status === 'Pending' ? 'status-pending' : 'status-ineligible');
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong> (${item.state})<br>
+                        <span style="color:var(--text-muted);">${item.crop} • ${item.size} • ${item.date}</span>
+                    </div>
+                    <span class="status-badge ${badgeClass}">${item.status}</span>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+        renderHistory();
+
+        // Web Form Submission
+        const subsidyForm = document.getElementById('subsidy-form');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalClose = document.getElementById('modal-close');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+
+        if (subsidyForm) {
+            subsidyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('farmer-name').value;
+                const state = document.getElementById('farmer-state').value;
+                const size = document.getElementById('farm-size').value;
+                const crop = document.getElementById('crop-type').value;
+
+                const isEligible = parseFloat(size) <= 15;
+                const status = isEligible ? 'Eligible' : 'Pending';
+
+                appState.history.unshift({
+                    id: Date.now(),
+                    name,
+                    state,
+                    crop,
+                    size: size + ' ha',
+                    status,
+                    date: 'Today'
+                });
+                saveState();
+                renderHistory();
+
+                if (modalTitle && modalBody && modalOverlay) {
+                    modalTitle.textContent = isEligible ? '✅ Subsidy Verification Passed' : '⚠️ Audit Required';
+                    modalBody.innerHTML = `
+                        <p style="margin-bottom: 12px;">Farmer: <strong>${name}</strong></p>
+                        <p style="margin-bottom: 12px;">Location: <strong>${state} State (${size} ha of ${crop})</strong></p>
+                        <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted);">
+                            ${isEligible ? 'Your profile qualifies for government-backed input subsidies. Reference code generated successfully.' : 'Your farm size exceeds standard smallholder threshold and requires local extension officer physical review.'}
+                        </p>
+                        <div style="background: var(--bg); padding: 10px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; margin-bottom: 16px; text-align:center;">
+                            Ref: NG-SUB-${Math.floor(100000 + Math.random() * 900000)}
+                        </div>
+                        <button class="btn btn-primary btn-full" id="modal-ok-btn">Done</button>
+                    `;
+                    modalOverlay.classList.add('active');
+
+                    document.getElementById('modal-ok-btn').addEventListener('click', () => {
+                        modalOverlay.classList.remove('active');
+                        subsidyForm.reset();
+                    });
+                }
+            });
+        }
+
+        if (modalClose && modalOverlay) {
+            modalClose.addEventListener('click', () => modalOverlay.classList.remove('active'));
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+            });
+        }
+
+        // Monetization & SMS subscription
+        const subscribeSmsBtn = document.getElementById('subscribe-sms-btn');
+        const smsStatusLabel = document.getElementById('sms-status-label');
+
+        function updateSmsUI() {
+            if (!smsStatusLabel || !subscribeSmsBtn) return;
+            if (appState.smsSubscribed) {
+                smsStatusLabel.textContent = 'Active (Subscribed)';
+                smsStatusLabel.style.color = 'var(--primary)';
+                subscribeSmsBtn.textContent = 'Manage SMS Alerts';
+            } else {
+                smsStatusLabel.textContent = 'Not Subscribed';
+                smsStatusLabel.style.color = 'var(--danger)';
+                subscribeSmsBtn.textContent = 'Activate Premium SMS Alerts (₦300/mo)';
+            }
+        }
+        updateSmsUI();
+
+        if (subscribeSmsBtn) {
+            subscribeSmsBtn.addEventListener('click', () => {
+                appState.smsSubscribed = !appState.smsSubscribed;
+                saveState();
+                updateSmsUI();
+                showToast(appState.smsSubscribed ? 'SMS Alert Subscription Activated!' : 'Subscription Updated');
+            });
+        }
+
+        // Ad banner & Lead buttons
+        const adCtaBtn = document.getElementById('ad-cta-btn');
+        if (adCtaBtn) {
+            adCtaBtn.addEventListener('click', () => {
+                showToast('Redirecting to Agribusiness Partner (Olam Seeds)...');
+            });
+        }
+
+        const leadBtns = document.querySelectorAll('.lead-btn');
+        leadBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.getAttribute('data-item');
+                showToast(`Lead request submitted for ${item}! Dealer will call you.`);
+            });
+        });
+    </script>
+</body>
+</html>
