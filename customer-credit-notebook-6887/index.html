@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KioskCredit - Customer Credit Notebook</title>
+<meta name="description" content="Customer Credit Notebook for Small Traders — a lightweight offline-first web app where kiosks and market traders record customer debts, due dates, and part">
+    <link rel="icon" href="📓">
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --primary-light: #ccfbf1;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pro-badge {
+            background: var(--accent);
+            color: #000;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .stats-banner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px 20px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .stat-value.danger { color: var(--danger); }
+        .stat-value.success { color: var(--success); }
+
+        .container {
+            padding: 16px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 38px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .filter-select {
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9rem;
+            outline: none;
+            color: var(--text);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-success { background: var(--success); }
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+        .customer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .customer-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .customer-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .customer-phone {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .customer-debt {
+            text-align: right;
+        }
+
+        .debt-amount {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--danger);
+        }
+
+        .due-date {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .due-date.overdue {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .customer-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .action-btn {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .action-btn.whatsapp {
+            background: #25d366;
+            color: white;
+            border-color: #25d366;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state div {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        /* Fixed Bottom Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 12px 20px;
+            padding-bottom: calc(12px + var(--safe-bottom));
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .bottom-bar .btn {
+            flex: 1;
+        }
+
+        /* Modal Overlay */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 90vh;
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.1, 1, 0.1, 1);
+            padding-bottom: calc(24px + var(--safe-bottom));
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background: white;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .sponsored-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 24px;
+            font-size: 0.85rem;
+            color: #92400e;
+        }
+
+        .sponsored-card strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #b45309;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .history-item {
+            background: var(--bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <h1>📓 KioskCredit <span class="pro-badge" id="proBadge">Free</span></h1>
+            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3); padding: 6px 12px; font-size: 0.8rem;" id="upgradeBtn">Go Pro</button>
+        </div>
+    </header>
+
+    <div class="stats-banner">
+        <div class="stat-card">
+            <div class="stat-label">Total Credit Out</div>
+            <div class="stat-value danger" id="totalCreditVal">₦0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Debtors</div>
+            <div class="stat-value" id="activeDebtorsVal">0</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search customer name...">
+            </div>
+            <select class="filter-select" id="filterSelect">
+                <option value="all">All</option>
+                <option value="overdue">Overdue</option>
+                <option value="active">Active</option>
+            </select>
+        </div>
+
+        <div class="customer-list" id="customerList">
+            <!-- Dynamically populated -->
+        </div>
+
+        <div class="sponsored-card">
+            <strong>📢 Sponsored for Kiosk Owners</strong>
+            Need reliable POS terminals or physical ledger books delivered to your shop? Contact Moniepoint/Opay agents or order our durable waterproof Credit Registers via WhatsApp today!
+        </div>
+    </div>
+
+    <!-- Fixed Bottom Bar -->
+    <div class="bottom-bar">
+        <button class="btn btn-success" id="openAddModalBtn">➕ Add Customer Debt</button>
+    </div>
+
+    <!-- Add/Edit Customer Modal -->
+    <div class="modal" id="customerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Record New Debt</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="customerForm">
+                <input type="hidden" id="customerId">
+                <div class="form-group">
+                    <label class="form-label">Customer Name</label>
+                    <input type="text" class="form-input" id="nameInput" placeholder="e.g. Mama Emeka" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">WhatsApp Phone Number</label>
+                    <input type="tel" class="form-input" id="phoneInput" placeholder="e.g. 2348012345678" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Credit Amount (₦)</label>
+                    <input type="number" class="form-input" id="amountInput" placeholder="e.g. 3500" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Items Bought / Description</label>
+                    <input type="text" class="form-input" id="itemsInput" placeholder="e.g. 2 tubers of yam, 1 paint oil" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" class="form-input" id="dueDateInput" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Save Record</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Part Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Payment</h3>
+                <button class="close-btn" id="closePaymentModalBtn">&times;</button>
+            </div>
+            <form id="paymentForm">
+                <input type="hidden" id="payCustomerId">
+                <div class="form-group">
+                    <label class="form-label">Customer: <span id="payCustomerName" style="color:var(--primary);"></span></label>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">Current Balance: <strong id="payCurrentDebt" style="color:var(--danger);"></strong></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount Paid Now (₦)</label>
+                    <input type="number" class="form-input" id="payAmountInput" placeholder="e.g. 2000" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Confirm Part-Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- WhatsApp Preview Modal -->
+    <div class="modal" id="whatsappModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">WhatsApp Reminder</h3>
+                <button class="close-btn" id="closeWhatsappModalBtn">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Ready-to-send polite reminder text:</label>
+                <textarea class="form-textarea" id="whatsappTextarea"></textarea>
+            </div>
+            <a href="#" id="whatsappSendBtn" target="_blank" class="action-btn whatsapp" style="width: 100%; padding: 14px; font-size: 1rem; border-radius: 8px;">
+                💬 Send Reminder via WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- Pro Upgrade Modal -->
+    <div class="modal" id="proModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Unlock KioskCredit Pro</h3>
+                <button class="close-btn" id="closeProModalBtn">&times;</button>
+            </div>
+            <p style="margin-bottom: 16px; font-size: 0.95rem; line-height: 1.5; color: var(--text-secondary);">
+                Upgrade to Pro to enjoy multi-device cloud backups, unlimited ledger books, and automated scheduled WhatsApp/SMS reminders so you never lose track of customer credits again!
+            </p>
+            <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary); margin-bottom: 4px;">₦2,000 <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">/ lifetime</span></div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">One-time payment via Paystack</div>
+            </div>
+            <button class="btn btn-accent" id="simulatePaymentBtn" style="width: 100%;">Upgrade Now (Simulate Paystack)</button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'kiosk_credit_data_v1';
+        const PRO_KEY = 'kiosk_credit_pro_v1';
+
+        let appData = {
+            customers: [
+                {
+                    id: '1',
+                    name: 'Mama Emeka Stores',
+                    phone: '2348012345678',
+                    amount: 4500,
+                    items: '2 cartons of noodles, 1 satchet milk',
+                    dueDate: '2026-11-25',
+                    history: [{ date: '2026-11-20', text: 'Initial credit: ₦4500' }]
+                },
+                {
+                    id: '2',
+                    name: 'Alhaji Bello',
+                    phone: '2348087654321',
+                    amount: 12000,
+                    items: '1 bag of rice (half) & provisions',
+                    dueDate: '2026-12-05',
+                    history: [{ date: '2026-11-22', text: 'Initial credit: ₦12000' }]
+                }
+            ]
+        };
+
+        let isPro = false;
+
+        // Load from localStorage
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) appData = JSON.parse(saved);
+            const savedPro = localStorage.getItem(PRO_KEY);
+            if (savedPro) isPro = JSON.parse(savedPro);
+        } catch (e) {
+            console.error('Storage error', e);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+                localStorage.setItem(PRO_KEY, JSON.stringify(isPro));
+            } catch (e) {
+                console.error('Save error', e);
+            }
+        }
+
+        // DOM Elements
+        const customerListEl = document.getElementById('customerList');
+        const totalCreditValEl = document.getElementById('totalCreditVal');
+        const activeDebtorsValEl = document.getElementById('activeDebtorsVal');
+        const searchInputEl = document.getElementById('searchInput');
+        const filterSelectEl = document.getElementById('filterSelect');
+        const proBadgeEl = document.getElementById('proBadge');
+
+        // Modals
+        const customerModal = document.getElementById('customerModal');
+        const paymentModal = document.getElementById('paymentModal');
+        const whatsappModal = document.getElementById('whatsappModal');
+        const proModal = document.getElementById('proModal');
+
+        // Buttons
+        const openAddModalBtn = document.getElementById('openAddModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closePaymentModalBtn = document.getElementById('closePaymentModalBtn');
+        const closeWhatsappModalBtn = document.getElementById('closeWhatsappModalBtn');
+        const closeProModalBtn = document.getElementById('closeProModalBtn');
+        const upgradeBtn = document.getElementById('upgradeBtn');
+        const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
+
+        // Forms
+        const customerForm = document.getElementById('customerForm');
+        const paymentForm = document.getElementById('paymentForm');
+
+        function updateProUI() {
+            if (isPro) {
+                proBadgeEl.textContent = 'PRO';
+                proBadgeEl.style.background = '#10b981';
+                proBadgeEl.style.color = '#fff';
+                upgradeBtn.textContent = 'Pro Active';
+                upgradeBtn.disabled = true;
+            } else {
+                proBadgeEl.textContent = 'Free';
+                proBadgeEl.style.background = '#f59e0b';
+                proBadgeEl.style.color = '#000';
+                upgradeBtn.textContent = 'Go Pro';
+                upgradeBtn.disabled = false;
+            }
+        }
+
+        function render() {
+            updateProUI();
+            const search = searchInputEl.value.toLowerCase();
+            const filter = filterSelectEl.value;
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let totalCredit = 0;
+            let activeCount = 0;
+
+            appData.customers.forEach(c => {
+                totalCredit += c.amount;
+                if (c.amount > 0) activeCount++;
+            });
+
+            totalCreditValEl.textContent = '₦' + totalCredit.toLocaleString();
+            activeDebtorsValEl.textContent = activeCount;
+
+            const filtered = appData.customers.filter(c => {
+                const matchesSearch = c.name.toLowerCase().includes(search) || c.items.toLowerCase().includes(search);
+                if (!matchesSearch) return false;
+
+                const isOverdue = c.dueDate < todayStr && c.amount > 0;
+                if (filter === 'overdue') return isOverdue;
+                if (filter === 'active') return c.amount > 0;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                customerListEl.innerHTML = `
+                    <div class="empty-state">
+                        <div>📭</div>
+                        <p>No credit records found.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            customerListEl.innerHTML = filtered.map(c => {
+                const isOverdue = c.dueDate < todayStr && c.amount > 0;
+                return `
+                    <div class="customer-card">
+                        <div class="customer-header">
+                            <div>
+                                <div class="customer-name">${escapeHtml(c.name)}</div>
+                                <div class="customer-phone">📞 ${escapeHtml(c.phone)}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Items: ${escapeHtml(c.items)}</div>
+                            </div>
+                            <div class="customer-debt">
+                                <div class="debt-amount">₦${c.amount.toLocaleString()}</div>
+                                <div class="due-date ${isOverdue ? 'overdue' : ''}">Due: ${c.dueDate} ${isOverdue ? '(Overdue!)' : ''}</div>
+                            </div>
+                        </div>
+                        <div class="customer-actions">
+                            <button class="action-btn" onclick="openPaymentModal('${c.id}')">💵 Part-Pay</button>
+                            <button class="action-btn whatsapp" onclick="openWhatsappModal('${c.id}')">💬 WhatsApp</button>
+                            <button class="action-btn" onclick="deleteCustomer('${c.id}')" style="color: var(--danger);">🗑 Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Event Listeners for UI
+        if (openAddModalBtn) {
+            openAddModalBtn.addEventListener('click', () => {
+                if (!isPro && appData.customers.length >= 3) {
+                    proModal.classList.add('active');
+                    return;
+                }
+                customerForm.reset();
+                document.getElementById('customerId').value = '';
+                document.getElementById('modalTitle').textContent = 'Record New Debt';
+                document.getElementById('dueDateInput').value = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
+                customerModal.classList.add('active');
+            });
+        }
+
+        if (closeModalBtn) closeModalBtn.addEventListener('click', () => customerModal.classList.remove('active'));
+        if (closePaymentModalBtn) closePaymentModalBtn.addEventListener('click', () => paymentModal.classList.remove('active'));
+        if (closeWhatsappModalBtn) closeWhatsappModalBtn.addEventListener('click', () => whatsappModal.classList.remove('active'));
+        if (closeProModalBtn) closeProModalBtn.addEventListener('click', () => proModal.classList.remove('active'));
+        if (upgradeBtn) upgradeBtn.addEventListener('click', () => proModal.classList.add('active'));
+
+        if (simulatePaymentBtn) {
+            simulatePaymentBtn.addEventListener('click', () => {
+                isPro = true;
+                saveState();
+                proModal.classList.remove('active');
+                render();
+                alert('Payment successful! KioskCredit Pro is now active.');
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', render);
+        if (filterSelect) filterSelect.addEventListener('change', render);
+
+        // Form Submit for Add/Edit
+        if (customerForm) {
+            customerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('customerId').value || Date.now().toString();
+                const name = document.getElementById('nameInput').value.trim();
+                const phone = document.getElementById('phoneInput').value.trim();
+                const amount = parseFloat(document.getElementById('amountInput').value);
+                const items = document.getElementById('itemsInput').value.trim();
+                const dueDate = document.getElementById('dueDateInput').value;
+
+                const existingIndex = appData.customers.findIndex(c => c.id === id);
+                if (existingIndex >= 0) {
+                    appData.customers[existingIndex] = { ...appData.customers[existingIndex], name, phone, amount, items, dueDate };
+                } else {
+                    appData.customers.push({
+                        id,
+                        name,
+                        phone,
+                        amount,
+                        items,
+                        dueDate,
+                        history: [{ date: new Date().toISOString().split('T')[0], text: `Initial credit: ₦${amount}` }]
+                    });
+                }
+
+                saveState();
+                customerModal.classList.remove('active');
+                render();
+            });
+        }
+
+        // Global functions called from inline handlers in template
+        window.openPaymentModal = function(id) {
+            const customer = appData.customers.find(c => c.id === id);
+            if (!customer) return;
+            document.getElementById('payCustomerId').value = customer.id;
+            document.getElementById('payCustomerName').textContent = customer.name;
+            document.getElementById('payCurrentDebt').textContent = '₦' + customer.amount.toLocaleString();
+            document.getElementById('payAmountInput').value = '';
+            paymentModal.classList.add('active');
+        };
+
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('payCustomerId').value;
+                const payAmount = parseFloat(document.getElementById('payAmountInput').value);
+                const customer = appData.customers.find(c => c.id === id);
+                if (!customer) return;
+
+                customer.amount = Math.max(0, customer.amount - payAmount);
+                customer.history.push({
+                    date: new Date().toISOString().split('T')[0],
+                    text: `Paid ₦${payAmount.toLocaleString()}. Balance: ₦${customer.amount.toLocaleString()}`
+                });
+
+                saveState();
+                paymentModal.classList.remove('active');
+                render();
+            });
+        }
+
+        window.openWhatsappModal = function(id) {
+            const customer = appData.customers.find(c => c.id === id);
+            if (!customer) return;
+            const text = `Hello ${customer.name}, polite reminder from your store ledger regarding your outstanding balance of ₦${customer.amount.toLocaleString()} for (${customer.items}). Due date was ${customer.dueDate}. Kindly send payment when possible. Thank you! 🙏`;
+            document.getElementById('whatsappTextarea').value = text;
+            const encoded = encodeURIComponent(text);
+            document.getElementById('whatsappSendBtn').href = `https://wa.me/${customer.phone}?text=${encoded}`;
+            whatsappModal.classList.add('active');
+        };
+
+        window.deleteCustomer = function(id) {
+            if (confirm('Are you sure you want to delete this credit record?')) {
+                appData.customers = appData.customers.filter(c => c.id !== id);
+                saveState();
+                render();
+            }
+        };
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
